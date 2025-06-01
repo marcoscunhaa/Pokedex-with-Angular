@@ -35,7 +35,7 @@ export interface PokemonFilter {
   providedIn: 'root',
 })
 export class PokemonService {
-  private readonly apiUrl = 'http://localhost:8080/api/pokemons';
+  private readonly apiUrl = 'https://pokedex-with-springboot-production.up.railway.app/api/pokemons';
 
   constructor(private http: HttpClient) {}
 
