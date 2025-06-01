@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "builds": [
     {
       "src": "dist/angular/server/server.mjs",
@@ -13,4 +13,3 @@
     }
   ]
 }
-
