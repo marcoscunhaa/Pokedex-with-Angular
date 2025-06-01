@@ -1,0 +1,119 @@
+@if (pokemon) {
+
+<!-- ID do Pokémon -->
+<span class="absolute top-2 left-4 text-sm text-gray-500 font-semibold">
+  #{{ pokemon.id }}
+</span>
+
+<!-- Nome -->
+<h2 class="lilita-one-regular mb-4 text-lg  text-center font-semibold capitalize">
+  {{ pokemon.name }}
+</h2>
+
+<!-- Sprite do Pokémon centralizada -->
+<div class="flex justify-center items-center mt-4">
+  <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" [alt]="pokemon.name" class="h-28 w-28 object-contain" />
+</div>
+
+<!-- Tipos -->
+<div class="flex flex-wrap montserrat justify-center gap-2 mt-2 mb-3">
+  @for (type of pokemon.type; track type) {
+  <span [ngClass]="getTypeColor(type)" class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
+    {{ type }}
+  </span>
+  } @empty {
+  <span>No types</span>
+  }
+</div>
+
+<!-- Descrição, Altura, Peso e Habilidades -->
+<div class="text-left montserrat text-sm text-gray-700 mb-4 px-4 space-y-3">
+  <p><strong>Description:</strong> {{ pokemon.description }}</p>
+
+  <div class="space-y-1">
+  <p><strong>Height:</strong> {{ pokemon.height }} m</p>
+  <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
+
+  <!-- Abilities -->
+  <div>
+    <strong>Abilities:</strong>
+    <div class="flex justify-start flex-wrap gap-2 mt-2">
+      <ng-container *ngFor="let ability of pokemon.ability">
+        <p>
+          <strong class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full capitalize montserrat">
+            {{ ability }}
+          </strong>
+        </p>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Moves -->
+<div>
+  <strong>Moves:</strong>
+  <div class="flex justify-start flex-wrap gap-2 mt-2">
+    <ng-container *ngFor="let move of getVisibleMoves()">
+      <p>
+        <strong class="bg-red-300 text-gray-700 px-3 py-1 rounded-full text-sm capitalize montserrat">
+          {{ move }}
+        </strong>
+      </p>
+    </ng-container>
+  </div>
+
+  <div class="mt-2 text-center">
+    <button
+      class="text-gray-700 text-sm hover:text-blue-700 montserrat"
+      (click)="showAllMoves = !showAllMoves"
+    >
+      {{ showAllMoves ? 'Show less...' : 'Show more...' }}
+    </button>
+  </div>
+</div>
+
+</div>
+
+</div>
+
+<!-- Stats -->
+<div class="mt-4 mb-6 px-4">
+  <h3 class="text-md font-semibold text-gray-700 text-center mb-2 lilita-one-regular">
+    Base Stats
+  </h3>
+
+  <div *ngIf="pokemon.stats" class="space-y-2 montserrat text-sm text-gray-700">
+    <div *ngFor="let stat of statKeys">
+      <div class="flex justify-between">
+        <span class="capitalize">{{ stat.replace('-', ' ') }}</span>
+        <span>{{ pokemon.stats[stat] }}</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="h-3 rounded-full" [ngStyle]="{
+              width: getStatWidth(pokemon.stats[stat]),
+              backgroundColor: getStatColor(stat)
+            }"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Evoluções -->
+
+<h3 class="text-md font-semibold text-gray-700 text-center mb-2 lilita-one-regular">
+  Evolution
+</h3>
+
+<div class="flex items-center justify-center gap-4 flex-wrap">
+  <ng-container *ngFor="let evo of evolutionSprites; let i = index">
+    <div class="flex flex-col items-center">
+      <img [src]="'data:image/png;base64,' + evo.spriteBase64" [alt]="evo.name" class="h-16 w-16 object-contain" />
+      <p class="text-sm capitalize mt-1 montserrat text-gray-700">
+        {{ evo.name }}
+      </p>
+    </div>
+
+    <span *ngIf="i < evolutionSprites.length - 1" class="text-xl text-gray-500">→</span>
+  </ng-container>
+</div>
+}
