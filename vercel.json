@@ -1,12 +1,15 @@
 {
+  "version": 3,
   "builds": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist/angular" }
+      "src": "dist/angular/server/server.mjs",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/(.*)",
+      "dest": "dist/angular/server/server.mjs"
+    }
   ]
 }
