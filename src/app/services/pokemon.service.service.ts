@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment.dev';
 
 // Interfaces para tipar os dados recebidos da API
 export interface Pokemon {
@@ -35,7 +36,7 @@ export interface PokemonFilter {
   providedIn: 'root',
 })
 export class PokemonService {
-  private readonly apiUrl = 'https://pokedex-with-springboot-production.up.railway.app/api/pokemons';
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
