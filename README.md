@@ -1,27 +1,77 @@
-# Angular
+# Pokédex - APP
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+Este projeto é o frontend de uma aplicação fullstack de Pokédex, desenvolvido com **Angular CLI 17.3.17**. Ele consome uma API REST construída com **Spring Boot** ([repositório](https://github.com/marcoscunhaa/Pokedex-with-springboot)).
 
-## Development server
+## 🛠️ Tecnologias utilizadas
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- [Angular CLI 17.3.17](https://angular.io/)
+- [RxJS](https://rxjs.dev/)
+- [Node.js v22.12.0](https://nodejs.org/)
+- [npm v11.4.1](https://www.npmjs.com/)
 
-## Code scaffolding
+## 📁 Estrutura de ambientes
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+A aplicação possui dois ambientes configurados:
 
-## Build
+- **environment.dev.ts (desenvolvimento)**: Usa a API local (`http://localhost:8080` ou conforme configurado).
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```ts
+import { environment } from '../../environments/environment.dev';
+```
 
-## Running unit tests
+- **environment.prod.ts (produção)**: Usa o endereço da API hospedada no Railway.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```ts
+import { environment } from '../../environments/environment.prod';
+```
 
-## Running end-to-end tests
+🚀 Como rodar o projeto localmente
+----------------------------------
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+### 1. Pré-requisitos
 
-## Further help
+* Node.js v22 ou superior
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+* npm v11 ou superior
+
+* Angular CLI instalado globalmente:
+  
+  ```
+  
+  ```
+
+### 2. Clonar o repositório
+
+```
+
+```
+
+
+
+### 3. Instalar as dependências
+
+bash
+
+CopiarEditar
+
+`npm install`
+
+### 4. Rodar em ambiente de desenvolvimento
+
+bash
+
+CopiarEditar
+
+`ng serve`
+
+Acesse em: `http://localhost:4200`
+
+### 5. Build para produção
+
+bash
+
+CopiarEditar
+
+`ng build --configuration production`
+
+O build estará disponível na pasta `dist/`.
