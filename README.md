@@ -1,77 +1,87 @@
-# Pokédex - APP
+# 🧠 Pokedex App - Angular
 
-Este projeto é o frontend de uma aplicação fullstack de Pokédex, desenvolvido com **Angular CLI 17.3.17**. Ele consome uma API REST construída com **Spring Boot** ([repositório](https://github.com/marcoscunhaa/Pokedex-with-springboot)).
+This is the frontend of the **Pokedex** application, developed with Angular, styled with Tailwind CSS, and connected to an API in Spring Boot. The application consumes data from the PokéAPI through an intermediary API ([Repositório Backend (Spring Boot)](https://github.com/marcoscunhaa/Pokedex-with-Angular/tree/main/backend)) and displays information about Pokémon in a modern and responsive way.
 
-## 🛠️ Tecnologias utilizadas
+---
 
-- [Angular CLI 17.3.17](https://angular.io/)
-- [RxJS](https://rxjs.dev/)
-- [Node.js v22.12.0](https://nodejs.org/)
-- [npm v11.4.1](https://www.npmjs.com/)
+### 🛠️ Technologies Used
 
-## 📁 Estrutura de ambientes
+* **Angular CLI**: v17.3.17
 
-A aplicação possui dois ambientes configurados:
+* **Node.js**: v22.12.0
 
-- **environment.dev.ts (desenvolvimento)**: Usa a API local (`http://localhost:8080` ou conforme configurado).
+* **NPM**: v11.4.1
 
-```ts
-import { environment } from '../../environments/environment.dev';
-```
+* **RxJS**
 
-- **environment.prod.ts (produção)**: Usa o endereço da API hospedada no Railway.
+* **Tailwind CSS**
 
-```ts
-import { environment } from '../../environments/environment.prod';
-```
+* **TypeScript**
 
-🚀 Como rodar o projeto localmente
-----------------------------------
+---
 
-### 1. Pré-requisitos
+### 📑 Environment Structure:
 
-* Node.js v22 ou superior
+The application has two environment files, The active environment is imported into the services through:
 
-* npm v11 ou superior
-
-* Angular CLI instalado globalmente:
+* `environment.ts` (development):
   
-  ```
-  
+  ```ts
+  import { environment } from '../../environments/environment'
   ```
 
-### 2. Clonar o repositório
+* `environment.prod.ts` (production)
+  
+  ```ts
+  import { environment } from '../../environments/environment.prod';
+  ```
 
+---
+
+### 🌐 Endpoints used by environment:
+
+* **Development:** points to the local Spring Boot backend (usually `http://localhost:8080`)
+
+* **Production:** points to to the backend hosted on [Railway](https://pokedex-with-springboot-production.up.railway.app/api/pokemons)
+
+---
+
+👨‍💻Installation and Execution:
+------------------------
+
+### ✅ 1. Prerequisites
+
+Make sure you have installed:
+
+* Node.js v22.12.0
+
+* NPM v11.4.1
+
+* Angular CLI v17.3.17
+
+### 🔄 2. Clone the repository
+
+```bash
+git clone https://github.com/marcoscunhaa/Pokedex-with-Angular
+cd Pokedex-with-Angular
 ```
 
+### 💾 3. Install dependencies
+
+```bash
+npm install
 ```
 
+### 🚀 4. Run in development environment
+
+```bash
+ng serve
+```
+
+---
+
+### 🎯 Application running:
+
+![pokedex-app](assets/pokedex-application.gif "pokedex-app")
 
 
-### 3. Instalar as dependências
-
-bash
-
-CopiarEditar
-
-`npm install`
-
-### 4. Rodar em ambiente de desenvolvimento
-
-bash
-
-CopiarEditar
-
-`ng serve`
-
-Acesse em: `http://localhost:4200`
-
-### 5. Build para produção
-
-bash
-
-CopiarEditar
-
-`ng build --configuration production`
-
-O build estará disponível na pasta `dist/`.
