@@ -2,7 +2,7 @@
   <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col relative">
 
     <!-- Título da Pokédex -->
-    <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-shadow text-purple-600 mb-6">
+    <h1 class="text-4xl md:text-5xl fredoka-one text-center text-shadow text-purple-600 mb-6 drop-shadow-md">
       Pokedex
     </h1>
 
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Link para abrir a pesquisa avançada -->
-    <div class="text-right lilita-one-regular mb-4">
+    <div class="text-right fredoka-one mb-4">
       <button (click)="showAdvancedSearch = true" class="text-purple-600 hover:underline text-sm">
         Advanced search?
       </button>
@@ -30,8 +30,7 @@
       <div class="flex-1 overflow-y-auto pr-1">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           @for (pokemon of displayedPokemons; track pokemon.id) {
-          
-            <!-- Card do Pokémon -->
+
           <div
             class="pokemon-card bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200 cursor-pointer"
             (click)="selectPokemon(pokemon.id)">
@@ -64,7 +63,7 @@
             </div>
 
             <!-- Nome -->
-            <h2 class="text-lg lilita-one-regular font-semibold capitalize">
+            <h2 class="text-lg fredoka-one font-semibold capitalize">
               {{ pokemon.name }}
             </h2>
           </div>
@@ -95,14 +94,16 @@
       </div>
 
       <!-- Card detalhes -->
-      <div *ngIf="selectedPokemonId"
-        class="w-full md:w-[380px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start"
-        style="max-height: calc(90vh - 250px);">
+      <div *ngIf="selectedPokemonId" #detailsCard
+        class="w-full md:w-[380px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start transition-opacity duration-300"
+        [class.opacity-0]="closingCard" [class.opacity-100]="!closingCard" style="max-height: calc(90vh - 250px);">
+
         <button (click)="selectedPokemonId = null"
           class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl"
           aria-label="Close details">&times;</button>
 
-        <app-pokemon-details [pokemonId]="selectedPokemonId"></app-pokemon-details>
+        <app-pokemon-details [pokemonId]="selectedPokemonId" (evolutionClicked)="selectEvolutionPokemon($event)">
+        </app-pokemon-details>
       </div>
     </div>
 
@@ -114,11 +115,11 @@
         <button (click)="showAdvancedSearch = false"
           class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl">&times;</button>
 
-        <h2 class="text-3xl lilita-one-regular text-center text-purple-700 mb-4">Advanced search</h2>
+        <h2 class="text-3xl fredoka-one text-center text-purple-700 mb-4">Advanced search</h2>
 
         <!-- Tipos -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Type:</label>
+          <label class="block font-semibold fredoka-one text-purple-700 mb-1">Type:</label>
           <div class="flex flex-wrap gap-2">
             @for (type of availableTypes; track type) {
             <button class="shadow montserrat" (click)="toggleTypeSelection(type)" [ngClass]="[
@@ -137,21 +138,21 @@
 
         <!-- Habilidade -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Ability:</label>
+          <label class="block font-semibold fredoka-one text-purple-700 mb-1">Ability:</label>
           <input [(ngModel)]="advancedSearch.ability" placeholder="Ex: telepathy"
             class="w-full p-2 montserrat border rounded-md border-gray-300" />
         </div>
 
         <!-- Movimento -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Move:</label>
+          <label class="block font-semibold fredoka-one text-purple-700 mb-1">Move:</label>
           <input [(ngModel)]="advancedSearch.move" placeholder="Ex: draco-meteor"
             class="w-full p-2 montserrat border rounded-md border-gray-300" />
         </div>
 
         <!-- Região -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Region:</label>
+          <label class="block font-semibold fredoka-one text-purple-700 mb-1">Region:</label>
           <select [(ngModel)]="advancedSearch.region" class="montserrat w-full p-2 border rounded-md border-gray-300">
             <option value="">All regions</option>
             @for (region of regions; track region) {
@@ -177,8 +178,6 @@
     </div>
     }
 
-
-    
   </div>
 
 </body>

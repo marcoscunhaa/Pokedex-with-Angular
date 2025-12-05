@@ -6,7 +6,7 @@
 </span>
 
 <!-- Nome -->
-<h2 class="lilita-one-regular mb-4 text-lg  text-center font-semibold capitalize">
+<h2 class="fredoka-one mb-4 text-lg text-center font-semibold capitalize">
   {{ pokemon.name }}
 </h2>
 
@@ -31,48 +31,47 @@
   <p><strong>Description:</strong> {{ pokemon.description }}</p>
 
   <div class="space-y-1">
-  <p><strong>Height:</strong> {{ pokemon.height }} m</p>
-  <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
+    <p><strong>Height:</strong> {{ pokemon.height }} m</p>
+    <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
 
-  <!-- Abilities -->
-  <div>
-    <strong>Abilities:</strong>
-    <div class="flex justify-start flex-wrap gap-2 mt-2">
-      <ng-container *ngFor="let ability of pokemon.ability">
+    <!-- Abilities -->
+    <div>
+      <strong>Abilities:</strong>
+      <div class="flex justify-start flex-wrap gap-2 mt-2">
+        @for (ability of pokemon.ability; track ability) {
         <p>
           <strong class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full capitalize montserrat">
             {{ ability }}
           </strong>
         </p>
-      </ng-container>
+        } @empty {
+        <span>No abilities</span>
+        }
+      </div>
+    </div>
+
+    <!-- Moves -->
+    <div>
+      <strong>Moves:</strong>
+      <div class="flex justify-start flex-wrap gap-2 mt-2">
+        @for (move of getVisibleMoves(); track move) {
+        <p>
+          <strong class="bg-red-300 text-gray-700 px-3 py-1 rounded-full text-sm capitalize montserrat">
+            {{ move }}
+          </strong>
+        </p>
+        } @empty {
+        <span>No moves</span>
+        }
+      </div>
+
+      <div class="mt-2 text-center">
+        <button class="text-gray-700 text-sm hover:text-blue-700 montserrat" (click)="showAllMoves = !showAllMoves">
+          {{ showAllMoves ? 'Show less...' : 'Show more...' }}
+        </button>
+      </div>
     </div>
   </div>
-
-  <!-- Moves -->
-<div>
-  <strong>Moves:</strong>
-  <div class="flex justify-start flex-wrap gap-2 mt-2">
-    <ng-container *ngFor="let move of getVisibleMoves()">
-      <p>
-        <strong class="bg-red-300 text-gray-700 px-3 py-1 rounded-full text-sm capitalize montserrat">
-          {{ move }}
-        </strong>
-      </p>
-    </ng-container>
-  </div>
-
-  <div class="mt-2 text-center">
-    <button
-      class="text-gray-700 text-sm hover:text-blue-700 montserrat"
-      (click)="showAllMoves = !showAllMoves"
-    >
-      {{ showAllMoves ? 'Show less...' : 'Show more...' }}
-    </button>
-  </div>
-</div>
-
-</div>
-
 </div>
 
 <!-- Stats -->
@@ -81,39 +80,47 @@
     Base Stats
   </h3>
 
-  <div *ngIf="pokemon.stats" class="space-y-2 montserrat text-sm text-gray-700">
-    <div *ngFor="let stat of statKeys">
-      <div class="flex justify-between">
-        <span class="capitalize">{{ stat.replace('-', ' ') }}</span>
-        <span>{{ pokemon.stats[stat] }}</span>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-3">
-        <div class="h-3 rounded-full" [ngStyle]="{
-              width: getStatWidth(pokemon.stats[stat]),
-              backgroundColor: getStatColor(stat)
-            }"></div>
-      </div>
+  @if (pokemon.stats) {
+  <div class="space-y-2 montserrat text-sm text-gray-700">
+    @for (stat of statKeys; track stat) {
+    <div class="flex justify-between">
+      <span class="capitalize">{{ stat.replace('-', ' ') }}</span>
+      <span>{{ pokemon.stats[stat] }}</span>
     </div>
+    <div class="w-full bg-gray-200 rounded-full h-3">
+      <div class="h-3 rounded-full" [ngStyle]="{
+                  width: getStatWidth(pokemon.stats[stat]),
+                  backgroundColor: getStatColor(stat)
+                }"></div>
+    </div>
+    }
   </div>
+  } @else {
+  <p class="text-center text-gray-500">No stats available</p>
+  }
 </div>
 
-
 <!-- Evoluções -->
-
-<h3 class="text-md font-semibold text-gray-700 text-center mb-2 lilita-one-regular">
+<h3 class="text-md font-semibold text-gray-700 text-center mb-2 fredoka-one">
   Evolution
 </h3>
 
 <div class="flex items-center justify-center gap-4 flex-wrap">
-  <ng-container *ngFor="let evo of evolutionSprites; let i = index">
-    <div class="flex flex-col items-center">
-      <img [src]="'data:image/png;base64,' + evo.spriteBase64" [alt]="evo.name" class="h-16 w-16 object-contain" />
-      <p class="text-sm capitalize mt-1 montserrat text-gray-700">
-        {{ evo.name }}
-      </p>
-    </div>
+  @for (evo of evolutionSprites; track evo.name) {
+  <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition" (click)="onEvolutionClick(evo.id)">
+    <img [src]="'data:image/png;base64,' + evo.spriteBase64" [alt]="evo.name" class="h-16 w-16 object-contain" />
+    <p class="text-sm capitalize mt-1 montserrat text-gray-700">
+      {{ evo.name }}
+    </p>
+  </div>
 
-    <span *ngIf="i < evolutionSprites.length - 1" class="text-xl text-gray-500">→</span>
-  </ng-container>
+  @if (evo !== evolutionSprites[evolutionSprites.length - 1]) {
+  <span class="text-xl text-gray-500">→</span>
+  }
+  } @empty {
+  <p class="text-center text-gray-500">No evolutions</p>
+  }
 </div>
+
+
 }

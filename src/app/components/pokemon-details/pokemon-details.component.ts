@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output, EventEmitter } from '@angular/core';
 import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
 import { CommonModule } from '@angular/common';
 
@@ -10,32 +10,26 @@ import { CommonModule } from '@angular/common';
 })
 export class PokemonDetailsComponent implements OnChanges {
   @Input() pokemonId!: number;
-  pokemon!: Pokemon;
-  evolutionSprites: { name: string; spriteBase64: string }[] = [];
-  abilities: string[] = [];
+  @Output() evolutionClicked = new EventEmitter<number>();
 
-  constructor(private pokemonService: PokemonService) { }
+  pokemon!: Pokemon;
+  evolutionSprites: { name: string; spriteBase64: string; id: number }[] = [];
+  showAllMoves = false;
+  statKeys = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+
+  constructor(private pokemonService: PokemonService) {}
 
   ngOnChanges(): void {
     if (this.pokemonId) {
       this.pokemonService.getPokemonById(this.pokemonId).subscribe({
         next: (data) => {
           this.pokemon = data;
-
-          if (this.pokemon.ability && Array.isArray(this.pokemon.ability)) {
-            this.abilities = this.pokemon.ability.map(a => a.trim());
-          } else {
-            this.abilities = [];
-          }
-
           this.loadEvolutionSprites();
         },
-        error: (err) => console.error('Erro ao buscar Pokémon:', err)
+        error: (err) => console.error('Erro ao buscar Pokémon:', err),
       });
     }
   }
-
-
 
   getTypeColor(type: string): string {
     switch (type.toLowerCase()) {
@@ -59,35 +53,29 @@ export class PokemonDetailsComponent implements OnChanges {
     }
   }
 
-  statKeys = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
-
-  getStatArray(): { name: string; value: number }[] {
-    return Object.entries(this.pokemon.stats).map(([name, value]) => ({
-      name,
-      value: value as number
-    }));
-  }
-
   getStatWidth(value: number): string {
-    const percent = Math.min(100, (value / 150) * 100); // Máximo de base stat
+    const percent = Math.min(100, (value / 150) * 100);
     return `${percent}%`;
   }
 
   getStatColor(stat: string): string {
     switch (stat) {
-      case 'hp': return '#fca5a5'; 
+      case 'hp': return '#fca5a5';
       case 'attack': return '#fdba74';
       case 'defense': return '#93c5fd';
       case 'special-attack': return '#d8b4fe';
-      case 'special-defense': return '#6ee7b7'; 
-      case 'speed': return '#fde68a';           
-      default: return '#d1d5db';                 
+      case 'special-defense': return '#6ee7b7';
+      case 'speed': return '#fde68a';
+      default: return '#d1d5db';
     }
+  }
+
+  getVisibleMoves(): string[] {
+    return this.showAllMoves ? this.pokemon.move : this.pokemon.move.slice(0, 6);
   }
 
   loadEvolutionSprites() {
     this.evolutionSprites = [];
-
     if (!this.pokemon.evolution) return;
 
     for (const name of this.pokemon.evolution) {
@@ -98,22 +86,21 @@ export class PokemonDetailsComponent implements OnChanges {
             this.evolutionSprites.push({
               name: poke.name,
               spriteBase64: poke.spriteBase64,
+              id: poke.id, // importante para clicar na evolução
             });
-
-            this.evolutionSprites.sort((a, b) =>
-              this.pokemon.evolution.indexOf(a.name) - this.pokemon.evolution.indexOf(b.name)
+            this.evolutionSprites.sort(
+              (a, b) => this.pokemon.evolution.indexOf(a.name) - this.pokemon.evolution.indexOf(b.name)
             );
           }
         },
-        error: (err) => console.error(`Erro ao buscar sprite de ${name}:`, err)
+        error: (err) => console.error(`Erro ao buscar sprite de ${name}:`, err),
       });
     }
   }
 
-  showAllMoves = false;
-
-  getVisibleMoves(): string[] {
-    return this.showAllMoves ? this.pokemon.move : this.pokemon.move.slice(0, 6);
+  // Chamado quando clica na evolução
+  onEvolutionClick(evoId: number) {
+    // Emite para o HomeComponent, que vai atualizar o card
+    this.evolutionClicked.emit(evoId);
   }
-
 }

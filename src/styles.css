@@ -1,6 +1,8 @@
 /* ✅ IMPORTS PRIMEIRO */
 @import url('https://fonts.googleapis.com/css2?family=Lilita+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +15,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Montserrat', sans-serif; /* texto normal */
 }
 
 /* Font classes globais */
@@ -29,4 +31,13 @@ body {
   font-style: normal;
 }
 
+.fredoka-one {
+  font-family: "Fredoka One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
 
+/* Exemplo de uso com Tailwind */
+.title-pokemon {
+  @apply fredoka-one text-2xl md:text-3xl;
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
 import { FormsModule } from '@angular/forms';
@@ -6,15 +6,19 @@ import { LoadingComponent } from '../loading/loading.component';
 import { RouterModule } from '@angular/router';
 import { PokemonDetailsComponent } from '../pokemon-details/pokemon-details.component';
 
-
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, RouterModule, PokemonDetailsComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    RouterModule,
+    PokemonDetailsComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
-
 export class HomeComponent implements OnInit {
   allPokemons: Pokemon[] = [];
   displayedPokemons: Pokemon[] = [];
@@ -28,15 +32,49 @@ export class HomeComponent implements OnInit {
   selectedTypes: string[] = [];
   selectedPokemonId: number | null = null;
   showScrollTopButton = false;
-  router: any;
+  closingCard = false;
 
-  constructor(private pokemonService: PokemonService) { }
+  @ViewChild('detailsCard') detailsCard!: ElementRef<HTMLDivElement>;
+
+  constructor(private pokemonService: PokemonService) {}
 
   ngOnInit(): void {
     this.loadAllPokemons();
   }
 
-  //Carrega todos os pokémons
+  /** Seleciona um Pokémon para abrir o card */
+  selectPokemon(id: number): void {
+    this.selectedPokemonId = id;
+    this.closingCard = false;
+  }
+
+  /** Função chamada pelo PokemonDetailsComponent quando clica em uma evolução */
+  selectEvolutionPokemon(evoId: number) {
+    if (!evoId) return;
+
+    // Fade-out do card atual
+    this.closingCard = true;
+
+    setTimeout(() => {
+      // Troca para o Pokémon da evolução
+      this.selectedPokemonId = evoId;
+      this.closingCard = false;
+
+      // Aguarda renderização e rola para o topo
+      setTimeout(() => {
+        if (this.detailsCard) {
+          this.detailsCard.nativeElement.scrollTop = 0;
+        }
+      }, 50);
+    }, 300); // tempo da animação de fade-out
+  }
+
+  /** Fecha o card */
+  closePokemonDetails() {
+    this.selectedPokemonId = null;
+  }
+
+  /** Carrega todos os Pokémons */
   loadAllPokemons(): void {
     this.loading = true;
     this.pokemonService.getAllPokemons().subscribe(
@@ -53,7 +91,7 @@ export class HomeComponent implements OnInit {
     );
   }
 
-  //Atualiza a paginação de pokémons com incremento de +9
+  /** Atualiza a lista exibida de acordo com a paginação */
   updateDisplayedPokemons(): void {
     const startIndex = this.currentPage * this.limit;
     const endIndex = startIndex + this.limit;
@@ -61,14 +99,17 @@ export class HomeComponent implements OnInit {
     this.endReached = endIndex >= this.filteredPokemons.length;
   }
 
-  //Busca o pokémon pelo nome ou ID
+  /** Retorna a lista filtrada por busca */
   get filteredPokemons(): Pokemon[] {
     const term = this.searchTerm.toLowerCase().trim();
-    return this.allPokemons.filter(pokemon =>
-      pokemon.name.toLowerCase().includes(term) || pokemon.id.toString().includes(term)
+    return this.allPokemons.filter(
+      (pokemon) =>
+        pokemon.name.toLowerCase().includes(term) ||
+        pokemon.id.toString().includes(term)
     );
   }
 
+  /** Carrega mais Pokémons ao scroll */
   loadPokemons(): void {
     if (this.loading || this.endReached) return;
     this.loading = true;
@@ -86,7 +127,7 @@ export class HomeComponent implements OnInit {
     this.updateDisplayedPokemons();
   }
 
-  //Interface de cores para a tipagem de pokémons
+  /** Retorna cor do tipo do Pokémon */
   getTypeColor(type: string): string {
     switch (type.toLowerCase()) {
       case 'fire': return 'text-orange-500';
@@ -109,65 +150,54 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  //Função para selecionar o pokémon
+  /** TrackBy para lista de Pokémon */
   trackPokemon(index: number, pokemon: Pokemon): number {
     return pokemon.id;
   }
 
-  //Array com os tipos de pokémons
   availableTypes: string[] = [
-    'normal', 'fire', 'water', 'grass', 'electric', 'ice',
-    'fighting', 'poison', 'ground', 'flying', 'psychic',
-    'bug', 'rock', 'ghost', 'dark', 'dragon', 'steel', 'fairy'
+    'normal','fire','water','grass','electric','ice','fighting','poison',
+    'ground','flying','psychic','bug','rock','ghost','dark','dragon','steel','fairy'
   ];
 
-  //Array com as regiões de cada geração de pokémons
   regions: string[] = [
-    'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova',
-    'Kalos', 'Alola', 'Galar', 'Paldea'
+    'Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'
   ];
 
-  //Interface para condicionar cada região
   regionToGenerationMap: { [key: string]: string } = {
-    'Kanto': 'generation-i',
-    'Johto': 'generation-ii',
-    'Hoenn': 'generation-iii',
-    'Sinnoh': 'generation-iv',
-    'Unova': 'generation-v',
-    'Kalos': 'generation-vi',
-    'Alola': 'generation-vii',
-    'Galar': 'generation-viii',
-    'Paldea': 'generation-ix'
+    Kanto: 'generation-i',
+    Johto: 'generation-ii',
+    Hoenn: 'generation-iii',
+    Sinnoh: 'generation-iv',
+    Unova: 'generation-v',
+    Kalos: 'generation-vi',
+    Alola: 'generation-vii',
+    Galar: 'generation-viii',
+    Paldea: 'generation-ix',
   };
 
   advancedSearch = {
     ability: '',
     move: '',
-    region: ''
+    region: '',
   };
 
   toggleTypeSelection(type: string): void {
     if (this.selectedTypes.includes(type)) {
-      this.selectedTypes = this.selectedTypes.filter(t => t !== type);
+      this.selectedTypes = this.selectedTypes.filter((t) => t !== type);
     } else {
       this.selectedTypes.push(type);
     }
   }
 
-  //Limpa as condições que o usuários criou para filtrar
   resetAdvancedSearch(): void {
     this.selectedTypes = [];
-    this.advancedSearch = {
-      ability: '',
-      move: '',
-      region: ''
-    };
+    this.advancedSearch = { ability: '', move: '', region: '' };
     this.searchTerm = '';
     this.showAdvancedSearch = false;
     this.loadAllPokemons();
   }
 
-  //Aplica as condições que o usuário criou para filtrar
   applyAdvancedSearch(): void {
     this.loading = true;
     this.currentPage = 0;
@@ -180,7 +210,7 @@ export class HomeComponent implements OnInit {
       move: this.advancedSearch.move.trim() || undefined,
       generation: this.advancedSearch.region
         ? this.regionToGenerationMap[this.advancedSearch.region]
-        : undefined
+        : undefined,
     };
 
     this.pokemonService.searchAdvancedPokemons(filters).subscribe(
@@ -202,13 +232,4 @@ export class HomeComponent implements OnInit {
   onScroll(container: HTMLElement) {
     this.showScrollTopButton = container.scrollTop > 200;
   }
-
-  selectPokemon(id: number): void {
-    this.selectedPokemonId = id;
-  }
-
-  closePokemonDetails() {
-    this.selectedPokemonId = null;
-  }
-
 }
