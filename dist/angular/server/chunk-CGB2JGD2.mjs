@@ -1,2173 +1,4600 @@
-import { createRequire } from 'node:module';
-globalThis['require'] ??= createRequire(import.meta.url);
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined")
-    return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
+import './polyfills.server.mjs';
+import {
+  ALLOW_MULTIPLE_PLATFORMS,
+  ANIMATION_MODULE_TYPE,
+  APP_ID,
+  ApplicationRef,
+  BrowserDomAdapter,
+  BrowserModule,
+  ChangeDetectionScheduler,
+  DOCUMENT,
+  DomRendererFactory2,
+  EVENT_MANAGER_PLUGINS,
+  EventManagerPlugin,
+  HTTP_ROOT_INTERCEPTOR_FNS,
+  HttpClientModule,
+  IS_HYDRATION_DOM_REUSE_ENABLED,
+  Inject,
+  Injectable,
+  InjectionToken,
+  Injector,
+  NgModule,
+  NgZone,
+  NullViewportScroller,
+  Optional,
+  PLATFORM_ID,
+  PLATFORM_INITIALIZER,
+  PLATFORM_SERVER_ID,
+  PlatformLocation,
+  Renderer2,
+  RendererFactory2,
+  RuntimeError,
+  SSR_CONTENT_INTEGRITY_MARKER,
+  Subject,
+  TESTABILITY,
+  Testability,
+  TransferState,
+  Version,
+  ViewEncapsulation$1,
+  ViewportScroller,
+  XhrFactory,
+  annotateForHydration,
+  createPlatformFactory,
+  getDOM,
+  inject,
+  makeEnvironmentProviders,
+  platformCore,
+  setClassMetadata,
+  setDocument,
+  setRootDomAdapter,
+  whenStable,
+  ɵɵdefineInjectable,
+  ɵɵdefineInjector,
+  ɵɵdefineNgModule,
+  ɵɵinject
+} from "./chunk-ZNBOV3P7.mjs";
+import {
+  __async,
+  __objRest,
+  __spreadValues
+} from "./chunk-24VIC3GD.mjs";
 
-// node_modules/zone.js/fesm2015/zone-node.js
-var global = globalThis;
-function __symbol__(name) {
-  const symbolPrefix = global["__Zone_symbol_prefix"] || "__zone_symbol__";
-  return symbolPrefix + name;
-}
-function initZone() {
-  const performance = global["performance"];
-  function mark(name) {
-    performance && performance["mark"] && performance["mark"](name);
-  }
-  function performanceMeasure(name, label) {
-    performance && performance["measure"] && performance["measure"](name, label);
-  }
-  mark("Zone");
-  class ZoneImpl {
-    static {
-      this.__symbol__ = __symbol__;
-    }
-    static assertZonePatched() {
-      if (global["Promise"] !== patches["ZoneAwarePromise"]) {
-        throw new Error("Zone.js has detected that ZoneAwarePromise `(window|global).Promise` has been overwritten.\nMost likely cause is that a Promise polyfill has been loaded after Zone.js (Polyfilling Promise api is not necessary when zone.js is loaded. If you must load one, do so before loading zone.js.)");
-      }
-    }
-    static get root() {
-      let zone = ZoneImpl.current;
-      while (zone.parent) {
-        zone = zone.parent;
-      }
-      return zone;
-    }
-    static get current() {
-      return _currentZoneFrame.zone;
-    }
-    static get currentTask() {
-      return _currentTask;
-    }
-    // tslint:disable-next-line:require-internal-with-underscore
-    static __load_patch(name, fn, ignoreDuplicate = false) {
-      if (patches.hasOwnProperty(name)) {
-        const checkDuplicate = global[__symbol__("forceDuplicateZoneCheck")] === true;
-        if (!ignoreDuplicate && checkDuplicate) {
-          throw Error("Already loaded patch: " + name);
-        }
-      } else if (!global["__Zone_disable_" + name]) {
-        const perfName = "Zone:" + name;
-        mark(perfName);
-        patches[name] = fn(global, ZoneImpl, _api);
-        performanceMeasure(perfName, perfName);
-      }
-    }
-    get parent() {
-      return this._parent;
-    }
-    get name() {
-      return this._name;
-    }
-    constructor(parent, zoneSpec) {
-      this._parent = parent;
-      this._name = zoneSpec ? zoneSpec.name || "unnamed" : "<root>";
-      this._properties = zoneSpec && zoneSpec.properties || {};
-      this._zoneDelegate = new _ZoneDelegate(this, this._parent && this._parent._zoneDelegate, zoneSpec);
-    }
-    get(key) {
-      const zone = this.getZoneWith(key);
-      if (zone)
-        return zone._properties[key];
-    }
-    getZoneWith(key) {
-      let current = this;
-      while (current) {
-        if (current._properties.hasOwnProperty(key)) {
-          return current;
-        }
-        current = current._parent;
-      }
-      return null;
-    }
-    fork(zoneSpec) {
-      if (!zoneSpec)
-        throw new Error("ZoneSpec required!");
-      return this._zoneDelegate.fork(this, zoneSpec);
-    }
-    wrap(callback, source) {
-      if (typeof callback !== "function") {
-        throw new Error("Expecting function got: " + callback);
-      }
-      const _callback = this._zoneDelegate.intercept(this, callback, source);
-      const zone = this;
-      return function() {
-        return zone.runGuarded(_callback, this, arguments, source);
-      };
-    }
-    run(callback, applyThis, applyArgs, source) {
-      _currentZoneFrame = { parent: _currentZoneFrame, zone: this };
-      try {
-        return this._zoneDelegate.invoke(this, callback, applyThis, applyArgs, source);
-      } finally {
-        _currentZoneFrame = _currentZoneFrame.parent;
-      }
-    }
-    runGuarded(callback, applyThis = null, applyArgs, source) {
-      _currentZoneFrame = { parent: _currentZoneFrame, zone: this };
-      try {
-        try {
-          return this._zoneDelegate.invoke(this, callback, applyThis, applyArgs, source);
-        } catch (error) {
-          if (this._zoneDelegate.handleError(this, error)) {
-            throw error;
-          }
-        }
-      } finally {
-        _currentZoneFrame = _currentZoneFrame.parent;
-      }
-    }
-    runTask(task, applyThis, applyArgs) {
-      if (task.zone != this) {
-        throw new Error("A task can only be run in the zone of creation! (Creation: " + (task.zone || NO_ZONE).name + "; Execution: " + this.name + ")");
-      }
-      const zoneTask = task;
-      const { type, data: { isPeriodic = false, isRefreshable = false } = {} } = task;
-      if (task.state === notScheduled && (type === eventTask || type === macroTask)) {
-        return;
-      }
-      const reEntryGuard = task.state != running;
-      reEntryGuard && zoneTask._transitionTo(running, scheduled);
-      const previousTask = _currentTask;
-      _currentTask = zoneTask;
-      _currentZoneFrame = { parent: _currentZoneFrame, zone: this };
-      try {
-        if (type == macroTask && task.data && !isPeriodic && !isRefreshable) {
-          task.cancelFn = void 0;
-        }
-        try {
-          return this._zoneDelegate.invokeTask(this, zoneTask, applyThis, applyArgs);
-        } catch (error) {
-          if (this._zoneDelegate.handleError(this, error)) {
-            throw error;
-          }
-        }
-      } finally {
-        const state = task.state;
-        if (state !== notScheduled && state !== unknown) {
-          if (type == eventTask || isPeriodic || isRefreshable && state === scheduling) {
-            reEntryGuard && zoneTask._transitionTo(scheduled, running, scheduling);
-          } else {
-            const zoneDelegates = zoneTask._zoneDelegates;
-            this._updateTaskCount(zoneTask, -1);
-            reEntryGuard && zoneTask._transitionTo(notScheduled, running, notScheduled);
-            if (isRefreshable) {
-              zoneTask._zoneDelegates = zoneDelegates;
-            }
-          }
-        }
-        _currentZoneFrame = _currentZoneFrame.parent;
-        _currentTask = previousTask;
-      }
-    }
-    scheduleTask(task) {
-      if (task.zone && task.zone !== this) {
-        let newZone = this;
-        while (newZone) {
-          if (newZone === task.zone) {
-            throw Error(`can not reschedule task to ${this.name} which is descendants of the original zone ${task.zone.name}`);
-          }
-          newZone = newZone.parent;
-        }
-      }
-      task._transitionTo(scheduling, notScheduled);
-      const zoneDelegates = [];
-      task._zoneDelegates = zoneDelegates;
-      task._zone = this;
-      try {
-        task = this._zoneDelegate.scheduleTask(this, task);
-      } catch (err) {
-        task._transitionTo(unknown, scheduling, notScheduled);
-        this._zoneDelegate.handleError(this, err);
-        throw err;
-      }
-      if (task._zoneDelegates === zoneDelegates) {
-        this._updateTaskCount(task, 1);
-      }
-      if (task.state == scheduling) {
-        task._transitionTo(scheduled, scheduling);
-      }
-      return task;
-    }
-    scheduleMicroTask(source, callback, data, customSchedule) {
-      return this.scheduleTask(new ZoneTask(microTask, source, callback, data, customSchedule, void 0));
-    }
-    scheduleMacroTask(source, callback, data, customSchedule, customCancel) {
-      return this.scheduleTask(new ZoneTask(macroTask, source, callback, data, customSchedule, customCancel));
-    }
-    scheduleEventTask(source, callback, data, customSchedule, customCancel) {
-      return this.scheduleTask(new ZoneTask(eventTask, source, callback, data, customSchedule, customCancel));
-    }
-    cancelTask(task) {
-      if (task.zone != this)
-        throw new Error("A task can only be cancelled in the zone of creation! (Creation: " + (task.zone || NO_ZONE).name + "; Execution: " + this.name + ")");
-      if (task.state !== scheduled && task.state !== running) {
-        return;
-      }
-      task._transitionTo(canceling, scheduled, running);
-      try {
-        this._zoneDelegate.cancelTask(this, task);
-      } catch (err) {
-        task._transitionTo(unknown, canceling);
-        this._zoneDelegate.handleError(this, err);
-        throw err;
-      }
-      this._updateTaskCount(task, -1);
-      task._transitionTo(notScheduled, canceling);
-      task.runCount = -1;
-      return task;
-    }
-    _updateTaskCount(task, count) {
-      const zoneDelegates = task._zoneDelegates;
-      if (count == -1) {
-        task._zoneDelegates = null;
-      }
-      for (let i = 0; i < zoneDelegates.length; i++) {
-        zoneDelegates[i]._updateTaskCount(task.type, count);
-      }
-    }
-  }
-  const DELEGATE_ZS = {
-    name: "",
-    onHasTask: (delegate, _, target, hasTaskState) => delegate.hasTask(target, hasTaskState),
-    onScheduleTask: (delegate, _, target, task) => delegate.scheduleTask(target, task),
-    onInvokeTask: (delegate, _, target, task, applyThis, applyArgs) => delegate.invokeTask(target, task, applyThis, applyArgs),
-    onCancelTask: (delegate, _, target, task) => delegate.cancelTask(target, task)
+// node_modules/@angular/animations/fesm2022/animations.mjs
+var AnimationMetadataType;
+(function(AnimationMetadataType2) {
+  AnimationMetadataType2[AnimationMetadataType2["State"] = 0] = "State";
+  AnimationMetadataType2[AnimationMetadataType2["Transition"] = 1] = "Transition";
+  AnimationMetadataType2[AnimationMetadataType2["Sequence"] = 2] = "Sequence";
+  AnimationMetadataType2[AnimationMetadataType2["Group"] = 3] = "Group";
+  AnimationMetadataType2[AnimationMetadataType2["Animate"] = 4] = "Animate";
+  AnimationMetadataType2[AnimationMetadataType2["Keyframes"] = 5] = "Keyframes";
+  AnimationMetadataType2[AnimationMetadataType2["Style"] = 6] = "Style";
+  AnimationMetadataType2[AnimationMetadataType2["Trigger"] = 7] = "Trigger";
+  AnimationMetadataType2[AnimationMetadataType2["Reference"] = 8] = "Reference";
+  AnimationMetadataType2[AnimationMetadataType2["AnimateChild"] = 9] = "AnimateChild";
+  AnimationMetadataType2[AnimationMetadataType2["AnimateRef"] = 10] = "AnimateRef";
+  AnimationMetadataType2[AnimationMetadataType2["Query"] = 11] = "Query";
+  AnimationMetadataType2[AnimationMetadataType2["Stagger"] = 12] = "Stagger";
+})(AnimationMetadataType || (AnimationMetadataType = {}));
+var AUTO_STYLE = "*";
+function sequence(steps, options = null) {
+  return {
+    type: AnimationMetadataType.Sequence,
+    steps,
+    options
   };
-  class _ZoneDelegate {
-    get zone() {
-      return this._zone;
-    }
-    constructor(zone, parentDelegate, zoneSpec) {
-      this._taskCounts = {
-        "microTask": 0,
-        "macroTask": 0,
-        "eventTask": 0
-      };
-      this._zone = zone;
-      this._parentDelegate = parentDelegate;
-      this._forkZS = zoneSpec && (zoneSpec && zoneSpec.onFork ? zoneSpec : parentDelegate._forkZS);
-      this._forkDlgt = zoneSpec && (zoneSpec.onFork ? parentDelegate : parentDelegate._forkDlgt);
-      this._forkCurrZone = zoneSpec && (zoneSpec.onFork ? this._zone : parentDelegate._forkCurrZone);
-      this._interceptZS = zoneSpec && (zoneSpec.onIntercept ? zoneSpec : parentDelegate._interceptZS);
-      this._interceptDlgt = zoneSpec && (zoneSpec.onIntercept ? parentDelegate : parentDelegate._interceptDlgt);
-      this._interceptCurrZone = zoneSpec && (zoneSpec.onIntercept ? this._zone : parentDelegate._interceptCurrZone);
-      this._invokeZS = zoneSpec && (zoneSpec.onInvoke ? zoneSpec : parentDelegate._invokeZS);
-      this._invokeDlgt = zoneSpec && (zoneSpec.onInvoke ? parentDelegate : parentDelegate._invokeDlgt);
-      this._invokeCurrZone = zoneSpec && (zoneSpec.onInvoke ? this._zone : parentDelegate._invokeCurrZone);
-      this._handleErrorZS = zoneSpec && (zoneSpec.onHandleError ? zoneSpec : parentDelegate._handleErrorZS);
-      this._handleErrorDlgt = zoneSpec && (zoneSpec.onHandleError ? parentDelegate : parentDelegate._handleErrorDlgt);
-      this._handleErrorCurrZone = zoneSpec && (zoneSpec.onHandleError ? this._zone : parentDelegate._handleErrorCurrZone);
-      this._scheduleTaskZS = zoneSpec && (zoneSpec.onScheduleTask ? zoneSpec : parentDelegate._scheduleTaskZS);
-      this._scheduleTaskDlgt = zoneSpec && (zoneSpec.onScheduleTask ? parentDelegate : parentDelegate._scheduleTaskDlgt);
-      this._scheduleTaskCurrZone = zoneSpec && (zoneSpec.onScheduleTask ? this._zone : parentDelegate._scheduleTaskCurrZone);
-      this._invokeTaskZS = zoneSpec && (zoneSpec.onInvokeTask ? zoneSpec : parentDelegate._invokeTaskZS);
-      this._invokeTaskDlgt = zoneSpec && (zoneSpec.onInvokeTask ? parentDelegate : parentDelegate._invokeTaskDlgt);
-      this._invokeTaskCurrZone = zoneSpec && (zoneSpec.onInvokeTask ? this._zone : parentDelegate._invokeTaskCurrZone);
-      this._cancelTaskZS = zoneSpec && (zoneSpec.onCancelTask ? zoneSpec : parentDelegate._cancelTaskZS);
-      this._cancelTaskDlgt = zoneSpec && (zoneSpec.onCancelTask ? parentDelegate : parentDelegate._cancelTaskDlgt);
-      this._cancelTaskCurrZone = zoneSpec && (zoneSpec.onCancelTask ? this._zone : parentDelegate._cancelTaskCurrZone);
-      this._hasTaskZS = null;
-      this._hasTaskDlgt = null;
-      this._hasTaskDlgtOwner = null;
-      this._hasTaskCurrZone = null;
-      const zoneSpecHasTask = zoneSpec && zoneSpec.onHasTask;
-      const parentHasTask = parentDelegate && parentDelegate._hasTaskZS;
-      if (zoneSpecHasTask || parentHasTask) {
-        this._hasTaskZS = zoneSpecHasTask ? zoneSpec : DELEGATE_ZS;
-        this._hasTaskDlgt = parentDelegate;
-        this._hasTaskDlgtOwner = this;
-        this._hasTaskCurrZone = this._zone;
-        if (!zoneSpec.onScheduleTask) {
-          this._scheduleTaskZS = DELEGATE_ZS;
-          this._scheduleTaskDlgt = parentDelegate;
-          this._scheduleTaskCurrZone = this._zone;
-        }
-        if (!zoneSpec.onInvokeTask) {
-          this._invokeTaskZS = DELEGATE_ZS;
-          this._invokeTaskDlgt = parentDelegate;
-          this._invokeTaskCurrZone = this._zone;
-        }
-        if (!zoneSpec.onCancelTask) {
-          this._cancelTaskZS = DELEGATE_ZS;
-          this._cancelTaskDlgt = parentDelegate;
-          this._cancelTaskCurrZone = this._zone;
-        }
+}
+function style(tokens) {
+  return {
+    type: AnimationMetadataType.Style,
+    styles: tokens,
+    offset: null
+  };
+}
+var AnimationBuilder = class _AnimationBuilder {
+  static {
+    this.\u0275fac = function AnimationBuilder_Factory(t) {
+      return new (t || _AnimationBuilder)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _AnimationBuilder,
+      factory: () => (() => inject(BrowserAnimationBuilder))(),
+      providedIn: "root"
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(AnimationBuilder, [{
+    type: Injectable,
+    args: [{
+      providedIn: "root",
+      useFactory: () => inject(BrowserAnimationBuilder)
+    }]
+  }], null, null);
+})();
+var AnimationFactory = class {
+};
+var BrowserAnimationBuilder = class _BrowserAnimationBuilder extends AnimationBuilder {
+  constructor(rootRenderer, doc) {
+    super();
+    this.animationModuleType = inject(ANIMATION_MODULE_TYPE, {
+      optional: true
+    });
+    this._nextAnimationId = 0;
+    const typeData = {
+      id: "0",
+      encapsulation: ViewEncapsulation$1.None,
+      styles: [],
+      data: {
+        animation: []
       }
-    }
-    fork(targetZone, zoneSpec) {
-      return this._forkZS ? this._forkZS.onFork(this._forkDlgt, this.zone, targetZone, zoneSpec) : new ZoneImpl(targetZone, zoneSpec);
-    }
-    intercept(targetZone, callback, source) {
-      return this._interceptZS ? this._interceptZS.onIntercept(this._interceptDlgt, this._interceptCurrZone, targetZone, callback, source) : callback;
-    }
-    invoke(targetZone, callback, applyThis, applyArgs, source) {
-      return this._invokeZS ? this._invokeZS.onInvoke(this._invokeDlgt, this._invokeCurrZone, targetZone, callback, applyThis, applyArgs, source) : callback.apply(applyThis, applyArgs);
-    }
-    handleError(targetZone, error) {
-      return this._handleErrorZS ? this._handleErrorZS.onHandleError(this._handleErrorDlgt, this._handleErrorCurrZone, targetZone, error) : true;
-    }
-    scheduleTask(targetZone, task) {
-      let returnTask = task;
-      if (this._scheduleTaskZS) {
-        if (this._hasTaskZS) {
-          returnTask._zoneDelegates.push(this._hasTaskDlgtOwner);
-        }
-        returnTask = this._scheduleTaskZS.onScheduleTask(this._scheduleTaskDlgt, this._scheduleTaskCurrZone, targetZone, task);
-        if (!returnTask)
-          returnTask = task;
-      } else {
-        if (task.scheduleFn) {
-          task.scheduleFn(task);
-        } else if (task.type == microTask) {
-          scheduleMicroTask(task);
-        } else {
-          throw new Error("Task is missing scheduleFn.");
-        }
-      }
-      return returnTask;
-    }
-    invokeTask(targetZone, task, applyThis, applyArgs) {
-      return this._invokeTaskZS ? this._invokeTaskZS.onInvokeTask(this._invokeTaskDlgt, this._invokeTaskCurrZone, targetZone, task, applyThis, applyArgs) : task.callback.apply(applyThis, applyArgs);
-    }
-    cancelTask(targetZone, task) {
-      let value;
-      if (this._cancelTaskZS) {
-        value = this._cancelTaskZS.onCancelTask(this._cancelTaskDlgt, this._cancelTaskCurrZone, targetZone, task);
-      } else {
-        if (!task.cancelFn) {
-          throw Error("Task is not cancelable");
-        }
-        value = task.cancelFn(task);
-      }
-      return value;
-    }
-    hasTask(targetZone, isEmpty) {
-      try {
-        this._hasTaskZS && this._hasTaskZS.onHasTask(this._hasTaskDlgt, this._hasTaskCurrZone, targetZone, isEmpty);
-      } catch (err) {
-        this.handleError(targetZone, err);
-      }
-    }
-    // tslint:disable-next-line:require-internal-with-underscore
-    _updateTaskCount(type, count) {
-      const counts = this._taskCounts;
-      const prev = counts[type];
-      const next = counts[type] = prev + count;
-      if (next < 0) {
-        throw new Error("More tasks executed then were scheduled.");
-      }
-      if (prev == 0 || next == 0) {
-        const isEmpty = {
-          microTask: counts["microTask"] > 0,
-          macroTask: counts["macroTask"] > 0,
-          eventTask: counts["eventTask"] > 0,
-          change: type
-        };
-        this.hasTask(this._zone, isEmpty);
-      }
+    };
+    this._renderer = rootRenderer.createRenderer(doc.body, typeData);
+    if (this.animationModuleType === null && !isAnimationRenderer(this._renderer)) {
+      throw new RuntimeError(3600, (typeof ngDevMode === "undefined" || ngDevMode) && "Angular detected that the `AnimationBuilder` was injected, but animation support was not enabled. Please make sure that you enable animations in your application by calling `provideAnimations()` or `provideAnimationsAsync()` function.");
     }
   }
-  class ZoneTask {
-    constructor(type, source, callback, options, scheduleFn, cancelFn) {
-      this._zone = null;
-      this.runCount = 0;
-      this._zoneDelegates = null;
-      this._state = "notScheduled";
-      this.type = type;
-      this.source = source;
-      this.data = options;
-      this.scheduleFn = scheduleFn;
-      this.cancelFn = cancelFn;
-      if (!callback) {
-        throw new Error("callback is not defined");
-      }
-      this.callback = callback;
-      const self2 = this;
-      if (type === eventTask && options && options.useG) {
-        this.invoke = ZoneTask.invokeTask;
-      } else {
-        this.invoke = function() {
-          return ZoneTask.invokeTask.call(global, self2, this, arguments);
-        };
-      }
-    }
-    static invokeTask(task, target, args) {
-      if (!task) {
-        task = this;
-      }
-      _numberOfNestedTaskFrames++;
-      try {
-        task.runCount++;
-        return task.zone.runTask(task, target, args);
-      } finally {
-        if (_numberOfNestedTaskFrames == 1) {
-          drainMicroTaskQueue();
-        }
-        _numberOfNestedTaskFrames--;
-      }
-    }
-    get zone() {
-      return this._zone;
-    }
-    get state() {
-      return this._state;
-    }
-    cancelScheduleRequest() {
-      this._transitionTo(notScheduled, scheduling);
-    }
-    // tslint:disable-next-line:require-internal-with-underscore
-    _transitionTo(toState, fromState1, fromState2) {
-      if (this._state === fromState1 || this._state === fromState2) {
-        this._state = toState;
-        if (toState == notScheduled) {
-          this._zoneDelegates = null;
-        }
-      } else {
-        throw new Error(`${this.type} '${this.source}': can not transition to '${toState}', expecting state '${fromState1}'${fromState2 ? " or '" + fromState2 + "'" : ""}, was '${this._state}'.`);
-      }
-    }
-    toString() {
-      if (this.data && typeof this.data.handleId !== "undefined") {
-        return this.data.handleId.toString();
-      } else {
-        return Object.prototype.toString.call(this);
-      }
-    }
-    // add toJSON method to prevent cyclic error when
-    // call JSON.stringify(zoneTask)
-    toJSON() {
-      return {
-        type: this.type,
-        state: this.state,
-        source: this.source,
-        zone: this.zone.name,
-        runCount: this.runCount
-      };
+  build(animation) {
+    const id = this._nextAnimationId;
+    this._nextAnimationId++;
+    const entry = Array.isArray(animation) ? sequence(animation) : animation;
+    issueAnimationCommand(this._renderer, null, id, "register", [entry]);
+    return new BrowserAnimationFactory(id, this._renderer);
+  }
+  static {
+    this.\u0275fac = function BrowserAnimationBuilder_Factory(t) {
+      return new (t || _BrowserAnimationBuilder)(\u0275\u0275inject(RendererFactory2), \u0275\u0275inject(DOCUMENT));
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _BrowserAnimationBuilder,
+      factory: _BrowserAnimationBuilder.\u0275fac,
+      providedIn: "root"
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(BrowserAnimationBuilder, [{
+    type: Injectable,
+    args: [{
+      providedIn: "root"
+    }]
+  }], () => [{
+    type: RendererFactory2
+  }, {
+    type: Document,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT]
+    }]
+  }], null);
+})();
+var BrowserAnimationFactory = class extends AnimationFactory {
+  constructor(_id, _renderer) {
+    super();
+    this._id = _id;
+    this._renderer = _renderer;
+  }
+  create(element, options) {
+    return new RendererAnimationPlayer(this._id, element, options || {}, this._renderer);
+  }
+};
+var RendererAnimationPlayer = class {
+  constructor(id, element, options, _renderer) {
+    this.id = id;
+    this.element = element;
+    this._renderer = _renderer;
+    this.parentPlayer = null;
+    this._started = false;
+    this.totalTime = 0;
+    this._command("create", options);
+  }
+  _listen(eventName, callback) {
+    return this._renderer.listen(this.element, `@@${this.id}:${eventName}`, callback);
+  }
+  _command(command, ...args) {
+    issueAnimationCommand(this._renderer, this.element, this.id, command, args);
+  }
+  onDone(fn) {
+    this._listen("done", fn);
+  }
+  onStart(fn) {
+    this._listen("start", fn);
+  }
+  onDestroy(fn) {
+    this._listen("destroy", fn);
+  }
+  init() {
+    this._command("init");
+  }
+  hasStarted() {
+    return this._started;
+  }
+  play() {
+    this._command("play");
+    this._started = true;
+  }
+  pause() {
+    this._command("pause");
+  }
+  restart() {
+    this._command("restart");
+  }
+  finish() {
+    this._command("finish");
+  }
+  destroy() {
+    this._command("destroy");
+  }
+  reset() {
+    this._command("reset");
+    this._started = false;
+  }
+  setPosition(p) {
+    this._command("setPosition", p);
+  }
+  getPosition() {
+    return unwrapAnimationRenderer(this._renderer)?.engine?.players[this.id]?.getPosition() ?? 0;
+  }
+};
+function issueAnimationCommand(renderer, element, id, command, args) {
+  renderer.setProperty(element, `@@${id}:${command}`, args);
+}
+function unwrapAnimationRenderer(renderer) {
+  const type = renderer.\u0275type;
+  if (type === 0) {
+    return renderer;
+  } else if (type === 1) {
+    return renderer.animationRenderer;
+  }
+  return null;
+}
+function isAnimationRenderer(renderer) {
+  const type = renderer.\u0275type;
+  return type === 0 || type === 1;
+}
+var NoopAnimationPlayer = class {
+  constructor(duration = 0, delay = 0) {
+    this._onDoneFns = [];
+    this._onStartFns = [];
+    this._onDestroyFns = [];
+    this._originalOnDoneFns = [];
+    this._originalOnStartFns = [];
+    this._started = false;
+    this._destroyed = false;
+    this._finished = false;
+    this._position = 0;
+    this.parentPlayer = null;
+    this.totalTime = duration + delay;
+  }
+  _onFinish() {
+    if (!this._finished) {
+      this._finished = true;
+      this._onDoneFns.forEach((fn) => fn());
+      this._onDoneFns = [];
     }
   }
-  const symbolSetTimeout = __symbol__("setTimeout");
-  const symbolPromise = __symbol__("Promise");
-  const symbolThen = __symbol__("then");
-  let _microTaskQueue = [];
-  let _isDrainingMicrotaskQueue = false;
-  let nativeMicroTaskQueuePromise;
-  function nativeScheduleMicroTask(func) {
-    if (!nativeMicroTaskQueuePromise) {
-      if (global[symbolPromise]) {
-        nativeMicroTaskQueuePromise = global[symbolPromise].resolve(0);
-      }
+  onStart(fn) {
+    this._originalOnStartFns.push(fn);
+    this._onStartFns.push(fn);
+  }
+  onDone(fn) {
+    this._originalOnDoneFns.push(fn);
+    this._onDoneFns.push(fn);
+  }
+  onDestroy(fn) {
+    this._onDestroyFns.push(fn);
+  }
+  hasStarted() {
+    return this._started;
+  }
+  init() {
+  }
+  play() {
+    if (!this.hasStarted()) {
+      this._onStart();
+      this.triggerMicrotask();
     }
-    if (nativeMicroTaskQueuePromise) {
-      let nativeThen = nativeMicroTaskQueuePromise[symbolThen];
-      if (!nativeThen) {
-        nativeThen = nativeMicroTaskQueuePromise["then"];
+    this._started = true;
+  }
+  /** @internal */
+  triggerMicrotask() {
+    queueMicrotask(() => this._onFinish());
+  }
+  _onStart() {
+    this._onStartFns.forEach((fn) => fn());
+    this._onStartFns = [];
+  }
+  pause() {
+  }
+  restart() {
+  }
+  finish() {
+    this._onFinish();
+  }
+  destroy() {
+    if (!this._destroyed) {
+      this._destroyed = true;
+      if (!this.hasStarted()) {
+        this._onStart();
       }
-      nativeThen.call(nativeMicroTaskQueuePromise, func);
+      this.finish();
+      this._onDestroyFns.forEach((fn) => fn());
+      this._onDestroyFns = [];
+    }
+  }
+  reset() {
+    this._started = false;
+    this._finished = false;
+    this._onStartFns = this._originalOnStartFns;
+    this._onDoneFns = this._originalOnDoneFns;
+  }
+  setPosition(position) {
+    this._position = this.totalTime ? position * this.totalTime : 1;
+  }
+  getPosition() {
+    return this.totalTime ? this._position / this.totalTime : 1;
+  }
+  /** @internal */
+  triggerCallback(phaseName) {
+    const methods = phaseName == "start" ? this._onStartFns : this._onDoneFns;
+    methods.forEach((fn) => fn());
+    methods.length = 0;
+  }
+};
+var AnimationGroupPlayer = class {
+  constructor(_players) {
+    this._onDoneFns = [];
+    this._onStartFns = [];
+    this._finished = false;
+    this._started = false;
+    this._destroyed = false;
+    this._onDestroyFns = [];
+    this.parentPlayer = null;
+    this.totalTime = 0;
+    this.players = _players;
+    let doneCount = 0;
+    let destroyCount = 0;
+    let startCount = 0;
+    const total = this.players.length;
+    if (total == 0) {
+      queueMicrotask(() => this._onFinish());
     } else {
-      global[symbolSetTimeout](func, 0);
-    }
-  }
-  function scheduleMicroTask(task) {
-    if (_numberOfNestedTaskFrames === 0 && _microTaskQueue.length === 0) {
-      nativeScheduleMicroTask(drainMicroTaskQueue);
-    }
-    task && _microTaskQueue.push(task);
-  }
-  function drainMicroTaskQueue() {
-    if (!_isDrainingMicrotaskQueue) {
-      _isDrainingMicrotaskQueue = true;
-      while (_microTaskQueue.length) {
-        const queue = _microTaskQueue;
-        _microTaskQueue = [];
-        for (let i = 0; i < queue.length; i++) {
-          const task = queue[i];
-          try {
-            task.zone.runTask(task, null, null);
-          } catch (error) {
-            _api.onUnhandledError(error);
+      this.players.forEach((player) => {
+        player.onDone(() => {
+          if (++doneCount == total) {
+            this._onFinish();
           }
+        });
+        player.onDestroy(() => {
+          if (++destroyCount == total) {
+            this._onDestroy();
+          }
+        });
+        player.onStart(() => {
+          if (++startCount == total) {
+            this._onStart();
+          }
+        });
+      });
+    }
+    this.totalTime = this.players.reduce((time, player) => Math.max(time, player.totalTime), 0);
+  }
+  _onFinish() {
+    if (!this._finished) {
+      this._finished = true;
+      this._onDoneFns.forEach((fn) => fn());
+      this._onDoneFns = [];
+    }
+  }
+  init() {
+    this.players.forEach((player) => player.init());
+  }
+  onStart(fn) {
+    this._onStartFns.push(fn);
+  }
+  _onStart() {
+    if (!this.hasStarted()) {
+      this._started = true;
+      this._onStartFns.forEach((fn) => fn());
+      this._onStartFns = [];
+    }
+  }
+  onDone(fn) {
+    this._onDoneFns.push(fn);
+  }
+  onDestroy(fn) {
+    this._onDestroyFns.push(fn);
+  }
+  hasStarted() {
+    return this._started;
+  }
+  play() {
+    if (!this.parentPlayer) {
+      this.init();
+    }
+    this._onStart();
+    this.players.forEach((player) => player.play());
+  }
+  pause() {
+    this.players.forEach((player) => player.pause());
+  }
+  restart() {
+    this.players.forEach((player) => player.restart());
+  }
+  finish() {
+    this._onFinish();
+    this.players.forEach((player) => player.finish());
+  }
+  destroy() {
+    this._onDestroy();
+  }
+  _onDestroy() {
+    if (!this._destroyed) {
+      this._destroyed = true;
+      this._onFinish();
+      this.players.forEach((player) => player.destroy());
+      this._onDestroyFns.forEach((fn) => fn());
+      this._onDestroyFns = [];
+    }
+  }
+  reset() {
+    this.players.forEach((player) => player.reset());
+    this._destroyed = false;
+    this._finished = false;
+    this._started = false;
+  }
+  setPosition(p) {
+    const timeAtPosition = p * this.totalTime;
+    this.players.forEach((player) => {
+      const position = player.totalTime ? Math.min(1, timeAtPosition / player.totalTime) : 1;
+      player.setPosition(position);
+    });
+  }
+  getPosition() {
+    const longestPlayer = this.players.reduce((longestSoFar, player) => {
+      const newPlayerIsLongest = longestSoFar === null || player.totalTime > longestSoFar.totalTime;
+      return newPlayerIsLongest ? player : longestSoFar;
+    }, null);
+    return longestPlayer != null ? longestPlayer.getPosition() : 0;
+  }
+  beforeDestroy() {
+    this.players.forEach((player) => {
+      if (player.beforeDestroy) {
+        player.beforeDestroy();
+      }
+    });
+  }
+  /** @internal */
+  triggerCallback(phaseName) {
+    const methods = phaseName == "start" ? this._onStartFns : this._onDoneFns;
+    methods.forEach((fn) => fn());
+    methods.length = 0;
+  }
+};
+var \u0275PRE_STYLE = "!";
+
+// node_modules/@angular/animations/fesm2022/browser.mjs
+var LINE_START = "\n - ";
+function invalidTimingValue(exp) {
+  return new RuntimeError(3e3, ngDevMode && `The provided timing value "${exp}" is invalid.`);
+}
+function negativeStepValue() {
+  return new RuntimeError(3100, ngDevMode && "Duration values below 0 are not allowed for this animation step.");
+}
+function negativeDelayValue() {
+  return new RuntimeError(3101, ngDevMode && "Delay values below 0 are not allowed for this animation step.");
+}
+function invalidStyleParams(varName) {
+  return new RuntimeError(3001, ngDevMode && `Unable to resolve the local animation param ${varName} in the given list of values`);
+}
+function invalidParamValue(varName) {
+  return new RuntimeError(3003, ngDevMode && `Please provide a value for the animation param ${varName}`);
+}
+function invalidNodeType(nodeType) {
+  return new RuntimeError(3004, ngDevMode && `Unable to resolve animation metadata node #${nodeType}`);
+}
+function invalidCssUnitValue(userProvidedProperty, value) {
+  return new RuntimeError(3005, ngDevMode && `Please provide a CSS unit value for ${userProvidedProperty}:${value}`);
+}
+function invalidTrigger() {
+  return new RuntimeError(3006, ngDevMode && "animation triggers cannot be prefixed with an `@` sign (e.g. trigger('@foo', [...]))");
+}
+function invalidDefinition() {
+  return new RuntimeError(3007, ngDevMode && "only state() and transition() definitions can sit inside of a trigger()");
+}
+function invalidState(metadataName, missingSubs) {
+  return new RuntimeError(3008, ngDevMode && `state("${metadataName}", ...) must define default values for all the following style substitutions: ${missingSubs.join(", ")}`);
+}
+function invalidStyleValue(value) {
+  return new RuntimeError(3002, ngDevMode && `The provided style string value ${value} is not allowed.`);
+}
+function invalidParallelAnimation(prop, firstStart, firstEnd, secondStart, secondEnd) {
+  return new RuntimeError(3010, ngDevMode && `The CSS property "${prop}" that exists between the times of "${firstStart}ms" and "${firstEnd}ms" is also being animated in a parallel animation between the times of "${secondStart}ms" and "${secondEnd}ms"`);
+}
+function invalidKeyframes() {
+  return new RuntimeError(3011, ngDevMode && `keyframes() must be placed inside of a call to animate()`);
+}
+function invalidOffset() {
+  return new RuntimeError(3012, ngDevMode && `Please ensure that all keyframe offsets are between 0 and 1`);
+}
+function keyframeOffsetsOutOfOrder() {
+  return new RuntimeError(3200, ngDevMode && `Please ensure that all keyframe offsets are in order`);
+}
+function keyframesMissingOffsets() {
+  return new RuntimeError(3202, ngDevMode && `Not all style() steps within the declared keyframes() contain offsets`);
+}
+function invalidStagger() {
+  return new RuntimeError(3013, ngDevMode && `stagger() can only be used inside of query()`);
+}
+function invalidQuery(selector) {
+  return new RuntimeError(3014, ngDevMode && `\`query("${selector}")\` returned zero elements. (Use \`query("${selector}", { optional: true })\` if you wish to allow this.)`);
+}
+function invalidExpression(expr) {
+  return new RuntimeError(3015, ngDevMode && `The provided transition expression "${expr}" is not supported`);
+}
+function invalidTransitionAlias(alias) {
+  return new RuntimeError(3016, ngDevMode && `The transition alias value "${alias}" is not supported`);
+}
+function triggerBuildFailed(name, errors) {
+  return new RuntimeError(3404, ngDevMode && `The animation trigger "${name}" has failed to build due to the following errors:
+ - ${errors.map((err) => err.message).join("\n - ")}`);
+}
+function animationFailed(errors) {
+  return new RuntimeError(3502, ngDevMode && `Unable to animate due to the following errors:${LINE_START}${errors.map((err) => err.message).join(LINE_START)}`);
+}
+function registerFailed(errors) {
+  return new RuntimeError(3503, ngDevMode && `Unable to build the animation due to the following errors: ${errors.map((err) => err.message).join("\n")}`);
+}
+function missingOrDestroyedAnimation() {
+  return new RuntimeError(3300, ngDevMode && "The requested animation doesn't exist or has already been destroyed");
+}
+function createAnimationFailed(errors) {
+  return new RuntimeError(3504, ngDevMode && `Unable to create the animation due to the following errors:${errors.map((err) => err.message).join("\n")}`);
+}
+function missingPlayer(id) {
+  return new RuntimeError(3301, ngDevMode && `Unable to find the timeline player referenced by ${id}`);
+}
+function missingTrigger(phase, name) {
+  return new RuntimeError(3302, ngDevMode && `Unable to listen on the animation trigger event "${phase}" because the animation trigger "${name}" doesn't exist!`);
+}
+function missingEvent(name) {
+  return new RuntimeError(3303, ngDevMode && `Unable to listen on the animation trigger "${name}" because the provided event is undefined!`);
+}
+function unsupportedTriggerEvent(phase, name) {
+  return new RuntimeError(3400, ngDevMode && `The provided animation trigger event "${phase}" for the animation trigger "${name}" is not supported!`);
+}
+function unregisteredTrigger(name) {
+  return new RuntimeError(3401, ngDevMode && `The provided animation trigger "${name}" has not been registered!`);
+}
+function triggerTransitionsFailed(errors) {
+  return new RuntimeError(3402, ngDevMode && `Unable to process animations due to the following failed trigger transitions
+ ${errors.map((err) => err.message).join("\n")}`);
+}
+function transitionFailed(name, errors) {
+  return new RuntimeError(3505, ngDevMode && `@${name} has failed due to:
+ ${errors.map((err) => err.message).join("\n- ")}`);
+}
+var ANIMATABLE_PROP_SET = /* @__PURE__ */ new Set(["-moz-outline-radius", "-moz-outline-radius-bottomleft", "-moz-outline-radius-bottomright", "-moz-outline-radius-topleft", "-moz-outline-radius-topright", "-ms-grid-columns", "-ms-grid-rows", "-webkit-line-clamp", "-webkit-text-fill-color", "-webkit-text-stroke", "-webkit-text-stroke-color", "accent-color", "all", "backdrop-filter", "background", "background-color", "background-position", "background-size", "block-size", "border", "border-block-end", "border-block-end-color", "border-block-end-width", "border-block-start", "border-block-start-color", "border-block-start-width", "border-bottom", "border-bottom-color", "border-bottom-left-radius", "border-bottom-right-radius", "border-bottom-width", "border-color", "border-end-end-radius", "border-end-start-radius", "border-image-outset", "border-image-slice", "border-image-width", "border-inline-end", "border-inline-end-color", "border-inline-end-width", "border-inline-start", "border-inline-start-color", "border-inline-start-width", "border-left", "border-left-color", "border-left-width", "border-radius", "border-right", "border-right-color", "border-right-width", "border-start-end-radius", "border-start-start-radius", "border-top", "border-top-color", "border-top-left-radius", "border-top-right-radius", "border-top-width", "border-width", "bottom", "box-shadow", "caret-color", "clip", "clip-path", "color", "column-count", "column-gap", "column-rule", "column-rule-color", "column-rule-width", "column-width", "columns", "filter", "flex", "flex-basis", "flex-grow", "flex-shrink", "font", "font-size", "font-size-adjust", "font-stretch", "font-variation-settings", "font-weight", "gap", "grid-column-gap", "grid-gap", "grid-row-gap", "grid-template-columns", "grid-template-rows", "height", "inline-size", "input-security", "inset", "inset-block", "inset-block-end", "inset-block-start", "inset-inline", "inset-inline-end", "inset-inline-start", "left", "letter-spacing", "line-clamp", "line-height", "margin", "margin-block-end", "margin-block-start", "margin-bottom", "margin-inline-end", "margin-inline-start", "margin-left", "margin-right", "margin-top", "mask", "mask-border", "mask-position", "mask-size", "max-block-size", "max-height", "max-inline-size", "max-lines", "max-width", "min-block-size", "min-height", "min-inline-size", "min-width", "object-position", "offset", "offset-anchor", "offset-distance", "offset-path", "offset-position", "offset-rotate", "opacity", "order", "outline", "outline-color", "outline-offset", "outline-width", "padding", "padding-block-end", "padding-block-start", "padding-bottom", "padding-inline-end", "padding-inline-start", "padding-left", "padding-right", "padding-top", "perspective", "perspective-origin", "right", "rotate", "row-gap", "scale", "scroll-margin", "scroll-margin-block", "scroll-margin-block-end", "scroll-margin-block-start", "scroll-margin-bottom", "scroll-margin-inline", "scroll-margin-inline-end", "scroll-margin-inline-start", "scroll-margin-left", "scroll-margin-right", "scroll-margin-top", "scroll-padding", "scroll-padding-block", "scroll-padding-block-end", "scroll-padding-block-start", "scroll-padding-bottom", "scroll-padding-inline", "scroll-padding-inline-end", "scroll-padding-inline-start", "scroll-padding-left", "scroll-padding-right", "scroll-padding-top", "scroll-snap-coordinate", "scroll-snap-destination", "scrollbar-color", "shape-image-threshold", "shape-margin", "shape-outside", "tab-size", "text-decoration", "text-decoration-color", "text-decoration-thickness", "text-emphasis", "text-emphasis-color", "text-indent", "text-shadow", "text-underline-offset", "top", "transform", "transform-origin", "translate", "vertical-align", "visibility", "width", "word-spacing", "z-index", "zoom"]);
+function optimizeGroupPlayer(players) {
+  switch (players.length) {
+    case 0:
+      return new NoopAnimationPlayer();
+    case 1:
+      return players[0];
+    default:
+      return new AnimationGroupPlayer(players);
+  }
+}
+function normalizeKeyframes$1(normalizer, keyframes, preStyles = /* @__PURE__ */ new Map(), postStyles = /* @__PURE__ */ new Map()) {
+  const errors = [];
+  const normalizedKeyframes = [];
+  let previousOffset = -1;
+  let previousKeyframe = null;
+  keyframes.forEach((kf) => {
+    const offset = kf.get("offset");
+    const isSameOffset = offset == previousOffset;
+    const normalizedKeyframe = isSameOffset && previousKeyframe || /* @__PURE__ */ new Map();
+    kf.forEach((val, prop) => {
+      let normalizedProp = prop;
+      let normalizedValue = val;
+      if (prop !== "offset") {
+        normalizedProp = normalizer.normalizePropertyName(normalizedProp, errors);
+        switch (normalizedValue) {
+          case \u0275PRE_STYLE:
+            normalizedValue = preStyles.get(prop);
+            break;
+          case AUTO_STYLE:
+            normalizedValue = postStyles.get(prop);
+            break;
+          default:
+            normalizedValue = normalizer.normalizeStyleValue(prop, normalizedProp, normalizedValue, errors);
+            break;
         }
       }
-      _api.microtaskDrainDone();
-      _isDrainingMicrotaskQueue = false;
+      normalizedKeyframe.set(normalizedProp, normalizedValue);
+    });
+    if (!isSameOffset) {
+      normalizedKeyframes.push(normalizedKeyframe);
     }
+    previousKeyframe = normalizedKeyframe;
+    previousOffset = offset;
+  });
+  if (errors.length) {
+    throw animationFailed(errors);
   }
-  const NO_ZONE = { name: "NO ZONE" };
-  const notScheduled = "notScheduled", scheduling = "scheduling", scheduled = "scheduled", running = "running", canceling = "canceling", unknown = "unknown";
-  const microTask = "microTask", macroTask = "macroTask", eventTask = "eventTask";
-  const patches = {};
-  const _api = {
-    symbol: __symbol__,
-    currentZoneFrame: () => _currentZoneFrame,
-    onUnhandledError: noop,
-    microtaskDrainDone: noop,
-    scheduleMicroTask,
-    showUncaughtError: () => !ZoneImpl[__symbol__("ignoreConsoleErrorUncaughtError")],
-    patchEventTarget: () => [],
-    patchOnProperties: noop,
-    patchMethod: () => noop,
-    bindArguments: () => [],
-    patchThen: () => noop,
-    patchMacroTask: () => noop,
-    patchEventPrototype: () => noop,
-    isIEOrEdge: () => false,
-    getGlobalObjects: () => void 0,
-    ObjectDefineProperty: () => noop,
-    ObjectGetOwnPropertyDescriptor: () => void 0,
-    ObjectCreate: () => void 0,
-    ArraySlice: () => [],
-    patchClass: () => noop,
-    wrapWithCurrentZone: () => noop,
-    filterProperties: () => [],
-    attachOriginToPatched: () => noop,
-    _redefineProperty: () => noop,
-    patchCallbacks: () => noop,
-    nativeScheduleMicroTask
+  return normalizedKeyframes;
+}
+function listenOnPlayer(player, eventName, event, callback) {
+  switch (eventName) {
+    case "start":
+      player.onStart(() => callback(event && copyAnimationEvent(event, "start", player)));
+      break;
+    case "done":
+      player.onDone(() => callback(event && copyAnimationEvent(event, "done", player)));
+      break;
+    case "destroy":
+      player.onDestroy(() => callback(event && copyAnimationEvent(event, "destroy", player)));
+      break;
+  }
+}
+function copyAnimationEvent(e, phaseName, player) {
+  const totalTime = player.totalTime;
+  const disabled = player.disabled ? true : false;
+  const event = makeAnimationEvent(e.element, e.triggerName, e.fromState, e.toState, phaseName || e.phaseName, totalTime == void 0 ? e.totalTime : totalTime, disabled);
+  const data = e["_data"];
+  if (data != null) {
+    event["_data"] = data;
+  }
+  return event;
+}
+function makeAnimationEvent(element, triggerName, fromState, toState, phaseName = "", totalTime = 0, disabled) {
+  return {
+    element,
+    triggerName,
+    fromState,
+    toState,
+    phaseName,
+    totalTime,
+    disabled: !!disabled
   };
-  let _currentZoneFrame = { parent: null, zone: new ZoneImpl(null, null) };
-  let _currentTask = null;
-  let _numberOfNestedTaskFrames = 0;
-  function noop() {
-  }
-  performanceMeasure("Zone", "Zone");
-  return ZoneImpl;
 }
-var ObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-var ObjectDefineProperty = Object.defineProperty;
-var ObjectGetPrototypeOf = Object.getPrototypeOf;
-var ArraySlice = Array.prototype.slice;
-var ADD_EVENT_LISTENER_STR = "addEventListener";
-var REMOVE_EVENT_LISTENER_STR = "removeEventListener";
-var TRUE_STR = "true";
-var FALSE_STR = "false";
-var ZONE_SYMBOL_PREFIX = __symbol__("");
-function wrapWithCurrentZone(callback, source) {
-  return Zone.current.wrap(callback, source);
+function getOrSetDefaultValue(map, key, defaultValue) {
+  let value = map.get(key);
+  if (!value) {
+    map.set(key, value = defaultValue);
+  }
+  return value;
 }
-function scheduleMacroTaskWithCurrentZone(source, callback, data, customSchedule, customCancel) {
-  return Zone.current.scheduleMacroTask(source, callback, data, customSchedule, customCancel);
+function parseTimelineCommand(command) {
+  const separatorPos = command.indexOf(":");
+  const id = command.substring(1, separatorPos);
+  const action = command.slice(separatorPos + 1);
+  return [id, action];
 }
-var zoneSymbol = __symbol__;
-var isWindowExists = typeof window !== "undefined";
-var internalWindow = isWindowExists ? window : void 0;
-var _global = isWindowExists && internalWindow || globalThis;
-var REMOVE_ATTRIBUTE = "removeAttribute";
-function bindArguments(args, source) {
-  for (let i = args.length - 1; i >= 0; i--) {
-    if (typeof args[i] === "function") {
-      args[i] = wrapWithCurrentZone(args[i], source + "_" + i);
-    }
+var documentElement = /* @__PURE__ */ (() => typeof document === "undefined" ? null : document.documentElement)();
+function getParentElement(element) {
+  const parent = element.parentNode || element.host || null;
+  if (parent === documentElement) {
+    return null;
   }
-  return args;
+  return parent;
 }
-function isPropertyWritable(propertyDesc) {
-  if (!propertyDesc) {
-    return true;
-  }
-  if (propertyDesc.writable === false) {
-    return false;
-  }
-  return !(typeof propertyDesc.get === "function" && typeof propertyDesc.set === "undefined");
+function containsVendorPrefix(prop) {
+  return prop.substring(1, 6) == "ebkit";
 }
-var isWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
-var isNode = !("nw" in _global) && typeof _global.process !== "undefined" && _global.process.toString() === "[object process]";
-var isBrowser = !isNode && !isWebWorker && !!(isWindowExists && internalWindow["HTMLElement"]);
-var isMix = typeof _global.process !== "undefined" && _global.process.toString() === "[object process]" && !isWebWorker && !!(isWindowExists && internalWindow["HTMLElement"]);
-var zoneSymbolEventNames$1 = {};
-var enableBeforeunloadSymbol = zoneSymbol("enable_beforeunload");
-var wrapFn = function(event) {
-  event = event || _global.event;
-  if (!event) {
-    return;
+var _CACHED_BODY = null;
+var _IS_WEBKIT = false;
+function validateStyleProperty(prop) {
+  if (!_CACHED_BODY) {
+    _CACHED_BODY = getBodyNode() || {};
+    _IS_WEBKIT = _CACHED_BODY.style ? "WebkitAppearance" in _CACHED_BODY.style : false;
   }
-  let eventNameSymbol = zoneSymbolEventNames$1[event.type];
-  if (!eventNameSymbol) {
-    eventNameSymbol = zoneSymbolEventNames$1[event.type] = zoneSymbol("ON_PROPERTY" + event.type);
-  }
-  const target = this || event.target || _global;
-  const listener = target[eventNameSymbol];
-  let result;
-  if (isBrowser && target === internalWindow && event.type === "error") {
-    const errorEvent = event;
-    result = listener && listener.call(this, errorEvent.message, errorEvent.filename, errorEvent.lineno, errorEvent.colno, errorEvent.error);
-    if (result === true) {
-      event.preventDefault();
-    }
-  } else {
-    result = listener && listener.apply(this, arguments);
-    if (
-      // https://github.com/angular/angular/issues/47579
-      // https://www.w3.org/TR/2011/WD-html5-20110525/history.html#beforeunloadevent
-      // This is the only specific case we should check for. The spec defines that the
-      // `returnValue` attribute represents the message to show the user. When the event
-      // is created, this attribute must be set to the empty string.
-      event.type === "beforeunload" && // To prevent any breaking changes resulting from this change, given that
-      // it was already causing a significant number of failures in G3, we have hidden
-      // that behavior behind a global configuration flag. Consumers can enable this
-      // flag explicitly if they want the `beforeunload` event to be handled as defined
-      // in the specification.
-      _global[enableBeforeunloadSymbol] && // The IDL event definition is `attribute DOMString returnValue`, so we check whether
-      // `typeof result` is a string.
-      typeof result === "string"
-    ) {
-      event.returnValue = result;
-    } else if (result != void 0 && !result) {
-      event.preventDefault();
+  let result = true;
+  if (_CACHED_BODY.style && !containsVendorPrefix(prop)) {
+    result = prop in _CACHED_BODY.style;
+    if (!result && _IS_WEBKIT) {
+      const camelProp = "Webkit" + prop.charAt(0).toUpperCase() + prop.slice(1);
+      result = camelProp in _CACHED_BODY.style;
     }
   }
   return result;
-};
-function patchProperty(obj, prop, prototype) {
-  let desc = ObjectGetOwnPropertyDescriptor(obj, prop);
-  if (!desc && prototype) {
-    const prototypeDesc = ObjectGetOwnPropertyDescriptor(prototype, prop);
-    if (prototypeDesc) {
-      desc = { enumerable: true, configurable: true };
-    }
-  }
-  if (!desc || !desc.configurable) {
-    return;
-  }
-  const onPropPatchedSymbol = zoneSymbol("on" + prop + "patched");
-  if (obj.hasOwnProperty(onPropPatchedSymbol) && obj[onPropPatchedSymbol]) {
-    return;
-  }
-  delete desc.writable;
-  delete desc.value;
-  const originalDescGet = desc.get;
-  const originalDescSet = desc.set;
-  const eventName = prop.slice(2);
-  let eventNameSymbol = zoneSymbolEventNames$1[eventName];
-  if (!eventNameSymbol) {
-    eventNameSymbol = zoneSymbolEventNames$1[eventName] = zoneSymbol("ON_PROPERTY" + eventName);
-  }
-  desc.set = function(newValue) {
-    let target = this;
-    if (!target && obj === _global) {
-      target = _global;
-    }
-    if (!target) {
-      return;
-    }
-    const previousValue = target[eventNameSymbol];
-    if (typeof previousValue === "function") {
-      target.removeEventListener(eventName, wrapFn);
-    }
-    originalDescSet && originalDescSet.call(target, null);
-    target[eventNameSymbol] = newValue;
-    if (typeof newValue === "function") {
-      target.addEventListener(eventName, wrapFn, false);
-    }
-  };
-  desc.get = function() {
-    let target = this;
-    if (!target && obj === _global) {
-      target = _global;
-    }
-    if (!target) {
-      return null;
-    }
-    const listener = target[eventNameSymbol];
-    if (listener) {
-      return listener;
-    } else if (originalDescGet) {
-      let value = originalDescGet.call(this);
-      if (value) {
-        desc.set.call(this, value);
-        if (typeof target[REMOVE_ATTRIBUTE] === "function") {
-          target.removeAttribute(prop);
-        }
-        return value;
-      }
-    }
-    return null;
-  };
-  ObjectDefineProperty(obj, prop, desc);
-  obj[onPropPatchedSymbol] = true;
 }
-function patchOnProperties(obj, properties, prototype) {
-  if (properties) {
-    for (let i = 0; i < properties.length; i++) {
-      patchProperty(obj, "on" + properties[i], prototype);
+function validateWebAnimatableStyleProperty(prop) {
+  return ANIMATABLE_PROP_SET.has(prop);
+}
+function getBodyNode() {
+  if (typeof document != "undefined") {
+    return document.body;
+  }
+  return null;
+}
+function containsElement(elm1, elm2) {
+  while (elm2) {
+    if (elm2 === elm1) {
+      return true;
+    }
+    elm2 = getParentElement(elm2);
+  }
+  return false;
+}
+function invokeQuery(element, selector, multi) {
+  if (multi) {
+    return Array.from(element.querySelectorAll(selector));
+  }
+  const elem = element.querySelector(selector);
+  return elem ? [elem] : [];
+}
+var NoopAnimationDriver = class _NoopAnimationDriver {
+  /**
+   * @returns Whether `prop` is a valid CSS property
+   */
+  validateStyleProperty(prop) {
+    return validateStyleProperty(prop);
+  }
+  /**
+   * @deprecated unused
+   */
+  matchesElement(_element, _selector) {
+    return false;
+  }
+  /**
+   *
+   * @returns Whether elm1 contains elm2.
+   */
+  containsElement(elm1, elm2) {
+    return containsElement(elm1, elm2);
+  }
+  /**
+   * @returns Rhe parent of the given element or `null` if the element is the `document`
+   */
+  getParentElement(element) {
+    return getParentElement(element);
+  }
+  /**
+   * @returns The result of the query selector on the element. The array will contain up to 1 item
+   *     if `multi` is  `false`.
+   */
+  query(element, selector, multi) {
+    return invokeQuery(element, selector, multi);
+  }
+  /**
+   * @returns The `defaultValue` or empty string
+   */
+  computeStyle(element, prop, defaultValue) {
+    return defaultValue || "";
+  }
+  /**
+   * @returns An `NoopAnimationPlayer`
+   */
+  animate(element, keyframes, duration, delay, easing, previousPlayers = [], scrubberAccessRequested) {
+    return new NoopAnimationPlayer(duration, delay);
+  }
+  static {
+    this.\u0275fac = function NoopAnimationDriver_Factory(t) {
+      return new (t || _NoopAnimationDriver)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _NoopAnimationDriver,
+      factory: _NoopAnimationDriver.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(NoopAnimationDriver, [{
+    type: Injectable
+  }], null, null);
+})();
+var AnimationDriver = class {
+  static {
+    this.NOOP = new NoopAnimationDriver();
+  }
+};
+var AnimationStyleNormalizer = class {
+};
+var ONE_SECOND = 1e3;
+var SUBSTITUTION_EXPR_START = "{{";
+var SUBSTITUTION_EXPR_END = "}}";
+var ENTER_CLASSNAME = "ng-enter";
+var LEAVE_CLASSNAME = "ng-leave";
+var NG_TRIGGER_CLASSNAME = "ng-trigger";
+var NG_TRIGGER_SELECTOR = ".ng-trigger";
+var NG_ANIMATING_CLASSNAME = "ng-animating";
+var NG_ANIMATING_SELECTOR = ".ng-animating";
+function resolveTimingValue(value) {
+  if (typeof value == "number")
+    return value;
+  const matches = value.match(/^(-?[\.\d]+)(m?s)/);
+  if (!matches || matches.length < 2)
+    return 0;
+  return _convertTimeValueToMS(parseFloat(matches[1]), matches[2]);
+}
+function _convertTimeValueToMS(value, unit) {
+  switch (unit) {
+    case "s":
+      return value * ONE_SECOND;
+    default:
+      return value;
+  }
+}
+function resolveTiming(timings, errors, allowNegativeValues) {
+  return timings.hasOwnProperty("duration") ? timings : parseTimeExpression(timings, errors, allowNegativeValues);
+}
+function parseTimeExpression(exp, errors, allowNegativeValues) {
+  const regex = /^(-?[\.\d]+)(m?s)(?:\s+(-?[\.\d]+)(m?s))?(?:\s+([-a-z]+(?:\(.+?\))?))?$/i;
+  let duration;
+  let delay = 0;
+  let easing = "";
+  if (typeof exp === "string") {
+    const matches = exp.match(regex);
+    if (matches === null) {
+      errors.push(invalidTimingValue(exp));
+      return {
+        duration: 0,
+        delay: 0,
+        easing: ""
+      };
+    }
+    duration = _convertTimeValueToMS(parseFloat(matches[1]), matches[2]);
+    const delayMatch = matches[3];
+    if (delayMatch != null) {
+      delay = _convertTimeValueToMS(parseFloat(delayMatch), matches[4]);
+    }
+    const easingVal = matches[5];
+    if (easingVal) {
+      easing = easingVal;
     }
   } else {
-    const onProperties = [];
-    for (const prop in obj) {
-      if (prop.slice(0, 2) == "on") {
-        onProperties.push(prop);
-      }
+    duration = exp;
+  }
+  if (!allowNegativeValues) {
+    let containsErrors = false;
+    let startIndex = errors.length;
+    if (duration < 0) {
+      errors.push(negativeStepValue());
+      containsErrors = true;
     }
-    for (let j = 0; j < onProperties.length; j++) {
-      patchProperty(obj, onProperties[j], prototype);
+    if (delay < 0) {
+      errors.push(negativeDelayValue());
+      containsErrors = true;
+    }
+    if (containsErrors) {
+      errors.splice(startIndex, 0, invalidTimingValue(exp));
     }
   }
+  return {
+    duration,
+    delay,
+    easing
+  };
 }
-function copySymbolProperties(src, dest) {
-  if (typeof Object.getOwnPropertySymbols !== "function") {
-    return;
+function normalizeKeyframes(keyframes) {
+  if (!keyframes.length) {
+    return [];
   }
-  const symbols = Object.getOwnPropertySymbols(src);
-  symbols.forEach((symbol) => {
-    const desc = Object.getOwnPropertyDescriptor(src, symbol);
-    Object.defineProperty(dest, symbol, {
-      get: function() {
-        return src[symbol];
-      },
-      set: function(value) {
-        if (desc && (!desc.writable || typeof desc.set !== "function")) {
-          return;
-        }
-        src[symbol] = value;
-      },
-      enumerable: desc ? desc.enumerable : true,
-      configurable: desc ? desc.configurable : true
-    });
+  if (keyframes[0] instanceof Map) {
+    return keyframes;
+  }
+  return keyframes.map((kf) => new Map(Object.entries(kf)));
+}
+function setStyles(element, styles, formerStyles) {
+  styles.forEach((val, prop) => {
+    const camelProp = dashCaseToCamelCase(prop);
+    if (formerStyles && !formerStyles.has(prop)) {
+      formerStyles.set(prop, element.style[camelProp]);
+    }
+    element.style[camelProp] = val;
   });
 }
-var shouldCopySymbolProperties = false;
-function setShouldCopySymbolProperties(flag) {
-  shouldCopySymbolProperties = flag;
-}
-function patchMethod(target, name, patchFn) {
-  let proto = target;
-  while (proto && !proto.hasOwnProperty(name)) {
-    proto = ObjectGetPrototypeOf(proto);
-  }
-  if (!proto && target[name]) {
-    proto = target;
-  }
-  const delegateName = zoneSymbol(name);
-  let delegate = null;
-  if (proto && (!(delegate = proto[delegateName]) || !proto.hasOwnProperty(delegateName))) {
-    delegate = proto[delegateName] = proto[name];
-    const desc = proto && ObjectGetOwnPropertyDescriptor(proto, name);
-    if (isPropertyWritable(desc)) {
-      const patchDelegate = patchFn(delegate, delegateName, name);
-      proto[name] = function() {
-        return patchDelegate(this, arguments);
-      };
-      attachOriginToPatched(proto[name], delegate);
-      if (shouldCopySymbolProperties) {
-        copySymbolProperties(delegate, proto[name]);
-      }
-    }
-  }
-  return delegate;
-}
-function patchMacroTask(obj, funcName, metaCreator) {
-  let setNative = null;
-  function scheduleTask(task) {
-    const data = task.data;
-    data.args[data.cbIdx] = function() {
-      task.invoke.apply(this, arguments);
-    };
-    setNative.apply(data.target, data.args);
-    return task;
-  }
-  setNative = patchMethod(obj, funcName, (delegate) => function(self2, args) {
-    const meta = metaCreator(self2, args);
-    if (meta.cbIdx >= 0 && typeof args[meta.cbIdx] === "function") {
-      return scheduleMacroTaskWithCurrentZone(meta.name, args[meta.cbIdx], meta, scheduleTask);
-    } else {
-      return delegate.apply(self2, args);
-    }
+function eraseStyles(element, styles) {
+  styles.forEach((_, prop) => {
+    const camelProp = dashCaseToCamelCase(prop);
+    element.style[camelProp] = "";
   });
 }
-function patchMicroTask(obj, funcName, metaCreator) {
-  let setNative = null;
-  function scheduleTask(task) {
-    const data = task.data;
-    data.args[data.cbIdx] = function() {
-      task.invoke.apply(this, arguments);
-    };
-    setNative.apply(data.target, data.args);
-    return task;
+function normalizeAnimationEntry(steps) {
+  if (Array.isArray(steps)) {
+    if (steps.length == 1)
+      return steps[0];
+    return sequence(steps);
   }
-  setNative = patchMethod(obj, funcName, (delegate) => function(self2, args) {
-    const meta = metaCreator(self2, args);
-    if (meta.cbIdx >= 0 && typeof args[meta.cbIdx] === "function") {
-      return Zone.current.scheduleMicroTask(meta.name, args[meta.cbIdx], meta, scheduleTask);
-    } else {
-      return delegate.apply(self2, args);
-    }
-  });
+  return steps;
 }
-function attachOriginToPatched(patched, original) {
-  patched[zoneSymbol("OriginalDelegate")] = original;
-}
-function isFunction(value) {
-  return typeof value === "function";
-}
-function isNumber(value) {
-  return typeof value === "number";
-}
-function patchPromise(Zone2) {
-  Zone2.__load_patch("ZoneAwarePromise", (global2, Zone3, api) => {
-    const ObjectGetOwnPropertyDescriptor2 = Object.getOwnPropertyDescriptor;
-    const ObjectDefineProperty2 = Object.defineProperty;
-    function readableObjectToString(obj) {
-      if (obj && obj.toString === Object.prototype.toString) {
-        const className = obj.constructor && obj.constructor.name;
-        return (className ? className : "") + ": " + JSON.stringify(obj);
-      }
-      return obj ? obj.toString() : Object.prototype.toString.call(obj);
-    }
-    const __symbol__2 = api.symbol;
-    const _uncaughtPromiseErrors = [];
-    const isDisableWrappingUncaughtPromiseRejection = global2[__symbol__2("DISABLE_WRAPPING_UNCAUGHT_PROMISE_REJECTION")] !== false;
-    const symbolPromise = __symbol__2("Promise");
-    const symbolThen = __symbol__2("then");
-    const creationTrace = "__creationTrace__";
-    api.onUnhandledError = (e) => {
-      if (api.showUncaughtError()) {
-        const rejection = e && e.rejection;
-        if (rejection) {
-          console.error("Unhandled Promise rejection:", rejection instanceof Error ? rejection.message : rejection, "; Zone:", e.zone.name, "; Task:", e.task && e.task.source, "; Value:", rejection, rejection instanceof Error ? rejection.stack : void 0);
-        } else {
-          console.error(e);
-        }
-      }
-    };
-    api.microtaskDrainDone = () => {
-      while (_uncaughtPromiseErrors.length) {
-        const uncaughtPromiseError = _uncaughtPromiseErrors.shift();
-        try {
-          uncaughtPromiseError.zone.runGuarded(() => {
-            if (uncaughtPromiseError.throwOriginal) {
-              throw uncaughtPromiseError.rejection;
-            }
-            throw uncaughtPromiseError;
-          });
-        } catch (error) {
-          handleUnhandledRejection(error);
-        }
-      }
-    };
-    const UNHANDLED_PROMISE_REJECTION_HANDLER_SYMBOL = __symbol__2("unhandledPromiseRejectionHandler");
-    function handleUnhandledRejection(e) {
-      api.onUnhandledError(e);
-      try {
-        const handler = Zone3[UNHANDLED_PROMISE_REJECTION_HANDLER_SYMBOL];
-        if (typeof handler === "function") {
-          handler.call(this, e);
-        }
-      } catch (err) {
-      }
-    }
-    function isThenable(value) {
-      return value && value.then;
-    }
-    function forwardResolution(value) {
-      return value;
-    }
-    function forwardRejection(rejection) {
-      return ZoneAwarePromise.reject(rejection);
-    }
-    const symbolState = __symbol__2("state");
-    const symbolValue = __symbol__2("value");
-    const symbolFinally = __symbol__2("finally");
-    const symbolParentPromiseValue = __symbol__2("parentPromiseValue");
-    const symbolParentPromiseState = __symbol__2("parentPromiseState");
-    const source = "Promise.then";
-    const UNRESOLVED = null;
-    const RESOLVED = true;
-    const REJECTED = false;
-    const REJECTED_NO_CATCH = 0;
-    function makeResolver(promise, state) {
-      return (v) => {
-        try {
-          resolvePromise(promise, state, v);
-        } catch (err) {
-          resolvePromise(promise, false, err);
-        }
-      };
-    }
-    const once = function() {
-      let wasCalled = false;
-      return function wrapper(wrappedFunction) {
-        return function() {
-          if (wasCalled) {
-            return;
-          }
-          wasCalled = true;
-          wrappedFunction.apply(null, arguments);
-        };
-      };
-    };
-    const TYPE_ERROR = "Promise resolved with itself";
-    const CURRENT_TASK_TRACE_SYMBOL = __symbol__2("currentTaskTrace");
-    function resolvePromise(promise, state, value) {
-      const onceWrapper = once();
-      if (promise === value) {
-        throw new TypeError(TYPE_ERROR);
-      }
-      if (promise[symbolState] === UNRESOLVED) {
-        let then = null;
-        try {
-          if (typeof value === "object" || typeof value === "function") {
-            then = value && value.then;
-          }
-        } catch (err) {
-          onceWrapper(() => {
-            resolvePromise(promise, false, err);
-          })();
-          return promise;
-        }
-        if (state !== REJECTED && value instanceof ZoneAwarePromise && value.hasOwnProperty(symbolState) && value.hasOwnProperty(symbolValue) && value[symbolState] !== UNRESOLVED) {
-          clearRejectedNoCatch(value);
-          resolvePromise(promise, value[symbolState], value[symbolValue]);
-        } else if (state !== REJECTED && typeof then === "function") {
-          try {
-            then.call(value, onceWrapper(makeResolver(promise, state)), onceWrapper(makeResolver(promise, false)));
-          } catch (err) {
-            onceWrapper(() => {
-              resolvePromise(promise, false, err);
-            })();
-          }
-        } else {
-          promise[symbolState] = state;
-          const queue = promise[symbolValue];
-          promise[symbolValue] = value;
-          if (promise[symbolFinally] === symbolFinally) {
-            if (state === RESOLVED) {
-              promise[symbolState] = promise[symbolParentPromiseState];
-              promise[symbolValue] = promise[symbolParentPromiseValue];
-            }
-          }
-          if (state === REJECTED && value instanceof Error) {
-            const trace = Zone3.currentTask && Zone3.currentTask.data && Zone3.currentTask.data[creationTrace];
-            if (trace) {
-              ObjectDefineProperty2(value, CURRENT_TASK_TRACE_SYMBOL, {
-                configurable: true,
-                enumerable: false,
-                writable: true,
-                value: trace
-              });
-            }
-          }
-          for (let i = 0; i < queue.length; ) {
-            scheduleResolveOrReject(promise, queue[i++], queue[i++], queue[i++], queue[i++]);
-          }
-          if (queue.length == 0 && state == REJECTED) {
-            promise[symbolState] = REJECTED_NO_CATCH;
-            let uncaughtPromiseError = value;
-            try {
-              throw new Error("Uncaught (in promise): " + readableObjectToString(value) + (value && value.stack ? "\n" + value.stack : ""));
-            } catch (err) {
-              uncaughtPromiseError = err;
-            }
-            if (isDisableWrappingUncaughtPromiseRejection) {
-              uncaughtPromiseError.throwOriginal = true;
-            }
-            uncaughtPromiseError.rejection = value;
-            uncaughtPromiseError.promise = promise;
-            uncaughtPromiseError.zone = Zone3.current;
-            uncaughtPromiseError.task = Zone3.currentTask;
-            _uncaughtPromiseErrors.push(uncaughtPromiseError);
-            api.scheduleMicroTask();
-          }
-        }
-      }
-      return promise;
-    }
-    const REJECTION_HANDLED_HANDLER = __symbol__2("rejectionHandledHandler");
-    function clearRejectedNoCatch(promise) {
-      if (promise[symbolState] === REJECTED_NO_CATCH) {
-        try {
-          const handler = Zone3[REJECTION_HANDLED_HANDLER];
-          if (handler && typeof handler === "function") {
-            handler.call(this, { rejection: promise[symbolValue], promise });
-          }
-        } catch (err) {
-        }
-        promise[symbolState] = REJECTED;
-        for (let i = 0; i < _uncaughtPromiseErrors.length; i++) {
-          if (promise === _uncaughtPromiseErrors[i].promise) {
-            _uncaughtPromiseErrors.splice(i, 1);
-          }
-        }
-      }
-    }
-    function scheduleResolveOrReject(promise, zone, chainPromise, onFulfilled, onRejected) {
-      clearRejectedNoCatch(promise);
-      const promiseState = promise[symbolState];
-      const delegate = promiseState ? typeof onFulfilled === "function" ? onFulfilled : forwardResolution : typeof onRejected === "function" ? onRejected : forwardRejection;
-      zone.scheduleMicroTask(source, () => {
-        try {
-          const parentPromiseValue = promise[symbolValue];
-          const isFinallyPromise = !!chainPromise && symbolFinally === chainPromise[symbolFinally];
-          if (isFinallyPromise) {
-            chainPromise[symbolParentPromiseValue] = parentPromiseValue;
-            chainPromise[symbolParentPromiseState] = promiseState;
-          }
-          const value = zone.run(delegate, void 0, isFinallyPromise && delegate !== forwardRejection && delegate !== forwardResolution ? [] : [parentPromiseValue]);
-          resolvePromise(chainPromise, true, value);
-        } catch (error) {
-          resolvePromise(chainPromise, false, error);
-        }
-      }, chainPromise);
-    }
-    const ZONE_AWARE_PROMISE_TO_STRING = "function ZoneAwarePromise() { [native code] }";
-    const noop = function() {
-    };
-    const AggregateError = global2.AggregateError;
-    class ZoneAwarePromise {
-      static toString() {
-        return ZONE_AWARE_PROMISE_TO_STRING;
-      }
-      static resolve(value) {
-        if (value instanceof ZoneAwarePromise) {
-          return value;
-        }
-        return resolvePromise(new this(null), RESOLVED, value);
-      }
-      static reject(error) {
-        return resolvePromise(new this(null), REJECTED, error);
-      }
-      static withResolvers() {
-        const result = {};
-        result.promise = new ZoneAwarePromise((res, rej) => {
-          result.resolve = res;
-          result.reject = rej;
-        });
-        return result;
-      }
-      static any(values) {
-        if (!values || typeof values[Symbol.iterator] !== "function") {
-          return Promise.reject(new AggregateError([], "All promises were rejected"));
-        }
-        const promises = [];
-        let count = 0;
-        try {
-          for (let v of values) {
-            count++;
-            promises.push(ZoneAwarePromise.resolve(v));
-          }
-        } catch (err) {
-          return Promise.reject(new AggregateError([], "All promises were rejected"));
-        }
-        if (count === 0) {
-          return Promise.reject(new AggregateError([], "All promises were rejected"));
-        }
-        let finished = false;
-        const errors = [];
-        return new ZoneAwarePromise((resolve, reject) => {
-          for (let i = 0; i < promises.length; i++) {
-            promises[i].then((v) => {
-              if (finished) {
-                return;
-              }
-              finished = true;
-              resolve(v);
-            }, (err) => {
-              errors.push(err);
-              count--;
-              if (count === 0) {
-                finished = true;
-                reject(new AggregateError(errors, "All promises were rejected"));
-              }
-            });
-          }
-        });
-      }
-      static race(values) {
-        let resolve;
-        let reject;
-        let promise = new this((res, rej) => {
-          resolve = res;
-          reject = rej;
-        });
-        function onResolve(value) {
-          resolve(value);
-        }
-        function onReject(error) {
-          reject(error);
-        }
-        for (let value of values) {
-          if (!isThenable(value)) {
-            value = this.resolve(value);
-          }
-          value.then(onResolve, onReject);
-        }
-        return promise;
-      }
-      static all(values) {
-        return ZoneAwarePromise.allWithCallback(values);
-      }
-      static allSettled(values) {
-        const P = this && this.prototype instanceof ZoneAwarePromise ? this : ZoneAwarePromise;
-        return P.allWithCallback(values, {
-          thenCallback: (value) => ({ status: "fulfilled", value }),
-          errorCallback: (err) => ({ status: "rejected", reason: err })
-        });
-      }
-      static allWithCallback(values, callback) {
-        let resolve;
-        let reject;
-        let promise = new this((res, rej) => {
-          resolve = res;
-          reject = rej;
-        });
-        let unresolvedCount = 2;
-        let valueIndex = 0;
-        const resolvedValues = [];
-        for (let value of values) {
-          if (!isThenable(value)) {
-            value = this.resolve(value);
-          }
-          const curValueIndex = valueIndex;
-          try {
-            value.then((value2) => {
-              resolvedValues[curValueIndex] = callback ? callback.thenCallback(value2) : value2;
-              unresolvedCount--;
-              if (unresolvedCount === 0) {
-                resolve(resolvedValues);
-              }
-            }, (err) => {
-              if (!callback) {
-                reject(err);
-              } else {
-                resolvedValues[curValueIndex] = callback.errorCallback(err);
-                unresolvedCount--;
-                if (unresolvedCount === 0) {
-                  resolve(resolvedValues);
-                }
-              }
-            });
-          } catch (thenErr) {
-            reject(thenErr);
-          }
-          unresolvedCount++;
-          valueIndex++;
-        }
-        unresolvedCount -= 2;
-        if (unresolvedCount === 0) {
-          resolve(resolvedValues);
-        }
-        return promise;
-      }
-      constructor(executor) {
-        const promise = this;
-        if (!(promise instanceof ZoneAwarePromise)) {
-          throw new Error("Must be an instanceof Promise.");
-        }
-        promise[symbolState] = UNRESOLVED;
-        promise[symbolValue] = [];
-        try {
-          const onceWrapper = once();
-          executor && executor(onceWrapper(makeResolver(promise, RESOLVED)), onceWrapper(makeResolver(promise, REJECTED)));
-        } catch (error) {
-          resolvePromise(promise, false, error);
-        }
-      }
-      get [Symbol.toStringTag]() {
-        return "Promise";
-      }
-      get [Symbol.species]() {
-        return ZoneAwarePromise;
-      }
-      then(onFulfilled, onRejected) {
-        let C = this.constructor?.[Symbol.species];
-        if (!C || typeof C !== "function") {
-          C = this.constructor || ZoneAwarePromise;
-        }
-        const chainPromise = new C(noop);
-        const zone = Zone3.current;
-        if (this[symbolState] == UNRESOLVED) {
-          this[symbolValue].push(zone, chainPromise, onFulfilled, onRejected);
-        } else {
-          scheduleResolveOrReject(this, zone, chainPromise, onFulfilled, onRejected);
-        }
-        return chainPromise;
-      }
-      catch(onRejected) {
-        return this.then(null, onRejected);
-      }
-      finally(onFinally) {
-        let C = this.constructor?.[Symbol.species];
-        if (!C || typeof C !== "function") {
-          C = ZoneAwarePromise;
-        }
-        const chainPromise = new C(noop);
-        chainPromise[symbolFinally] = symbolFinally;
-        const zone = Zone3.current;
-        if (this[symbolState] == UNRESOLVED) {
-          this[symbolValue].push(zone, chainPromise, onFinally, onFinally);
-        } else {
-          scheduleResolveOrReject(this, zone, chainPromise, onFinally, onFinally);
-        }
-        return chainPromise;
-      }
-    }
-    ZoneAwarePromise["resolve"] = ZoneAwarePromise.resolve;
-    ZoneAwarePromise["reject"] = ZoneAwarePromise.reject;
-    ZoneAwarePromise["race"] = ZoneAwarePromise.race;
-    ZoneAwarePromise["all"] = ZoneAwarePromise.all;
-    const NativePromise = global2[symbolPromise] = global2["Promise"];
-    global2["Promise"] = ZoneAwarePromise;
-    const symbolThenPatched = __symbol__2("thenPatched");
-    function patchThen(Ctor) {
-      const proto = Ctor.prototype;
-      const prop = ObjectGetOwnPropertyDescriptor2(proto, "then");
-      if (prop && (prop.writable === false || !prop.configurable)) {
-        return;
-      }
-      const originalThen = proto.then;
-      proto[symbolThen] = originalThen;
-      Ctor.prototype.then = function(onResolve, onReject) {
-        const wrapped = new ZoneAwarePromise((resolve, reject) => {
-          originalThen.call(this, resolve, reject);
-        });
-        return wrapped.then(onResolve, onReject);
-      };
-      Ctor[symbolThenPatched] = true;
-    }
-    api.patchThen = patchThen;
-    function zoneify(fn) {
-      return function(self2, args) {
-        let resultPromise = fn.apply(self2, args);
-        if (resultPromise instanceof ZoneAwarePromise) {
-          return resultPromise;
-        }
-        let ctor = resultPromise.constructor;
-        if (!ctor[symbolThenPatched]) {
-          patchThen(ctor);
-        }
-        return resultPromise;
-      };
-    }
-    if (NativePromise) {
-      patchThen(NativePromise);
-      patchMethod(global2, "fetch", (delegate) => zoneify(delegate));
-    }
-    Promise[Zone3.__symbol__("uncaughtPromiseErrors")] = _uncaughtPromiseErrors;
-    return ZoneAwarePromise;
-  });
-}
-function patchToString(Zone2) {
-  Zone2.__load_patch("toString", (global2) => {
-    const originalFunctionToString = Function.prototype.toString;
-    const ORIGINAL_DELEGATE_SYMBOL = zoneSymbol("OriginalDelegate");
-    const PROMISE_SYMBOL = zoneSymbol("Promise");
-    const ERROR_SYMBOL = zoneSymbol("Error");
-    const newFunctionToString = function toString() {
-      if (typeof this === "function") {
-        const originalDelegate = this[ORIGINAL_DELEGATE_SYMBOL];
-        if (originalDelegate) {
-          if (typeof originalDelegate === "function") {
-            return originalFunctionToString.call(originalDelegate);
-          } else {
-            return Object.prototype.toString.call(originalDelegate);
-          }
-        }
-        if (this === Promise) {
-          const nativePromise = global2[PROMISE_SYMBOL];
-          if (nativePromise) {
-            return originalFunctionToString.call(nativePromise);
-          }
-        }
-        if (this === Error) {
-          const nativeError = global2[ERROR_SYMBOL];
-          if (nativeError) {
-            return originalFunctionToString.call(nativeError);
-          }
-        }
-      }
-      return originalFunctionToString.call(this);
-    };
-    newFunctionToString[ORIGINAL_DELEGATE_SYMBOL] = originalFunctionToString;
-    Function.prototype.toString = newFunctionToString;
-    const originalObjectToString = Object.prototype.toString;
-    const PROMISE_OBJECT_TO_STRING = "[object Promise]";
-    Object.prototype.toString = function() {
-      if (typeof Promise === "function" && this instanceof Promise) {
-        return PROMISE_OBJECT_TO_STRING;
-      }
-      return originalObjectToString.call(this);
-    };
-  });
-}
-function loadZone() {
-  const global2 = globalThis;
-  const checkDuplicate = global2[__symbol__("forceDuplicateZoneCheck")] === true;
-  if (global2["Zone"] && (checkDuplicate || typeof global2["Zone"].__symbol__ !== "function")) {
-    throw new Error("Zone already loaded.");
-  }
-  global2["Zone"] ??= initZone();
-  return global2["Zone"];
-}
-var passiveSupported = false;
-if (typeof window !== "undefined") {
-  try {
-    const options = Object.defineProperty({}, "passive", {
-      get: function() {
-        passiveSupported = true;
+function validateStyleParams(value, options, errors) {
+  const params = options.params || {};
+  const matches = extractStyleParams(value);
+  if (matches.length) {
+    matches.forEach((varName) => {
+      if (!params.hasOwnProperty(varName)) {
+        errors.push(invalidStyleParams(varName));
       }
     });
-    window.addEventListener("test", options, options);
-    window.removeEventListener("test", options, options);
-  } catch (err) {
-    passiveSupported = false;
   }
 }
-var OPTIMIZED_ZONE_EVENT_TASK_DATA = {
-  useG: true
+var PARAM_REGEX = new RegExp(`${SUBSTITUTION_EXPR_START}\\s*(.+?)\\s*${SUBSTITUTION_EXPR_END}`, "g");
+function extractStyleParams(value) {
+  let params = [];
+  if (typeof value === "string") {
+    let match;
+    while (match = PARAM_REGEX.exec(value)) {
+      params.push(match[1]);
+    }
+    PARAM_REGEX.lastIndex = 0;
+  }
+  return params;
+}
+function interpolateParams(value, params, errors) {
+  const original = `${value}`;
+  const str = original.replace(PARAM_REGEX, (_, varName) => {
+    let localVal = params[varName];
+    if (localVal == null) {
+      errors.push(invalidParamValue(varName));
+      localVal = "";
+    }
+    return localVal.toString();
+  });
+  return str == original ? value : str;
+}
+var DASH_CASE_REGEXP = /-+([a-z0-9])/g;
+function dashCaseToCamelCase(input) {
+  return input.replace(DASH_CASE_REGEXP, (...m) => m[1].toUpperCase());
+}
+function camelCaseToDashCase(input) {
+  return input.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+function allowPreviousPlayerStylesMerge(duration, delay) {
+  return duration === 0 || delay === 0;
+}
+function balancePreviousStylesIntoKeyframes(element, keyframes, previousStyles) {
+  if (previousStyles.size && keyframes.length) {
+    let startingKeyframe = keyframes[0];
+    let missingStyleProps = [];
+    previousStyles.forEach((val, prop) => {
+      if (!startingKeyframe.has(prop)) {
+        missingStyleProps.push(prop);
+      }
+      startingKeyframe.set(prop, val);
+    });
+    if (missingStyleProps.length) {
+      for (let i = 1; i < keyframes.length; i++) {
+        let kf = keyframes[i];
+        missingStyleProps.forEach((prop) => kf.set(prop, computeStyle(element, prop)));
+      }
+    }
+  }
+  return keyframes;
+}
+function visitDslNode(visitor, node, context) {
+  switch (node.type) {
+    case AnimationMetadataType.Trigger:
+      return visitor.visitTrigger(node, context);
+    case AnimationMetadataType.State:
+      return visitor.visitState(node, context);
+    case AnimationMetadataType.Transition:
+      return visitor.visitTransition(node, context);
+    case AnimationMetadataType.Sequence:
+      return visitor.visitSequence(node, context);
+    case AnimationMetadataType.Group:
+      return visitor.visitGroup(node, context);
+    case AnimationMetadataType.Animate:
+      return visitor.visitAnimate(node, context);
+    case AnimationMetadataType.Keyframes:
+      return visitor.visitKeyframes(node, context);
+    case AnimationMetadataType.Style:
+      return visitor.visitStyle(node, context);
+    case AnimationMetadataType.Reference:
+      return visitor.visitReference(node, context);
+    case AnimationMetadataType.AnimateChild:
+      return visitor.visitAnimateChild(node, context);
+    case AnimationMetadataType.AnimateRef:
+      return visitor.visitAnimateRef(node, context);
+    case AnimationMetadataType.Query:
+      return visitor.visitQuery(node, context);
+    case AnimationMetadataType.Stagger:
+      return visitor.visitStagger(node, context);
+    default:
+      throw invalidNodeType(node.type);
+  }
+}
+function computeStyle(element, prop) {
+  return window.getComputedStyle(element)[prop];
+}
+var DIMENSIONAL_PROP_SET = /* @__PURE__ */ new Set(["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight", "left", "top", "bottom", "right", "fontSize", "outlineWidth", "outlineOffset", "paddingTop", "paddingLeft", "paddingBottom", "paddingRight", "marginTop", "marginLeft", "marginBottom", "marginRight", "borderRadius", "borderWidth", "borderTopWidth", "borderLeftWidth", "borderRightWidth", "borderBottomWidth", "textIndent", "perspective"]);
+var WebAnimationsStyleNormalizer = class extends AnimationStyleNormalizer {
+  normalizePropertyName(propertyName, errors) {
+    return dashCaseToCamelCase(propertyName);
+  }
+  normalizeStyleValue(userProvidedProperty, normalizedProperty, value, errors) {
+    let unit = "";
+    const strVal = value.toString().trim();
+    if (DIMENSIONAL_PROP_SET.has(normalizedProperty) && value !== 0 && value !== "0") {
+      if (typeof value === "number") {
+        unit = "px";
+      } else {
+        const valAndSuffixMatch = value.match(/^[+-]?[\d\.]+([a-z]*)$/);
+        if (valAndSuffixMatch && valAndSuffixMatch[1].length == 0) {
+          errors.push(invalidCssUnitValue(userProvidedProperty, value));
+        }
+      }
+    }
+    return strVal + unit;
+  }
 };
-var zoneSymbolEventNames = {};
-var globalSources = {};
-var EVENT_NAME_SYMBOL_REGX = new RegExp("^" + ZONE_SYMBOL_PREFIX + "(\\w+)(true|false)$");
-var IMMEDIATE_PROPAGATION_SYMBOL = zoneSymbol("propagationStopped");
-function prepareEventNames(eventName, eventNameToString) {
-  const falseEventName = (eventNameToString ? eventNameToString(eventName) : eventName) + FALSE_STR;
-  const trueEventName = (eventNameToString ? eventNameToString(eventName) : eventName) + TRUE_STR;
-  const symbol = ZONE_SYMBOL_PREFIX + falseEventName;
-  const symbolCapture = ZONE_SYMBOL_PREFIX + trueEventName;
-  zoneSymbolEventNames[eventName] = {};
-  zoneSymbolEventNames[eventName][FALSE_STR] = symbol;
-  zoneSymbolEventNames[eventName][TRUE_STR] = symbolCapture;
+function createListOfWarnings(warnings) {
+  const LINE_START2 = "\n - ";
+  return `${LINE_START2}${warnings.filter(Boolean).map((warning) => warning).join(LINE_START2)}`;
 }
-function patchEventTarget(_global2, api, apis, patchOptions) {
-  const ADD_EVENT_LISTENER = patchOptions && patchOptions.add || ADD_EVENT_LISTENER_STR;
-  const REMOVE_EVENT_LISTENER = patchOptions && patchOptions.rm || REMOVE_EVENT_LISTENER_STR;
-  const LISTENERS_EVENT_LISTENER = patchOptions && patchOptions.listeners || "eventListeners";
-  const REMOVE_ALL_LISTENERS_EVENT_LISTENER = patchOptions && patchOptions.rmAll || "removeAllListeners";
-  const zoneSymbolAddEventListener = zoneSymbol(ADD_EVENT_LISTENER);
-  const ADD_EVENT_LISTENER_SOURCE = "." + ADD_EVENT_LISTENER + ":";
-  const PREPEND_EVENT_LISTENER = "prependListener";
-  const PREPEND_EVENT_LISTENER_SOURCE = "." + PREPEND_EVENT_LISTENER + ":";
-  const invokeTask = function(task, target, event) {
-    if (task.isRemoved) {
+function warnTriggerBuild(name, warnings) {
+  (typeof ngDevMode === "undefined" || ngDevMode) && console.warn(`The animation trigger "${name}" has built with the following warnings:${createListOfWarnings(warnings)}`);
+}
+function warnRegister(warnings) {
+  (typeof ngDevMode === "undefined" || ngDevMode) && console.warn(`Animation built with the following warnings:${createListOfWarnings(warnings)}`);
+}
+function pushUnrecognizedPropertiesWarning(warnings, props) {
+  if (props.length) {
+    warnings.push(`The following provided properties are not recognized: ${props.join(", ")}`);
+  }
+}
+var ANY_STATE = "*";
+function parseTransitionExpr(transitionValue, errors) {
+  const expressions = [];
+  if (typeof transitionValue == "string") {
+    transitionValue.split(/\s*,\s*/).forEach((str) => parseInnerTransitionStr(str, expressions, errors));
+  } else {
+    expressions.push(transitionValue);
+  }
+  return expressions;
+}
+function parseInnerTransitionStr(eventStr, expressions, errors) {
+  if (eventStr[0] == ":") {
+    const result = parseAnimationAlias(eventStr, errors);
+    if (typeof result == "function") {
+      expressions.push(result);
       return;
     }
-    const delegate = task.callback;
-    if (typeof delegate === "object" && delegate.handleEvent) {
-      task.callback = (event2) => delegate.handleEvent(event2);
-      task.originalDelegate = delegate;
+    eventStr = result;
+  }
+  const match = eventStr.match(/^(\*|[-\w]+)\s*(<?[=-]>)\s*(\*|[-\w]+)$/);
+  if (match == null || match.length < 4) {
+    errors.push(invalidExpression(eventStr));
+    return expressions;
+  }
+  const fromState = match[1];
+  const separator = match[2];
+  const toState = match[3];
+  expressions.push(makeLambdaFromStates(fromState, toState));
+  const isFullAnyStateExpr = fromState == ANY_STATE && toState == ANY_STATE;
+  if (separator[0] == "<" && !isFullAnyStateExpr) {
+    expressions.push(makeLambdaFromStates(toState, fromState));
+  }
+  return;
+}
+function parseAnimationAlias(alias, errors) {
+  switch (alias) {
+    case ":enter":
+      return "void => *";
+    case ":leave":
+      return "* => void";
+    case ":increment":
+      return (fromState, toState) => parseFloat(toState) > parseFloat(fromState);
+    case ":decrement":
+      return (fromState, toState) => parseFloat(toState) < parseFloat(fromState);
+    default:
+      errors.push(invalidTransitionAlias(alias));
+      return "* => *";
+  }
+}
+var TRUE_BOOLEAN_VALUES = /* @__PURE__ */ new Set(["true", "1"]);
+var FALSE_BOOLEAN_VALUES = /* @__PURE__ */ new Set(["false", "0"]);
+function makeLambdaFromStates(lhs, rhs) {
+  const LHS_MATCH_BOOLEAN = TRUE_BOOLEAN_VALUES.has(lhs) || FALSE_BOOLEAN_VALUES.has(lhs);
+  const RHS_MATCH_BOOLEAN = TRUE_BOOLEAN_VALUES.has(rhs) || FALSE_BOOLEAN_VALUES.has(rhs);
+  return (fromState, toState) => {
+    let lhsMatch = lhs == ANY_STATE || lhs == fromState;
+    let rhsMatch = rhs == ANY_STATE || rhs == toState;
+    if (!lhsMatch && LHS_MATCH_BOOLEAN && typeof fromState === "boolean") {
+      lhsMatch = fromState ? TRUE_BOOLEAN_VALUES.has(lhs) : FALSE_BOOLEAN_VALUES.has(lhs);
     }
-    let error;
-    try {
-      task.invoke(task, target, [event]);
-    } catch (err) {
-      error = err;
+    if (!rhsMatch && RHS_MATCH_BOOLEAN && typeof toState === "boolean") {
+      rhsMatch = toState ? TRUE_BOOLEAN_VALUES.has(rhs) : FALSE_BOOLEAN_VALUES.has(rhs);
     }
-    const options = task.options;
-    if (options && typeof options === "object" && options.once) {
-      const delegate2 = task.originalDelegate ? task.originalDelegate : task.callback;
-      target[REMOVE_EVENT_LISTENER].call(target, event.type, delegate2, options);
-    }
-    return error;
+    return lhsMatch && rhsMatch;
   };
-  function globalCallback(context, event, isCapture) {
-    event = event || _global2.event;
-    if (!event) {
-      return;
-    }
-    const target = context || event.target || _global2;
-    const tasks = target[zoneSymbolEventNames[event.type][isCapture ? TRUE_STR : FALSE_STR]];
-    if (tasks) {
-      const errors = [];
-      if (tasks.length === 1) {
-        const err = invokeTask(tasks[0], target, event);
-        err && errors.push(err);
-      } else {
-        const copyTasks = tasks.slice();
-        for (let i = 0; i < copyTasks.length; i++) {
-          if (event && event[IMMEDIATE_PROPAGATION_SYMBOL] === true) {
-            break;
-          }
-          const err = invokeTask(copyTasks[i], target, event);
-          err && errors.push(err);
-        }
+}
+var SELF_TOKEN = ":self";
+var SELF_TOKEN_REGEX = new RegExp(`s*${SELF_TOKEN}s*,?`, "g");
+function buildAnimationAst(driver, metadata, errors, warnings) {
+  return new AnimationAstBuilderVisitor(driver).build(metadata, errors, warnings);
+}
+var ROOT_SELECTOR = "";
+var AnimationAstBuilderVisitor = class {
+  constructor(_driver) {
+    this._driver = _driver;
+  }
+  build(metadata, errors, warnings) {
+    const context = new AnimationAstBuilderContext(errors);
+    this._resetContextStyleTimingState(context);
+    const ast = visitDslNode(this, normalizeAnimationEntry(metadata), context);
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      if (context.unsupportedCSSPropertiesFound.size) {
+        pushUnrecognizedPropertiesWarning(warnings, [...context.unsupportedCSSPropertiesFound.keys()]);
       }
-      if (errors.length === 1) {
-        throw errors[0];
+    }
+    return ast;
+  }
+  _resetContextStyleTimingState(context) {
+    context.currentQuerySelector = ROOT_SELECTOR;
+    context.collectedStyles = /* @__PURE__ */ new Map();
+    context.collectedStyles.set(ROOT_SELECTOR, /* @__PURE__ */ new Map());
+    context.currentTime = 0;
+  }
+  visitTrigger(metadata, context) {
+    let queryCount = context.queryCount = 0;
+    let depCount = context.depCount = 0;
+    const states = [];
+    const transitions = [];
+    if (metadata.name.charAt(0) == "@") {
+      context.errors.push(invalidTrigger());
+    }
+    metadata.definitions.forEach((def) => {
+      this._resetContextStyleTimingState(context);
+      if (def.type == AnimationMetadataType.State) {
+        const stateDef = def;
+        const name = stateDef.name;
+        name.toString().split(/\s*,\s*/).forEach((n) => {
+          stateDef.name = n;
+          states.push(this.visitState(stateDef, context));
+        });
+        stateDef.name = name;
+      } else if (def.type == AnimationMetadataType.Transition) {
+        const transition = this.visitTransition(def, context);
+        queryCount += transition.queryCount;
+        depCount += transition.depCount;
+        transitions.push(transition);
       } else {
-        for (let i = 0; i < errors.length; i++) {
-          const err = errors[i];
-          api.nativeScheduleMicroTask(() => {
-            throw err;
+        context.errors.push(invalidDefinition());
+      }
+    });
+    return {
+      type: AnimationMetadataType.Trigger,
+      name: metadata.name,
+      states,
+      transitions,
+      queryCount,
+      depCount,
+      options: null
+    };
+  }
+  visitState(metadata, context) {
+    const styleAst = this.visitStyle(metadata.styles, context);
+    const astParams = metadata.options && metadata.options.params || null;
+    if (styleAst.containsDynamicStyles) {
+      const missingSubs = /* @__PURE__ */ new Set();
+      const params = astParams || {};
+      styleAst.styles.forEach((style2) => {
+        if (style2 instanceof Map) {
+          style2.forEach((value) => {
+            extractStyleParams(value).forEach((sub) => {
+              if (!params.hasOwnProperty(sub)) {
+                missingSubs.add(sub);
+              }
+            });
           });
         }
+      });
+      if (missingSubs.size) {
+        context.errors.push(invalidState(metadata.name, [...missingSubs.values()]));
       }
     }
-  }
-  const globalZoneAwareCallback = function(event) {
-    return globalCallback(this, event, false);
-  };
-  const globalZoneAwareCaptureCallback = function(event) {
-    return globalCallback(this, event, true);
-  };
-  function patchEventTargetMethods(obj, patchOptions2) {
-    if (!obj) {
-      return false;
-    }
-    let useGlobalCallback = true;
-    if (patchOptions2 && patchOptions2.useG !== void 0) {
-      useGlobalCallback = patchOptions2.useG;
-    }
-    const validateHandler = patchOptions2 && patchOptions2.vh;
-    let checkDuplicate = true;
-    if (patchOptions2 && patchOptions2.chkDup !== void 0) {
-      checkDuplicate = patchOptions2.chkDup;
-    }
-    let returnTarget = false;
-    if (patchOptions2 && patchOptions2.rt !== void 0) {
-      returnTarget = patchOptions2.rt;
-    }
-    let proto = obj;
-    while (proto && !proto.hasOwnProperty(ADD_EVENT_LISTENER)) {
-      proto = ObjectGetPrototypeOf(proto);
-    }
-    if (!proto && obj[ADD_EVENT_LISTENER]) {
-      proto = obj;
-    }
-    if (!proto) {
-      return false;
-    }
-    if (proto[zoneSymbolAddEventListener]) {
-      return false;
-    }
-    const eventNameToString = patchOptions2 && patchOptions2.eventNameToString;
-    const taskData = {};
-    const nativeAddEventListener = proto[zoneSymbolAddEventListener] = proto[ADD_EVENT_LISTENER];
-    const nativeRemoveEventListener = proto[zoneSymbol(REMOVE_EVENT_LISTENER)] = proto[REMOVE_EVENT_LISTENER];
-    const nativeListeners = proto[zoneSymbol(LISTENERS_EVENT_LISTENER)] = proto[LISTENERS_EVENT_LISTENER];
-    const nativeRemoveAllListeners = proto[zoneSymbol(REMOVE_ALL_LISTENERS_EVENT_LISTENER)] = proto[REMOVE_ALL_LISTENERS_EVENT_LISTENER];
-    let nativePrependEventListener;
-    if (patchOptions2 && patchOptions2.prepend) {
-      nativePrependEventListener = proto[zoneSymbol(patchOptions2.prepend)] = proto[patchOptions2.prepend];
-    }
-    function buildEventListenerOptions(options, passive) {
-      if (!passiveSupported && typeof options === "object" && options) {
-        return !!options.capture;
-      }
-      if (!passiveSupported || !passive) {
-        return options;
-      }
-      if (typeof options === "boolean") {
-        return { capture: options, passive: true };
-      }
-      if (!options) {
-        return { passive: true };
-      }
-      if (typeof options === "object" && options.passive !== false) {
-        return { ...options, passive: true };
-      }
-      return options;
-    }
-    const customScheduleGlobal = function(task) {
-      if (taskData.isExisting) {
-        return;
-      }
-      return nativeAddEventListener.call(taskData.target, taskData.eventName, taskData.capture ? globalZoneAwareCaptureCallback : globalZoneAwareCallback, taskData.options);
+    return {
+      type: AnimationMetadataType.State,
+      name: metadata.name,
+      style: styleAst,
+      options: astParams ? {
+        params: astParams
+      } : null
     };
-    const customCancelGlobal = function(task) {
-      if (!task.isRemoved) {
-        const symbolEventNames = zoneSymbolEventNames[task.eventName];
-        let symbolEventName;
-        if (symbolEventNames) {
-          symbolEventName = symbolEventNames[task.capture ? TRUE_STR : FALSE_STR];
+  }
+  visitTransition(metadata, context) {
+    context.queryCount = 0;
+    context.depCount = 0;
+    const animation = visitDslNode(this, normalizeAnimationEntry(metadata.animation), context);
+    const matchers = parseTransitionExpr(metadata.expr, context.errors);
+    return {
+      type: AnimationMetadataType.Transition,
+      matchers,
+      animation,
+      queryCount: context.queryCount,
+      depCount: context.depCount,
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitSequence(metadata, context) {
+    return {
+      type: AnimationMetadataType.Sequence,
+      steps: metadata.steps.map((s) => visitDslNode(this, s, context)),
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitGroup(metadata, context) {
+    const currentTime = context.currentTime;
+    let furthestTime = 0;
+    const steps = metadata.steps.map((step) => {
+      context.currentTime = currentTime;
+      const innerAst = visitDslNode(this, step, context);
+      furthestTime = Math.max(furthestTime, context.currentTime);
+      return innerAst;
+    });
+    context.currentTime = furthestTime;
+    return {
+      type: AnimationMetadataType.Group,
+      steps,
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitAnimate(metadata, context) {
+    const timingAst = constructTimingAst(metadata.timings, context.errors);
+    context.currentAnimateTimings = timingAst;
+    let styleAst;
+    let styleMetadata = metadata.styles ? metadata.styles : style({});
+    if (styleMetadata.type == AnimationMetadataType.Keyframes) {
+      styleAst = this.visitKeyframes(styleMetadata, context);
+    } else {
+      let styleMetadata2 = metadata.styles;
+      let isEmpty = false;
+      if (!styleMetadata2) {
+        isEmpty = true;
+        const newStyleData = {};
+        if (timingAst.easing) {
+          newStyleData["easing"] = timingAst.easing;
         }
-        const existingTasks = symbolEventName && task.target[symbolEventName];
-        if (existingTasks) {
-          for (let i = 0; i < existingTasks.length; i++) {
-            const existingTask = existingTasks[i];
-            if (existingTask === task) {
-              existingTasks.splice(i, 1);
-              task.isRemoved = true;
-              if (task.removeAbortListener) {
-                task.removeAbortListener();
-                task.removeAbortListener = null;
-              }
-              if (existingTasks.length === 0) {
-                task.allRemoved = true;
-                task.target[symbolEventName] = null;
-              }
+        styleMetadata2 = style(newStyleData);
+      }
+      context.currentTime += timingAst.duration + timingAst.delay;
+      const _styleAst = this.visitStyle(styleMetadata2, context);
+      _styleAst.isEmptyStep = isEmpty;
+      styleAst = _styleAst;
+    }
+    context.currentAnimateTimings = null;
+    return {
+      type: AnimationMetadataType.Animate,
+      timings: timingAst,
+      style: styleAst,
+      options: null
+    };
+  }
+  visitStyle(metadata, context) {
+    const ast = this._makeStyleAst(metadata, context);
+    this._validateStyleAst(ast, context);
+    return ast;
+  }
+  _makeStyleAst(metadata, context) {
+    const styles = [];
+    const metadataStyles = Array.isArray(metadata.styles) ? metadata.styles : [metadata.styles];
+    for (let styleTuple of metadataStyles) {
+      if (typeof styleTuple === "string") {
+        if (styleTuple === AUTO_STYLE) {
+          styles.push(styleTuple);
+        } else {
+          context.errors.push(invalidStyleValue(styleTuple));
+        }
+      } else {
+        styles.push(new Map(Object.entries(styleTuple)));
+      }
+    }
+    let containsDynamicStyles = false;
+    let collectedEasing = null;
+    styles.forEach((styleData) => {
+      if (styleData instanceof Map) {
+        if (styleData.has("easing")) {
+          collectedEasing = styleData.get("easing");
+          styleData.delete("easing");
+        }
+        if (!containsDynamicStyles) {
+          for (let value of styleData.values()) {
+            if (value.toString().indexOf(SUBSTITUTION_EXPR_START) >= 0) {
+              containsDynamicStyles = true;
               break;
             }
           }
         }
       }
-      if (!task.allRemoved) {
-        return;
-      }
-      return nativeRemoveEventListener.call(task.target, task.eventName, task.capture ? globalZoneAwareCaptureCallback : globalZoneAwareCallback, task.options);
+    });
+    return {
+      type: AnimationMetadataType.Style,
+      styles,
+      easing: collectedEasing,
+      offset: metadata.offset,
+      containsDynamicStyles,
+      options: null
     };
-    const customScheduleNonGlobal = function(task) {
-      return nativeAddEventListener.call(taskData.target, taskData.eventName, task.invoke, taskData.options);
-    };
-    const customSchedulePrepend = function(task) {
-      return nativePrependEventListener.call(taskData.target, taskData.eventName, task.invoke, taskData.options);
-    };
-    const customCancelNonGlobal = function(task) {
-      return nativeRemoveEventListener.call(task.target, task.eventName, task.invoke, task.options);
-    };
-    const customSchedule = useGlobalCallback ? customScheduleGlobal : customScheduleNonGlobal;
-    const customCancel = useGlobalCallback ? customCancelGlobal : customCancelNonGlobal;
-    const compareTaskCallbackVsDelegate = function(task, delegate) {
-      const typeOfDelegate = typeof delegate;
-      return typeOfDelegate === "function" && task.callback === delegate || typeOfDelegate === "object" && task.originalDelegate === delegate;
-    };
-    const compare = patchOptions2 && patchOptions2.diff ? patchOptions2.diff : compareTaskCallbackVsDelegate;
-    const unpatchedEvents = Zone[zoneSymbol("UNPATCHED_EVENTS")];
-    const passiveEvents = _global2[zoneSymbol("PASSIVE_EVENTS")];
-    function copyEventListenerOptions(options) {
-      if (typeof options === "object" && options !== null) {
-        const newOptions = { ...options };
-        if (options.signal) {
-          newOptions.signal = options.signal;
-        }
-        return newOptions;
-      }
-      return options;
+  }
+  _validateStyleAst(ast, context) {
+    const timings = context.currentAnimateTimings;
+    let endTime = context.currentTime;
+    let startTime = context.currentTime;
+    if (timings && startTime > 0) {
+      startTime -= timings.duration + timings.delay;
     }
-    const makeAddListener = function(nativeListener, addSource, customScheduleFn, customCancelFn, returnTarget2 = false, prepend = false) {
-      return function() {
-        const target = this || _global2;
-        let eventName = arguments[0];
-        if (patchOptions2 && patchOptions2.transferEventName) {
-          eventName = patchOptions2.transferEventName(eventName);
-        }
-        let delegate = arguments[1];
-        if (!delegate) {
-          return nativeListener.apply(this, arguments);
-        }
-        if (isNode && eventName === "uncaughtException") {
-          return nativeListener.apply(this, arguments);
-        }
-        let isHandleEvent = false;
-        if (typeof delegate !== "function") {
-          if (!delegate.handleEvent) {
-            return nativeListener.apply(this, arguments);
-          }
-          isHandleEvent = true;
-        }
-        if (validateHandler && !validateHandler(nativeListener, delegate, target, arguments)) {
-          return;
-        }
-        const passive = passiveSupported && !!passiveEvents && passiveEvents.indexOf(eventName) !== -1;
-        const options = copyEventListenerOptions(buildEventListenerOptions(arguments[2], passive));
-        const signal = options?.signal;
-        if (signal?.aborted) {
-          return;
-        }
-        if (unpatchedEvents) {
-          for (let i = 0; i < unpatchedEvents.length; i++) {
-            if (eventName === unpatchedEvents[i]) {
-              if (passive) {
-                return nativeListener.call(target, eventName, delegate, options);
-              } else {
-                return nativeListener.apply(this, arguments);
-              }
-            }
-          }
-        }
-        const capture = !options ? false : typeof options === "boolean" ? true : options.capture;
-        const once = options && typeof options === "object" ? options.once : false;
-        const zone = Zone.current;
-        let symbolEventNames = zoneSymbolEventNames[eventName];
-        if (!symbolEventNames) {
-          prepareEventNames(eventName, eventNameToString);
-          symbolEventNames = zoneSymbolEventNames[eventName];
-        }
-        const symbolEventName = symbolEventNames[capture ? TRUE_STR : FALSE_STR];
-        let existingTasks = target[symbolEventName];
-        let isExisting = false;
-        if (existingTasks) {
-          isExisting = true;
-          if (checkDuplicate) {
-            for (let i = 0; i < existingTasks.length; i++) {
-              if (compare(existingTasks[i], delegate)) {
-                return;
-              }
-            }
-          }
-        } else {
-          existingTasks = target[symbolEventName] = [];
-        }
-        let source;
-        const constructorName = target.constructor["name"];
-        const targetSource = globalSources[constructorName];
-        if (targetSource) {
-          source = targetSource[eventName];
-        }
-        if (!source) {
-          source = constructorName + addSource + (eventNameToString ? eventNameToString(eventName) : eventName);
-        }
-        taskData.options = options;
-        if (once) {
-          taskData.options.once = false;
-        }
-        taskData.target = target;
-        taskData.capture = capture;
-        taskData.eventName = eventName;
-        taskData.isExisting = isExisting;
-        const data = useGlobalCallback ? OPTIMIZED_ZONE_EVENT_TASK_DATA : void 0;
-        if (data) {
-          data.taskData = taskData;
-        }
-        if (signal) {
-          taskData.options.signal = void 0;
-        }
-        const task = zone.scheduleEventTask(source, delegate, data, customScheduleFn, customCancelFn);
-        if (signal) {
-          taskData.options.signal = signal;
-          const onAbort = () => task.zone.cancelTask(task);
-          nativeListener.call(signal, "abort", onAbort, { once: true });
-          task.removeAbortListener = () => signal.removeEventListener("abort", onAbort);
-        }
-        taskData.target = null;
-        if (data) {
-          data.taskData = null;
-        }
-        if (once) {
-          taskData.options.once = true;
-        }
-        if (!(!passiveSupported && typeof task.options === "boolean")) {
-          task.options = options;
-        }
-        task.target = target;
-        task.capture = capture;
-        task.eventName = eventName;
-        if (isHandleEvent) {
-          task.originalDelegate = delegate;
-        }
-        if (!prepend) {
-          existingTasks.push(task);
-        } else {
-          existingTasks.unshift(task);
-        }
-        if (returnTarget2) {
-          return target;
-        }
-      };
-    };
-    proto[ADD_EVENT_LISTENER] = makeAddListener(nativeAddEventListener, ADD_EVENT_LISTENER_SOURCE, customSchedule, customCancel, returnTarget);
-    if (nativePrependEventListener) {
-      proto[PREPEND_EVENT_LISTENER] = makeAddListener(nativePrependEventListener, PREPEND_EVENT_LISTENER_SOURCE, customSchedulePrepend, customCancel, returnTarget, true);
-    }
-    proto[REMOVE_EVENT_LISTENER] = function() {
-      const target = this || _global2;
-      let eventName = arguments[0];
-      if (patchOptions2 && patchOptions2.transferEventName) {
-        eventName = patchOptions2.transferEventName(eventName);
-      }
-      const options = arguments[2];
-      const capture = !options ? false : typeof options === "boolean" ? true : options.capture;
-      const delegate = arguments[1];
-      if (!delegate) {
-        return nativeRemoveEventListener.apply(this, arguments);
-      }
-      if (validateHandler && !validateHandler(nativeRemoveEventListener, delegate, target, arguments)) {
+    ast.styles.forEach((tuple) => {
+      if (typeof tuple === "string")
         return;
-      }
-      const symbolEventNames = zoneSymbolEventNames[eventName];
-      let symbolEventName;
-      if (symbolEventNames) {
-        symbolEventName = symbolEventNames[capture ? TRUE_STR : FALSE_STR];
-      }
-      const existingTasks = symbolEventName && target[symbolEventName];
-      if (existingTasks) {
-        for (let i = 0; i < existingTasks.length; i++) {
-          const existingTask = existingTasks[i];
-          if (compare(existingTask, delegate)) {
-            existingTasks.splice(i, 1);
-            existingTask.isRemoved = true;
-            if (existingTasks.length === 0) {
-              existingTask.allRemoved = true;
-              target[symbolEventName] = null;
-              if (!capture && typeof eventName === "string") {
-                const onPropertySymbol = ZONE_SYMBOL_PREFIX + "ON_PROPERTY" + eventName;
-                target[onPropertySymbol] = null;
-              }
-            }
-            existingTask.zone.cancelTask(existingTask);
-            if (returnTarget) {
-              return target;
-            }
+      tuple.forEach((value, prop) => {
+        if (typeof ngDevMode === "undefined" || ngDevMode) {
+          if (!this._driver.validateStyleProperty(prop)) {
+            tuple.delete(prop);
+            context.unsupportedCSSPropertiesFound.add(prop);
             return;
           }
         }
-      }
-      return nativeRemoveEventListener.apply(this, arguments);
-    };
-    proto[LISTENERS_EVENT_LISTENER] = function() {
-      const target = this || _global2;
-      let eventName = arguments[0];
-      if (patchOptions2 && patchOptions2.transferEventName) {
-        eventName = patchOptions2.transferEventName(eventName);
-      }
-      const listeners = [];
-      const tasks = findEventTasks(target, eventNameToString ? eventNameToString(eventName) : eventName);
-      for (let i = 0; i < tasks.length; i++) {
-        const task = tasks[i];
-        let delegate = task.originalDelegate ? task.originalDelegate : task.callback;
-        listeners.push(delegate);
-      }
-      return listeners;
-    };
-    proto[REMOVE_ALL_LISTENERS_EVENT_LISTENER] = function() {
-      const target = this || _global2;
-      let eventName = arguments[0];
-      if (!eventName) {
-        const keys = Object.keys(target);
-        for (let i = 0; i < keys.length; i++) {
-          const prop = keys[i];
-          const match = EVENT_NAME_SYMBOL_REGX.exec(prop);
-          let evtName = match && match[1];
-          if (evtName && evtName !== "removeListener") {
-            this[REMOVE_ALL_LISTENERS_EVENT_LISTENER].call(this, evtName);
+        const collectedStyles = context.collectedStyles.get(context.currentQuerySelector);
+        const collectedEntry = collectedStyles.get(prop);
+        let updateCollectedStyle = true;
+        if (collectedEntry) {
+          if (startTime != endTime && startTime >= collectedEntry.startTime && endTime <= collectedEntry.endTime) {
+            context.errors.push(invalidParallelAnimation(prop, collectedEntry.startTime, collectedEntry.endTime, startTime, endTime));
+            updateCollectedStyle = false;
           }
+          startTime = collectedEntry.startTime;
         }
-        this[REMOVE_ALL_LISTENERS_EVENT_LISTENER].call(this, "removeListener");
-      } else {
-        if (patchOptions2 && patchOptions2.transferEventName) {
-          eventName = patchOptions2.transferEventName(eventName);
+        if (updateCollectedStyle) {
+          collectedStyles.set(prop, {
+            startTime,
+            endTime
+          });
         }
-        const symbolEventNames = zoneSymbolEventNames[eventName];
-        if (symbolEventNames) {
-          const symbolEventName = symbolEventNames[FALSE_STR];
-          const symbolCaptureEventName = symbolEventNames[TRUE_STR];
-          const tasks = target[symbolEventName];
-          const captureTasks = target[symbolCaptureEventName];
-          if (tasks) {
-            const removeTasks = tasks.slice();
-            for (let i = 0; i < removeTasks.length; i++) {
-              const task = removeTasks[i];
-              let delegate = task.originalDelegate ? task.originalDelegate : task.callback;
-              this[REMOVE_EVENT_LISTENER].call(this, eventName, delegate, task.options);
-            }
-          }
-          if (captureTasks) {
-            const removeTasks = captureTasks.slice();
-            for (let i = 0; i < removeTasks.length; i++) {
-              const task = removeTasks[i];
-              let delegate = task.originalDelegate ? task.originalDelegate : task.callback;
-              this[REMOVE_EVENT_LISTENER].call(this, eventName, delegate, task.options);
-            }
-          }
+        if (context.options) {
+          validateStyleParams(value, context.options, context.errors);
         }
-      }
-      if (returnTarget) {
-        return this;
-      }
+      });
+    });
+  }
+  visitKeyframes(metadata, context) {
+    const ast = {
+      type: AnimationMetadataType.Keyframes,
+      styles: [],
+      options: null
     };
-    attachOriginToPatched(proto[ADD_EVENT_LISTENER], nativeAddEventListener);
-    attachOriginToPatched(proto[REMOVE_EVENT_LISTENER], nativeRemoveEventListener);
-    if (nativeRemoveAllListeners) {
-      attachOriginToPatched(proto[REMOVE_ALL_LISTENERS_EVENT_LISTENER], nativeRemoveAllListeners);
+    if (!context.currentAnimateTimings) {
+      context.errors.push(invalidKeyframes());
+      return ast;
     }
-    if (nativeListeners) {
-      attachOriginToPatched(proto[LISTENERS_EVENT_LISTENER], nativeListeners);
+    const MAX_KEYFRAME_OFFSET = 1;
+    let totalKeyframesWithOffsets = 0;
+    const offsets = [];
+    let offsetsOutOfOrder = false;
+    let keyframesOutOfRange = false;
+    let previousOffset = 0;
+    const keyframes = metadata.steps.map((styles) => {
+      const style2 = this._makeStyleAst(styles, context);
+      let offsetVal = style2.offset != null ? style2.offset : consumeOffset(style2.styles);
+      let offset = 0;
+      if (offsetVal != null) {
+        totalKeyframesWithOffsets++;
+        offset = style2.offset = offsetVal;
+      }
+      keyframesOutOfRange = keyframesOutOfRange || offset < 0 || offset > 1;
+      offsetsOutOfOrder = offsetsOutOfOrder || offset < previousOffset;
+      previousOffset = offset;
+      offsets.push(offset);
+      return style2;
+    });
+    if (keyframesOutOfRange) {
+      context.errors.push(invalidOffset());
+    }
+    if (offsetsOutOfOrder) {
+      context.errors.push(keyframeOffsetsOutOfOrder());
+    }
+    const length = metadata.steps.length;
+    let generatedOffset = 0;
+    if (totalKeyframesWithOffsets > 0 && totalKeyframesWithOffsets < length) {
+      context.errors.push(keyframesMissingOffsets());
+    } else if (totalKeyframesWithOffsets == 0) {
+      generatedOffset = MAX_KEYFRAME_OFFSET / (length - 1);
+    }
+    const limit = length - 1;
+    const currentTime = context.currentTime;
+    const currentAnimateTimings = context.currentAnimateTimings;
+    const animateDuration = currentAnimateTimings.duration;
+    keyframes.forEach((kf, i) => {
+      const offset = generatedOffset > 0 ? i == limit ? 1 : generatedOffset * i : offsets[i];
+      const durationUpToThisFrame = offset * animateDuration;
+      context.currentTime = currentTime + currentAnimateTimings.delay + durationUpToThisFrame;
+      currentAnimateTimings.duration = durationUpToThisFrame;
+      this._validateStyleAst(kf, context);
+      kf.offset = offset;
+      ast.styles.push(kf);
+    });
+    return ast;
+  }
+  visitReference(metadata, context) {
+    return {
+      type: AnimationMetadataType.Reference,
+      animation: visitDslNode(this, normalizeAnimationEntry(metadata.animation), context),
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitAnimateChild(metadata, context) {
+    context.depCount++;
+    return {
+      type: AnimationMetadataType.AnimateChild,
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitAnimateRef(metadata, context) {
+    return {
+      type: AnimationMetadataType.AnimateRef,
+      animation: this.visitReference(metadata.animation, context),
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitQuery(metadata, context) {
+    const parentSelector = context.currentQuerySelector;
+    const options = metadata.options || {};
+    context.queryCount++;
+    context.currentQuery = metadata;
+    const [selector, includeSelf] = normalizeSelector(metadata.selector);
+    context.currentQuerySelector = parentSelector.length ? parentSelector + " " + selector : selector;
+    getOrSetDefaultValue(context.collectedStyles, context.currentQuerySelector, /* @__PURE__ */ new Map());
+    const animation = visitDslNode(this, normalizeAnimationEntry(metadata.animation), context);
+    context.currentQuery = null;
+    context.currentQuerySelector = parentSelector;
+    return {
+      type: AnimationMetadataType.Query,
+      selector,
+      limit: options.limit || 0,
+      optional: !!options.optional,
+      includeSelf,
+      animation,
+      originalSelector: metadata.selector,
+      options: normalizeAnimationOptions(metadata.options)
+    };
+  }
+  visitStagger(metadata, context) {
+    if (!context.currentQuery) {
+      context.errors.push(invalidStagger());
+    }
+    const timings = metadata.timings === "full" ? {
+      duration: 0,
+      delay: 0,
+      easing: "full"
+    } : resolveTiming(metadata.timings, context.errors, true);
+    return {
+      type: AnimationMetadataType.Stagger,
+      animation: visitDslNode(this, normalizeAnimationEntry(metadata.animation), context),
+      timings,
+      options: null
+    };
+  }
+};
+function normalizeSelector(selector) {
+  const hasAmpersand = selector.split(/\s*,\s*/).find((token) => token == SELF_TOKEN) ? true : false;
+  if (hasAmpersand) {
+    selector = selector.replace(SELF_TOKEN_REGEX, "");
+  }
+  selector = selector.replace(/@\*/g, NG_TRIGGER_SELECTOR).replace(/@\w+/g, (match) => NG_TRIGGER_SELECTOR + "-" + match.slice(1)).replace(/:animating/g, NG_ANIMATING_SELECTOR);
+  return [selector, hasAmpersand];
+}
+function normalizeParams(obj) {
+  return obj ? __spreadValues({}, obj) : null;
+}
+var AnimationAstBuilderContext = class {
+  constructor(errors) {
+    this.errors = errors;
+    this.queryCount = 0;
+    this.depCount = 0;
+    this.currentTransition = null;
+    this.currentQuery = null;
+    this.currentQuerySelector = null;
+    this.currentAnimateTimings = null;
+    this.currentTime = 0;
+    this.collectedStyles = /* @__PURE__ */ new Map();
+    this.options = null;
+    this.unsupportedCSSPropertiesFound = /* @__PURE__ */ new Set();
+  }
+};
+function consumeOffset(styles) {
+  if (typeof styles == "string")
+    return null;
+  let offset = null;
+  if (Array.isArray(styles)) {
+    styles.forEach((styleTuple) => {
+      if (styleTuple instanceof Map && styleTuple.has("offset")) {
+        const obj = styleTuple;
+        offset = parseFloat(obj.get("offset"));
+        obj.delete("offset");
+      }
+    });
+  } else if (styles instanceof Map && styles.has("offset")) {
+    const obj = styles;
+    offset = parseFloat(obj.get("offset"));
+    obj.delete("offset");
+  }
+  return offset;
+}
+function constructTimingAst(value, errors) {
+  if (value.hasOwnProperty("duration")) {
+    return value;
+  }
+  if (typeof value == "number") {
+    const duration = resolveTiming(value, errors).duration;
+    return makeTimingAst(duration, 0, "");
+  }
+  const strValue = value;
+  const isDynamic = strValue.split(/\s+/).some((v) => v.charAt(0) == "{" && v.charAt(1) == "{");
+  if (isDynamic) {
+    const ast = makeTimingAst(0, 0, "");
+    ast.dynamic = true;
+    ast.strValue = strValue;
+    return ast;
+  }
+  const timings = resolveTiming(strValue, errors);
+  return makeTimingAst(timings.duration, timings.delay, timings.easing);
+}
+function normalizeAnimationOptions(options) {
+  if (options) {
+    options = __spreadValues({}, options);
+    if (options["params"]) {
+      options["params"] = normalizeParams(options["params"]);
+    }
+  } else {
+    options = {};
+  }
+  return options;
+}
+function makeTimingAst(duration, delay, easing) {
+  return {
+    duration,
+    delay,
+    easing
+  };
+}
+function createTimelineInstruction(element, keyframes, preStyleProps, postStyleProps, duration, delay, easing = null, subTimeline = false) {
+  return {
+    type: 1,
+    element,
+    keyframes,
+    preStyleProps,
+    postStyleProps,
+    duration,
+    delay,
+    totalTime: duration + delay,
+    easing,
+    subTimeline
+  };
+}
+var ElementInstructionMap = class {
+  constructor() {
+    this._map = /* @__PURE__ */ new Map();
+  }
+  get(element) {
+    return this._map.get(element) || [];
+  }
+  append(element, instructions) {
+    let existingInstructions = this._map.get(element);
+    if (!existingInstructions) {
+      this._map.set(element, existingInstructions = []);
+    }
+    existingInstructions.push(...instructions);
+  }
+  has(element) {
+    return this._map.has(element);
+  }
+  clear() {
+    this._map.clear();
+  }
+};
+var ONE_FRAME_IN_MILLISECONDS = 1;
+var ENTER_TOKEN = ":enter";
+var ENTER_TOKEN_REGEX = new RegExp(ENTER_TOKEN, "g");
+var LEAVE_TOKEN = ":leave";
+var LEAVE_TOKEN_REGEX = new RegExp(LEAVE_TOKEN, "g");
+function buildAnimationTimelines(driver, rootElement, ast, enterClassName, leaveClassName, startingStyles = /* @__PURE__ */ new Map(), finalStyles = /* @__PURE__ */ new Map(), options, subInstructions, errors = []) {
+  return new AnimationTimelineBuilderVisitor().buildKeyframes(driver, rootElement, ast, enterClassName, leaveClassName, startingStyles, finalStyles, options, subInstructions, errors);
+}
+var AnimationTimelineBuilderVisitor = class {
+  buildKeyframes(driver, rootElement, ast, enterClassName, leaveClassName, startingStyles, finalStyles, options, subInstructions, errors = []) {
+    subInstructions = subInstructions || new ElementInstructionMap();
+    const context = new AnimationTimelineContext(driver, rootElement, subInstructions, enterClassName, leaveClassName, errors, []);
+    context.options = options;
+    const delay = options.delay ? resolveTimingValue(options.delay) : 0;
+    context.currentTimeline.delayNextStep(delay);
+    context.currentTimeline.setStyles([startingStyles], null, context.errors, options);
+    visitDslNode(this, ast, context);
+    const timelines = context.timelines.filter((timeline) => timeline.containsAnimation());
+    if (timelines.length && finalStyles.size) {
+      let lastRootTimeline;
+      for (let i = timelines.length - 1; i >= 0; i--) {
+        const timeline = timelines[i];
+        if (timeline.element === rootElement) {
+          lastRootTimeline = timeline;
+          break;
+        }
+      }
+      if (lastRootTimeline && !lastRootTimeline.allowOnlyTimelineStyles()) {
+        lastRootTimeline.setStyles([finalStyles], null, context.errors, options);
+      }
+    }
+    return timelines.length ? timelines.map((timeline) => timeline.buildKeyframes()) : [createTimelineInstruction(rootElement, [], [], [], 0, delay, "", false)];
+  }
+  visitTrigger(ast, context) {
+  }
+  visitState(ast, context) {
+  }
+  visitTransition(ast, context) {
+  }
+  visitAnimateChild(ast, context) {
+    const elementInstructions = context.subInstructions.get(context.element);
+    if (elementInstructions) {
+      const innerContext = context.createSubContext(ast.options);
+      const startTime = context.currentTimeline.currentTime;
+      const endTime = this._visitSubInstructions(elementInstructions, innerContext, innerContext.options);
+      if (startTime != endTime) {
+        context.transformIntoNewTimeline(endTime);
+      }
+    }
+    context.previousNode = ast;
+  }
+  visitAnimateRef(ast, context) {
+    const innerContext = context.createSubContext(ast.options);
+    innerContext.transformIntoNewTimeline();
+    this._applyAnimationRefDelays([ast.options, ast.animation.options], context, innerContext);
+    this.visitReference(ast.animation, innerContext);
+    context.transformIntoNewTimeline(innerContext.currentTimeline.currentTime);
+    context.previousNode = ast;
+  }
+  _applyAnimationRefDelays(animationsRefsOptions, context, innerContext) {
+    for (const animationRefOptions of animationsRefsOptions) {
+      const animationDelay = animationRefOptions?.delay;
+      if (animationDelay) {
+        const animationDelayValue = typeof animationDelay === "number" ? animationDelay : resolveTimingValue(interpolateParams(animationDelay, animationRefOptions?.params ?? {}, context.errors));
+        innerContext.delayNextStep(animationDelayValue);
+      }
+    }
+  }
+  _visitSubInstructions(instructions, context, options) {
+    const startTime = context.currentTimeline.currentTime;
+    let furthestTime = startTime;
+    const duration = options.duration != null ? resolveTimingValue(options.duration) : null;
+    const delay = options.delay != null ? resolveTimingValue(options.delay) : null;
+    if (duration !== 0) {
+      instructions.forEach((instruction) => {
+        const instructionTimings = context.appendInstructionToTimeline(instruction, duration, delay);
+        furthestTime = Math.max(furthestTime, instructionTimings.duration + instructionTimings.delay);
+      });
+    }
+    return furthestTime;
+  }
+  visitReference(ast, context) {
+    context.updateOptions(ast.options, true);
+    visitDslNode(this, ast.animation, context);
+    context.previousNode = ast;
+  }
+  visitSequence(ast, context) {
+    const subContextCount = context.subContextCount;
+    let ctx = context;
+    const options = ast.options;
+    if (options && (options.params || options.delay)) {
+      ctx = context.createSubContext(options);
+      ctx.transformIntoNewTimeline();
+      if (options.delay != null) {
+        if (ctx.previousNode.type == AnimationMetadataType.Style) {
+          ctx.currentTimeline.snapshotCurrentStyles();
+          ctx.previousNode = DEFAULT_NOOP_PREVIOUS_NODE;
+        }
+        const delay = resolveTimingValue(options.delay);
+        ctx.delayNextStep(delay);
+      }
+    }
+    if (ast.steps.length) {
+      ast.steps.forEach((s) => visitDslNode(this, s, ctx));
+      ctx.currentTimeline.applyStylesToKeyframe();
+      if (ctx.subContextCount > subContextCount) {
+        ctx.transformIntoNewTimeline();
+      }
+    }
+    context.previousNode = ast;
+  }
+  visitGroup(ast, context) {
+    const innerTimelines = [];
+    let furthestTime = context.currentTimeline.currentTime;
+    const delay = ast.options && ast.options.delay ? resolveTimingValue(ast.options.delay) : 0;
+    ast.steps.forEach((s) => {
+      const innerContext = context.createSubContext(ast.options);
+      if (delay) {
+        innerContext.delayNextStep(delay);
+      }
+      visitDslNode(this, s, innerContext);
+      furthestTime = Math.max(furthestTime, innerContext.currentTimeline.currentTime);
+      innerTimelines.push(innerContext.currentTimeline);
+    });
+    innerTimelines.forEach((timeline) => context.currentTimeline.mergeTimelineCollectedStyles(timeline));
+    context.transformIntoNewTimeline(furthestTime);
+    context.previousNode = ast;
+  }
+  _visitTiming(ast, context) {
+    if (ast.dynamic) {
+      const strValue = ast.strValue;
+      const timingValue = context.params ? interpolateParams(strValue, context.params, context.errors) : strValue;
+      return resolveTiming(timingValue, context.errors);
+    } else {
+      return {
+        duration: ast.duration,
+        delay: ast.delay,
+        easing: ast.easing
+      };
+    }
+  }
+  visitAnimate(ast, context) {
+    const timings = context.currentAnimateTimings = this._visitTiming(ast.timings, context);
+    const timeline = context.currentTimeline;
+    if (timings.delay) {
+      context.incrementTime(timings.delay);
+      timeline.snapshotCurrentStyles();
+    }
+    const style2 = ast.style;
+    if (style2.type == AnimationMetadataType.Keyframes) {
+      this.visitKeyframes(style2, context);
+    } else {
+      context.incrementTime(timings.duration);
+      this.visitStyle(style2, context);
+      timeline.applyStylesToKeyframe();
+    }
+    context.currentAnimateTimings = null;
+    context.previousNode = ast;
+  }
+  visitStyle(ast, context) {
+    const timeline = context.currentTimeline;
+    const timings = context.currentAnimateTimings;
+    if (!timings && timeline.hasCurrentStyleProperties()) {
+      timeline.forwardFrame();
+    }
+    const easing = timings && timings.easing || ast.easing;
+    if (ast.isEmptyStep) {
+      timeline.applyEmptyStep(easing);
+    } else {
+      timeline.setStyles(ast.styles, easing, context.errors, context.options);
+    }
+    context.previousNode = ast;
+  }
+  visitKeyframes(ast, context) {
+    const currentAnimateTimings = context.currentAnimateTimings;
+    const startTime = context.currentTimeline.duration;
+    const duration = currentAnimateTimings.duration;
+    const innerContext = context.createSubContext();
+    const innerTimeline = innerContext.currentTimeline;
+    innerTimeline.easing = currentAnimateTimings.easing;
+    ast.styles.forEach((step) => {
+      const offset = step.offset || 0;
+      innerTimeline.forwardTime(offset * duration);
+      innerTimeline.setStyles(step.styles, step.easing, context.errors, context.options);
+      innerTimeline.applyStylesToKeyframe();
+    });
+    context.currentTimeline.mergeTimelineCollectedStyles(innerTimeline);
+    context.transformIntoNewTimeline(startTime + duration);
+    context.previousNode = ast;
+  }
+  visitQuery(ast, context) {
+    const startTime = context.currentTimeline.currentTime;
+    const options = ast.options || {};
+    const delay = options.delay ? resolveTimingValue(options.delay) : 0;
+    if (delay && (context.previousNode.type === AnimationMetadataType.Style || startTime == 0 && context.currentTimeline.hasCurrentStyleProperties())) {
+      context.currentTimeline.snapshotCurrentStyles();
+      context.previousNode = DEFAULT_NOOP_PREVIOUS_NODE;
+    }
+    let furthestTime = startTime;
+    const elms = context.invokeQuery(ast.selector, ast.originalSelector, ast.limit, ast.includeSelf, options.optional ? true : false, context.errors);
+    context.currentQueryTotal = elms.length;
+    let sameElementTimeline = null;
+    elms.forEach((element, i) => {
+      context.currentQueryIndex = i;
+      const innerContext = context.createSubContext(ast.options, element);
+      if (delay) {
+        innerContext.delayNextStep(delay);
+      }
+      if (element === context.element) {
+        sameElementTimeline = innerContext.currentTimeline;
+      }
+      visitDslNode(this, ast.animation, innerContext);
+      innerContext.currentTimeline.applyStylesToKeyframe();
+      const endTime = innerContext.currentTimeline.currentTime;
+      furthestTime = Math.max(furthestTime, endTime);
+    });
+    context.currentQueryIndex = 0;
+    context.currentQueryTotal = 0;
+    context.transformIntoNewTimeline(furthestTime);
+    if (sameElementTimeline) {
+      context.currentTimeline.mergeTimelineCollectedStyles(sameElementTimeline);
+      context.currentTimeline.snapshotCurrentStyles();
+    }
+    context.previousNode = ast;
+  }
+  visitStagger(ast, context) {
+    const parentContext = context.parentContext;
+    const tl = context.currentTimeline;
+    const timings = ast.timings;
+    const duration = Math.abs(timings.duration);
+    const maxTime = duration * (context.currentQueryTotal - 1);
+    let delay = duration * context.currentQueryIndex;
+    let staggerTransformer = timings.duration < 0 ? "reverse" : timings.easing;
+    switch (staggerTransformer) {
+      case "reverse":
+        delay = maxTime - delay;
+        break;
+      case "full":
+        delay = parentContext.currentStaggerTime;
+        break;
+    }
+    const timeline = context.currentTimeline;
+    if (delay) {
+      timeline.delayNextStep(delay);
+    }
+    const startingTime = timeline.currentTime;
+    visitDslNode(this, ast.animation, context);
+    context.previousNode = ast;
+    parentContext.currentStaggerTime = tl.currentTime - startingTime + (tl.startTime - parentContext.currentTimeline.startTime);
+  }
+};
+var DEFAULT_NOOP_PREVIOUS_NODE = {};
+var AnimationTimelineContext = class _AnimationTimelineContext {
+  constructor(_driver, element, subInstructions, _enterClassName, _leaveClassName, errors, timelines, initialTimeline) {
+    this._driver = _driver;
+    this.element = element;
+    this.subInstructions = subInstructions;
+    this._enterClassName = _enterClassName;
+    this._leaveClassName = _leaveClassName;
+    this.errors = errors;
+    this.timelines = timelines;
+    this.parentContext = null;
+    this.currentAnimateTimings = null;
+    this.previousNode = DEFAULT_NOOP_PREVIOUS_NODE;
+    this.subContextCount = 0;
+    this.options = {};
+    this.currentQueryIndex = 0;
+    this.currentQueryTotal = 0;
+    this.currentStaggerTime = 0;
+    this.currentTimeline = initialTimeline || new TimelineBuilder(this._driver, element, 0);
+    timelines.push(this.currentTimeline);
+  }
+  get params() {
+    return this.options.params;
+  }
+  updateOptions(options, skipIfExists) {
+    if (!options)
+      return;
+    const newOptions = options;
+    let optionsToUpdate = this.options;
+    if (newOptions.duration != null) {
+      optionsToUpdate.duration = resolveTimingValue(newOptions.duration);
+    }
+    if (newOptions.delay != null) {
+      optionsToUpdate.delay = resolveTimingValue(newOptions.delay);
+    }
+    const newParams = newOptions.params;
+    if (newParams) {
+      let paramsToUpdate = optionsToUpdate.params;
+      if (!paramsToUpdate) {
+        paramsToUpdate = this.options.params = {};
+      }
+      Object.keys(newParams).forEach((name) => {
+        if (!skipIfExists || !paramsToUpdate.hasOwnProperty(name)) {
+          paramsToUpdate[name] = interpolateParams(newParams[name], paramsToUpdate, this.errors);
+        }
+      });
+    }
+  }
+  _copyOptions() {
+    const options = {};
+    if (this.options) {
+      const oldParams = this.options.params;
+      if (oldParams) {
+        const params = options["params"] = {};
+        Object.keys(oldParams).forEach((name) => {
+          params[name] = oldParams[name];
+        });
+      }
+    }
+    return options;
+  }
+  createSubContext(options = null, element, newTime) {
+    const target = element || this.element;
+    const context = new _AnimationTimelineContext(this._driver, target, this.subInstructions, this._enterClassName, this._leaveClassName, this.errors, this.timelines, this.currentTimeline.fork(target, newTime || 0));
+    context.previousNode = this.previousNode;
+    context.currentAnimateTimings = this.currentAnimateTimings;
+    context.options = this._copyOptions();
+    context.updateOptions(options);
+    context.currentQueryIndex = this.currentQueryIndex;
+    context.currentQueryTotal = this.currentQueryTotal;
+    context.parentContext = this;
+    this.subContextCount++;
+    return context;
+  }
+  transformIntoNewTimeline(newTime) {
+    this.previousNode = DEFAULT_NOOP_PREVIOUS_NODE;
+    this.currentTimeline = this.currentTimeline.fork(this.element, newTime);
+    this.timelines.push(this.currentTimeline);
+    return this.currentTimeline;
+  }
+  appendInstructionToTimeline(instruction, duration, delay) {
+    const updatedTimings = {
+      duration: duration != null ? duration : instruction.duration,
+      delay: this.currentTimeline.currentTime + (delay != null ? delay : 0) + instruction.delay,
+      easing: ""
+    };
+    const builder = new SubTimelineBuilder(this._driver, instruction.element, instruction.keyframes, instruction.preStyleProps, instruction.postStyleProps, updatedTimings, instruction.stretchStartingKeyframe);
+    this.timelines.push(builder);
+    return updatedTimings;
+  }
+  incrementTime(time) {
+    this.currentTimeline.forwardTime(this.currentTimeline.duration + time);
+  }
+  delayNextStep(delay) {
+    if (delay > 0) {
+      this.currentTimeline.delayNextStep(delay);
+    }
+  }
+  invokeQuery(selector, originalSelector, limit, includeSelf, optional, errors) {
+    let results = [];
+    if (includeSelf) {
+      results.push(this.element);
+    }
+    if (selector.length > 0) {
+      selector = selector.replace(ENTER_TOKEN_REGEX, "." + this._enterClassName);
+      selector = selector.replace(LEAVE_TOKEN_REGEX, "." + this._leaveClassName);
+      const multi = limit != 1;
+      let elements = this._driver.query(this.element, selector, multi);
+      if (limit !== 0) {
+        elements = limit < 0 ? elements.slice(elements.length + limit, elements.length) : elements.slice(0, limit);
+      }
+      results.push(...elements);
+    }
+    if (!optional && results.length == 0) {
+      errors.push(invalidQuery(originalSelector));
+    }
+    return results;
+  }
+};
+var TimelineBuilder = class _TimelineBuilder {
+  constructor(_driver, element, startTime, _elementTimelineStylesLookup) {
+    this._driver = _driver;
+    this.element = element;
+    this.startTime = startTime;
+    this._elementTimelineStylesLookup = _elementTimelineStylesLookup;
+    this.duration = 0;
+    this.easing = null;
+    this._previousKeyframe = /* @__PURE__ */ new Map();
+    this._currentKeyframe = /* @__PURE__ */ new Map();
+    this._keyframes = /* @__PURE__ */ new Map();
+    this._styleSummary = /* @__PURE__ */ new Map();
+    this._localTimelineStyles = /* @__PURE__ */ new Map();
+    this._pendingStyles = /* @__PURE__ */ new Map();
+    this._backFill = /* @__PURE__ */ new Map();
+    this._currentEmptyStepKeyframe = null;
+    if (!this._elementTimelineStylesLookup) {
+      this._elementTimelineStylesLookup = /* @__PURE__ */ new Map();
+    }
+    this._globalTimelineStyles = this._elementTimelineStylesLookup.get(element);
+    if (!this._globalTimelineStyles) {
+      this._globalTimelineStyles = this._localTimelineStyles;
+      this._elementTimelineStylesLookup.set(element, this._localTimelineStyles);
+    }
+    this._loadKeyframe();
+  }
+  containsAnimation() {
+    switch (this._keyframes.size) {
+      case 0:
+        return false;
+      case 1:
+        return this.hasCurrentStyleProperties();
+      default:
+        return true;
+    }
+  }
+  hasCurrentStyleProperties() {
+    return this._currentKeyframe.size > 0;
+  }
+  get currentTime() {
+    return this.startTime + this.duration;
+  }
+  delayNextStep(delay) {
+    const hasPreStyleStep = this._keyframes.size === 1 && this._pendingStyles.size;
+    if (this.duration || hasPreStyleStep) {
+      this.forwardTime(this.currentTime + delay);
+      if (hasPreStyleStep) {
+        this.snapshotCurrentStyles();
+      }
+    } else {
+      this.startTime += delay;
+    }
+  }
+  fork(element, currentTime) {
+    this.applyStylesToKeyframe();
+    return new _TimelineBuilder(this._driver, element, currentTime || this.currentTime, this._elementTimelineStylesLookup);
+  }
+  _loadKeyframe() {
+    if (this._currentKeyframe) {
+      this._previousKeyframe = this._currentKeyframe;
+    }
+    this._currentKeyframe = this._keyframes.get(this.duration);
+    if (!this._currentKeyframe) {
+      this._currentKeyframe = /* @__PURE__ */ new Map();
+      this._keyframes.set(this.duration, this._currentKeyframe);
+    }
+  }
+  forwardFrame() {
+    this.duration += ONE_FRAME_IN_MILLISECONDS;
+    this._loadKeyframe();
+  }
+  forwardTime(time) {
+    this.applyStylesToKeyframe();
+    this.duration = time;
+    this._loadKeyframe();
+  }
+  _updateStyle(prop, value) {
+    this._localTimelineStyles.set(prop, value);
+    this._globalTimelineStyles.set(prop, value);
+    this._styleSummary.set(prop, {
+      time: this.currentTime,
+      value
+    });
+  }
+  allowOnlyTimelineStyles() {
+    return this._currentEmptyStepKeyframe !== this._currentKeyframe;
+  }
+  applyEmptyStep(easing) {
+    if (easing) {
+      this._previousKeyframe.set("easing", easing);
+    }
+    for (let [prop, value] of this._globalTimelineStyles) {
+      this._backFill.set(prop, value || AUTO_STYLE);
+      this._currentKeyframe.set(prop, AUTO_STYLE);
+    }
+    this._currentEmptyStepKeyframe = this._currentKeyframe;
+  }
+  setStyles(input, easing, errors, options) {
+    if (easing) {
+      this._previousKeyframe.set("easing", easing);
+    }
+    const params = options && options.params || {};
+    const styles = flattenStyles(input, this._globalTimelineStyles);
+    for (let [prop, value] of styles) {
+      const val = interpolateParams(value, params, errors);
+      this._pendingStyles.set(prop, val);
+      if (!this._localTimelineStyles.has(prop)) {
+        this._backFill.set(prop, this._globalTimelineStyles.get(prop) ?? AUTO_STYLE);
+      }
+      this._updateStyle(prop, val);
+    }
+  }
+  applyStylesToKeyframe() {
+    if (this._pendingStyles.size == 0)
+      return;
+    this._pendingStyles.forEach((val, prop) => {
+      this._currentKeyframe.set(prop, val);
+    });
+    this._pendingStyles.clear();
+    this._localTimelineStyles.forEach((val, prop) => {
+      if (!this._currentKeyframe.has(prop)) {
+        this._currentKeyframe.set(prop, val);
+      }
+    });
+  }
+  snapshotCurrentStyles() {
+    for (let [prop, val] of this._localTimelineStyles) {
+      this._pendingStyles.set(prop, val);
+      this._updateStyle(prop, val);
+    }
+  }
+  getFinalKeyframe() {
+    return this._keyframes.get(this.duration);
+  }
+  get properties() {
+    const properties = [];
+    for (let prop in this._currentKeyframe) {
+      properties.push(prop);
+    }
+    return properties;
+  }
+  mergeTimelineCollectedStyles(timeline) {
+    timeline._styleSummary.forEach((details1, prop) => {
+      const details0 = this._styleSummary.get(prop);
+      if (!details0 || details1.time > details0.time) {
+        this._updateStyle(prop, details1.value);
+      }
+    });
+  }
+  buildKeyframes() {
+    this.applyStylesToKeyframe();
+    const preStyleProps = /* @__PURE__ */ new Set();
+    const postStyleProps = /* @__PURE__ */ new Set();
+    const isEmpty = this._keyframes.size === 1 && this.duration === 0;
+    let finalKeyframes = [];
+    this._keyframes.forEach((keyframe, time) => {
+      const finalKeyframe = new Map([...this._backFill, ...keyframe]);
+      finalKeyframe.forEach((value, prop) => {
+        if (value === \u0275PRE_STYLE) {
+          preStyleProps.add(prop);
+        } else if (value === AUTO_STYLE) {
+          postStyleProps.add(prop);
+        }
+      });
+      if (!isEmpty) {
+        finalKeyframe.set("offset", time / this.duration);
+      }
+      finalKeyframes.push(finalKeyframe);
+    });
+    const preProps = [...preStyleProps.values()];
+    const postProps = [...postStyleProps.values()];
+    if (isEmpty) {
+      const kf0 = finalKeyframes[0];
+      const kf1 = new Map(kf0);
+      kf0.set("offset", 0);
+      kf1.set("offset", 1);
+      finalKeyframes = [kf0, kf1];
+    }
+    return createTimelineInstruction(this.element, finalKeyframes, preProps, postProps, this.duration, this.startTime, this.easing, false);
+  }
+};
+var SubTimelineBuilder = class extends TimelineBuilder {
+  constructor(driver, element, keyframes, preStyleProps, postStyleProps, timings, _stretchStartingKeyframe = false) {
+    super(driver, element, timings.delay);
+    this.keyframes = keyframes;
+    this.preStyleProps = preStyleProps;
+    this.postStyleProps = postStyleProps;
+    this._stretchStartingKeyframe = _stretchStartingKeyframe;
+    this.timings = {
+      duration: timings.duration,
+      delay: timings.delay,
+      easing: timings.easing
+    };
+  }
+  containsAnimation() {
+    return this.keyframes.length > 1;
+  }
+  buildKeyframes() {
+    let keyframes = this.keyframes;
+    let {
+      delay,
+      duration,
+      easing
+    } = this.timings;
+    if (this._stretchStartingKeyframe && delay) {
+      const newKeyframes = [];
+      const totalTime = duration + delay;
+      const startingGap = delay / totalTime;
+      const newFirstKeyframe = new Map(keyframes[0]);
+      newFirstKeyframe.set("offset", 0);
+      newKeyframes.push(newFirstKeyframe);
+      const oldFirstKeyframe = new Map(keyframes[0]);
+      oldFirstKeyframe.set("offset", roundOffset(startingGap));
+      newKeyframes.push(oldFirstKeyframe);
+      const limit = keyframes.length - 1;
+      for (let i = 1; i <= limit; i++) {
+        let kf = new Map(keyframes[i]);
+        const oldOffset = kf.get("offset");
+        const timeAtKeyframe = delay + oldOffset * duration;
+        kf.set("offset", roundOffset(timeAtKeyframe / totalTime));
+        newKeyframes.push(kf);
+      }
+      duration = totalTime;
+      delay = 0;
+      easing = "";
+      keyframes = newKeyframes;
+    }
+    return createTimelineInstruction(this.element, keyframes, this.preStyleProps, this.postStyleProps, duration, delay, easing, true);
+  }
+};
+function roundOffset(offset, decimalPoints = 3) {
+  const mult = Math.pow(10, decimalPoints - 1);
+  return Math.round(offset * mult) / mult;
+}
+function flattenStyles(input, allStyles) {
+  const styles = /* @__PURE__ */ new Map();
+  let allProperties;
+  input.forEach((token) => {
+    if (token === "*") {
+      allProperties ??= allStyles.keys();
+      for (let prop of allProperties) {
+        styles.set(prop, AUTO_STYLE);
+      }
+    } else {
+      for (let [prop, val] of token) {
+        styles.set(prop, val);
+      }
+    }
+  });
+  return styles;
+}
+function createTransitionInstruction(element, triggerName, fromState, toState, isRemovalTransition, fromStyles, toStyles, timelines, queriedElements, preStyleProps, postStyleProps, totalTime, errors) {
+  return {
+    type: 0,
+    element,
+    triggerName,
+    isRemovalTransition,
+    fromState,
+    fromStyles,
+    toState,
+    toStyles,
+    timelines,
+    queriedElements,
+    preStyleProps,
+    postStyleProps,
+    totalTime,
+    errors
+  };
+}
+var EMPTY_OBJECT = {};
+var AnimationTransitionFactory = class {
+  constructor(_triggerName, ast, _stateStyles) {
+    this._triggerName = _triggerName;
+    this.ast = ast;
+    this._stateStyles = _stateStyles;
+  }
+  match(currentState, nextState, element, params) {
+    return oneOrMoreTransitionsMatch(this.ast.matchers, currentState, nextState, element, params);
+  }
+  buildStyles(stateName, params, errors) {
+    let styler = this._stateStyles.get("*");
+    if (stateName !== void 0) {
+      styler = this._stateStyles.get(stateName?.toString()) || styler;
+    }
+    return styler ? styler.buildStyles(params, errors) : /* @__PURE__ */ new Map();
+  }
+  build(driver, element, currentState, nextState, enterClassName, leaveClassName, currentOptions, nextOptions, subInstructions, skipAstBuild) {
+    const errors = [];
+    const transitionAnimationParams = this.ast.options && this.ast.options.params || EMPTY_OBJECT;
+    const currentAnimationParams = currentOptions && currentOptions.params || EMPTY_OBJECT;
+    const currentStateStyles = this.buildStyles(currentState, currentAnimationParams, errors);
+    const nextAnimationParams = nextOptions && nextOptions.params || EMPTY_OBJECT;
+    const nextStateStyles = this.buildStyles(nextState, nextAnimationParams, errors);
+    const queriedElements = /* @__PURE__ */ new Set();
+    const preStyleMap = /* @__PURE__ */ new Map();
+    const postStyleMap = /* @__PURE__ */ new Map();
+    const isRemoval = nextState === "void";
+    const animationOptions = {
+      params: applyParamDefaults(nextAnimationParams, transitionAnimationParams),
+      delay: this.ast.options?.delay
+    };
+    const timelines = skipAstBuild ? [] : buildAnimationTimelines(driver, element, this.ast.animation, enterClassName, leaveClassName, currentStateStyles, nextStateStyles, animationOptions, subInstructions, errors);
+    let totalTime = 0;
+    timelines.forEach((tl) => {
+      totalTime = Math.max(tl.duration + tl.delay, totalTime);
+    });
+    if (errors.length) {
+      return createTransitionInstruction(element, this._triggerName, currentState, nextState, isRemoval, currentStateStyles, nextStateStyles, [], [], preStyleMap, postStyleMap, totalTime, errors);
+    }
+    timelines.forEach((tl) => {
+      const elm = tl.element;
+      const preProps = getOrSetDefaultValue(preStyleMap, elm, /* @__PURE__ */ new Set());
+      tl.preStyleProps.forEach((prop) => preProps.add(prop));
+      const postProps = getOrSetDefaultValue(postStyleMap, elm, /* @__PURE__ */ new Set());
+      tl.postStyleProps.forEach((prop) => postProps.add(prop));
+      if (elm !== element) {
+        queriedElements.add(elm);
+      }
+    });
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      checkNonAnimatableInTimelines(timelines, this._triggerName, driver);
+    }
+    return createTransitionInstruction(element, this._triggerName, currentState, nextState, isRemoval, currentStateStyles, nextStateStyles, timelines, [...queriedElements.values()], preStyleMap, postStyleMap, totalTime);
+  }
+};
+function checkNonAnimatableInTimelines(timelines, triggerName, driver) {
+  if (!driver.validateAnimatableStyleProperty) {
+    return;
+  }
+  const allowedNonAnimatableProps = /* @__PURE__ */ new Set([
+    // 'easing' is a utility/synthetic prop we use to represent
+    // easing functions, it represents a property of the animation
+    // which is not animatable but different values can be used
+    // in different steps
+    "easing"
+  ]);
+  const invalidNonAnimatableProps = /* @__PURE__ */ new Set();
+  timelines.forEach(({
+    keyframes
+  }) => {
+    const nonAnimatablePropsInitialValues = /* @__PURE__ */ new Map();
+    keyframes.forEach((keyframe) => {
+      const entriesToCheck = Array.from(keyframe.entries()).filter(([prop]) => !allowedNonAnimatableProps.has(prop));
+      for (const [prop, value] of entriesToCheck) {
+        if (!driver.validateAnimatableStyleProperty(prop)) {
+          if (nonAnimatablePropsInitialValues.has(prop) && !invalidNonAnimatableProps.has(prop)) {
+            const propInitialValue = nonAnimatablePropsInitialValues.get(prop);
+            if (propInitialValue !== value) {
+              invalidNonAnimatableProps.add(prop);
+            }
+          } else {
+            nonAnimatablePropsInitialValues.set(prop, value);
+          }
+        }
+      }
+    });
+  });
+  if (invalidNonAnimatableProps.size > 0) {
+    console.warn(`Warning: The animation trigger "${triggerName}" is attempting to animate the following not animatable properties: ` + Array.from(invalidNonAnimatableProps).join(", ") + "\n(to check the list of all animatable properties visit https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties)");
+  }
+}
+function oneOrMoreTransitionsMatch(matchFns, currentState, nextState, element, params) {
+  return matchFns.some((fn) => fn(currentState, nextState, element, params));
+}
+function applyParamDefaults(userParams, defaults) {
+  const result = __spreadValues({}, defaults);
+  Object.entries(userParams).forEach(([key, value]) => {
+    if (value != null) {
+      result[key] = value;
+    }
+  });
+  return result;
+}
+var AnimationStateStyles = class {
+  constructor(styles, defaultParams, normalizer) {
+    this.styles = styles;
+    this.defaultParams = defaultParams;
+    this.normalizer = normalizer;
+  }
+  buildStyles(params, errors) {
+    const finalStyles = /* @__PURE__ */ new Map();
+    const combinedParams = applyParamDefaults(params, this.defaultParams);
+    this.styles.styles.forEach((value) => {
+      if (typeof value !== "string") {
+        value.forEach((val, prop) => {
+          if (val) {
+            val = interpolateParams(val, combinedParams, errors);
+          }
+          const normalizedProp = this.normalizer.normalizePropertyName(prop, errors);
+          val = this.normalizer.normalizeStyleValue(prop, normalizedProp, val, errors);
+          finalStyles.set(prop, val);
+        });
+      }
+    });
+    return finalStyles;
+  }
+};
+function buildTrigger(name, ast, normalizer) {
+  return new AnimationTrigger(name, ast, normalizer);
+}
+var AnimationTrigger = class {
+  constructor(name, ast, _normalizer) {
+    this.name = name;
+    this.ast = ast;
+    this._normalizer = _normalizer;
+    this.transitionFactories = [];
+    this.states = /* @__PURE__ */ new Map();
+    ast.states.forEach((ast2) => {
+      const defaultParams = ast2.options && ast2.options.params || {};
+      this.states.set(ast2.name, new AnimationStateStyles(ast2.style, defaultParams, _normalizer));
+    });
+    balanceProperties(this.states, "true", "1");
+    balanceProperties(this.states, "false", "0");
+    ast.transitions.forEach((ast2) => {
+      this.transitionFactories.push(new AnimationTransitionFactory(name, ast2, this.states));
+    });
+    this.fallbackTransition = createFallbackTransition(name, this.states, this._normalizer);
+  }
+  get containsQueries() {
+    return this.ast.queryCount > 0;
+  }
+  matchTransition(currentState, nextState, element, params) {
+    const entry = this.transitionFactories.find((f) => f.match(currentState, nextState, element, params));
+    return entry || null;
+  }
+  matchStyles(currentState, params, errors) {
+    return this.fallbackTransition.buildStyles(currentState, params, errors);
+  }
+};
+function createFallbackTransition(triggerName, states, normalizer) {
+  const matchers = [(fromState, toState) => true];
+  const animation = {
+    type: AnimationMetadataType.Sequence,
+    steps: [],
+    options: null
+  };
+  const transition = {
+    type: AnimationMetadataType.Transition,
+    animation,
+    matchers,
+    options: null,
+    queryCount: 0,
+    depCount: 0
+  };
+  return new AnimationTransitionFactory(triggerName, transition, states);
+}
+function balanceProperties(stateMap, key1, key2) {
+  if (stateMap.has(key1)) {
+    if (!stateMap.has(key2)) {
+      stateMap.set(key2, stateMap.get(key1));
+    }
+  } else if (stateMap.has(key2)) {
+    stateMap.set(key1, stateMap.get(key2));
+  }
+}
+var EMPTY_INSTRUCTION_MAP = new ElementInstructionMap();
+var TimelineAnimationEngine = class {
+  constructor(bodyNode, _driver, _normalizer) {
+    this.bodyNode = bodyNode;
+    this._driver = _driver;
+    this._normalizer = _normalizer;
+    this._animations = /* @__PURE__ */ new Map();
+    this._playersById = /* @__PURE__ */ new Map();
+    this.players = [];
+  }
+  register(id, metadata) {
+    const errors = [];
+    const warnings = [];
+    const ast = buildAnimationAst(this._driver, metadata, errors, warnings);
+    if (errors.length) {
+      throw registerFailed(errors);
+    } else {
+      if (warnings.length) {
+        warnRegister(warnings);
+      }
+      this._animations.set(id, ast);
+    }
+  }
+  _buildPlayer(i, preStyles, postStyles) {
+    const element = i.element;
+    const keyframes = normalizeKeyframes$1(this._normalizer, i.keyframes, preStyles, postStyles);
+    return this._driver.animate(element, keyframes, i.duration, i.delay, i.easing, [], true);
+  }
+  create(id, element, options = {}) {
+    const errors = [];
+    const ast = this._animations.get(id);
+    let instructions;
+    const autoStylesMap = /* @__PURE__ */ new Map();
+    if (ast) {
+      instructions = buildAnimationTimelines(this._driver, element, ast, ENTER_CLASSNAME, LEAVE_CLASSNAME, /* @__PURE__ */ new Map(), /* @__PURE__ */ new Map(), options, EMPTY_INSTRUCTION_MAP, errors);
+      instructions.forEach((inst) => {
+        const styles = getOrSetDefaultValue(autoStylesMap, inst.element, /* @__PURE__ */ new Map());
+        inst.postStyleProps.forEach((prop) => styles.set(prop, null));
+      });
+    } else {
+      errors.push(missingOrDestroyedAnimation());
+      instructions = [];
+    }
+    if (errors.length) {
+      throw createAnimationFailed(errors);
+    }
+    autoStylesMap.forEach((styles, element2) => {
+      styles.forEach((_, prop) => {
+        styles.set(prop, this._driver.computeStyle(element2, prop, AUTO_STYLE));
+      });
+    });
+    const players = instructions.map((i) => {
+      const styles = autoStylesMap.get(i.element);
+      return this._buildPlayer(i, /* @__PURE__ */ new Map(), styles);
+    });
+    const player = optimizeGroupPlayer(players);
+    this._playersById.set(id, player);
+    player.onDestroy(() => this.destroy(id));
+    this.players.push(player);
+    return player;
+  }
+  destroy(id) {
+    const player = this._getPlayer(id);
+    player.destroy();
+    this._playersById.delete(id);
+    const index = this.players.indexOf(player);
+    if (index >= 0) {
+      this.players.splice(index, 1);
+    }
+  }
+  _getPlayer(id) {
+    const player = this._playersById.get(id);
+    if (!player) {
+      throw missingPlayer(id);
+    }
+    return player;
+  }
+  listen(id, element, eventName, callback) {
+    const baseEvent = makeAnimationEvent(element, "", "", "");
+    listenOnPlayer(this._getPlayer(id), eventName, baseEvent, callback);
+    return () => {
+    };
+  }
+  command(id, element, command, args) {
+    if (command == "register") {
+      this.register(id, args[0]);
+      return;
+    }
+    if (command == "create") {
+      const options = args[0] || {};
+      this.create(id, element, options);
+      return;
+    }
+    const player = this._getPlayer(id);
+    switch (command) {
+      case "play":
+        player.play();
+        break;
+      case "pause":
+        player.pause();
+        break;
+      case "reset":
+        player.reset();
+        break;
+      case "restart":
+        player.restart();
+        break;
+      case "finish":
+        player.finish();
+        break;
+      case "init":
+        player.init();
+        break;
+      case "setPosition":
+        player.setPosition(parseFloat(args[0]));
+        break;
+      case "destroy":
+        this.destroy(id);
+        break;
+    }
+  }
+};
+var QUEUED_CLASSNAME = "ng-animate-queued";
+var QUEUED_SELECTOR = ".ng-animate-queued";
+var DISABLED_CLASSNAME = "ng-animate-disabled";
+var DISABLED_SELECTOR = ".ng-animate-disabled";
+var STAR_CLASSNAME = "ng-star-inserted";
+var STAR_SELECTOR = ".ng-star-inserted";
+var EMPTY_PLAYER_ARRAY = [];
+var NULL_REMOVAL_STATE = {
+  namespaceId: "",
+  setForRemoval: false,
+  setForMove: false,
+  hasAnimation: false,
+  removedBeforeQueried: false
+};
+var NULL_REMOVED_QUERIED_STATE = {
+  namespaceId: "",
+  setForMove: false,
+  setForRemoval: false,
+  hasAnimation: false,
+  removedBeforeQueried: true
+};
+var REMOVAL_FLAG = "__ng_removed";
+var StateValue = class {
+  get params() {
+    return this.options.params;
+  }
+  constructor(input, namespaceId = "") {
+    this.namespaceId = namespaceId;
+    const isObj = input && input.hasOwnProperty("value");
+    const value = isObj ? input["value"] : input;
+    this.value = normalizeTriggerValue(value);
+    if (isObj) {
+      const _a = input, {
+        value: value2
+      } = _a, options = __objRest(_a, [
+        "value"
+      ]);
+      this.options = options;
+    } else {
+      this.options = {};
+    }
+    if (!this.options.params) {
+      this.options.params = {};
+    }
+  }
+  absorbOptions(options) {
+    const newParams = options.params;
+    if (newParams) {
+      const oldParams = this.options.params;
+      Object.keys(newParams).forEach((prop) => {
+        if (oldParams[prop] == null) {
+          oldParams[prop] = newParams[prop];
+        }
+      });
+    }
+  }
+};
+var VOID_VALUE = "void";
+var DEFAULT_STATE_VALUE = new StateValue(VOID_VALUE);
+var AnimationTransitionNamespace = class {
+  constructor(id, hostElement, _engine) {
+    this.id = id;
+    this.hostElement = hostElement;
+    this._engine = _engine;
+    this.players = [];
+    this._triggers = /* @__PURE__ */ new Map();
+    this._queue = [];
+    this._elementListeners = /* @__PURE__ */ new Map();
+    this._hostClassName = "ng-tns-" + id;
+    addClass(hostElement, this._hostClassName);
+  }
+  listen(element, name, phase, callback) {
+    if (!this._triggers.has(name)) {
+      throw missingTrigger(phase, name);
+    }
+    if (phase == null || phase.length == 0) {
+      throw missingEvent(name);
+    }
+    if (!isTriggerEventValid(phase)) {
+      throw unsupportedTriggerEvent(phase, name);
+    }
+    const listeners = getOrSetDefaultValue(this._elementListeners, element, []);
+    const data = {
+      name,
+      phase,
+      callback
+    };
+    listeners.push(data);
+    const triggersWithStates = getOrSetDefaultValue(this._engine.statesByElement, element, /* @__PURE__ */ new Map());
+    if (!triggersWithStates.has(name)) {
+      addClass(element, NG_TRIGGER_CLASSNAME);
+      addClass(element, NG_TRIGGER_CLASSNAME + "-" + name);
+      triggersWithStates.set(name, DEFAULT_STATE_VALUE);
+    }
+    return () => {
+      this._engine.afterFlush(() => {
+        const index = listeners.indexOf(data);
+        if (index >= 0) {
+          listeners.splice(index, 1);
+        }
+        if (!this._triggers.has(name)) {
+          triggersWithStates.delete(name);
+        }
+      });
+    };
+  }
+  register(name, ast) {
+    if (this._triggers.has(name)) {
+      return false;
+    } else {
+      this._triggers.set(name, ast);
+      return true;
+    }
+  }
+  _getTrigger(name) {
+    const trigger = this._triggers.get(name);
+    if (!trigger) {
+      throw unregisteredTrigger(name);
+    }
+    return trigger;
+  }
+  trigger(element, triggerName, value, defaultToFallback = true) {
+    const trigger = this._getTrigger(triggerName);
+    const player = new TransitionAnimationPlayer(this.id, triggerName, element);
+    let triggersWithStates = this._engine.statesByElement.get(element);
+    if (!triggersWithStates) {
+      addClass(element, NG_TRIGGER_CLASSNAME);
+      addClass(element, NG_TRIGGER_CLASSNAME + "-" + triggerName);
+      this._engine.statesByElement.set(element, triggersWithStates = /* @__PURE__ */ new Map());
+    }
+    let fromState = triggersWithStates.get(triggerName);
+    const toState = new StateValue(value, this.id);
+    const isObj = value && value.hasOwnProperty("value");
+    if (!isObj && fromState) {
+      toState.absorbOptions(fromState.options);
+    }
+    triggersWithStates.set(triggerName, toState);
+    if (!fromState) {
+      fromState = DEFAULT_STATE_VALUE;
+    }
+    const isRemoval = toState.value === VOID_VALUE;
+    if (!isRemoval && fromState.value === toState.value) {
+      if (!objEquals(fromState.params, toState.params)) {
+        const errors = [];
+        const fromStyles = trigger.matchStyles(fromState.value, fromState.params, errors);
+        const toStyles = trigger.matchStyles(toState.value, toState.params, errors);
+        if (errors.length) {
+          this._engine.reportError(errors);
+        } else {
+          this._engine.afterFlush(() => {
+            eraseStyles(element, fromStyles);
+            setStyles(element, toStyles);
+          });
+        }
+      }
+      return;
+    }
+    const playersOnElement = getOrSetDefaultValue(this._engine.playersByElement, element, []);
+    playersOnElement.forEach((player2) => {
+      if (player2.namespaceId == this.id && player2.triggerName == triggerName && player2.queued) {
+        player2.destroy();
+      }
+    });
+    let transition = trigger.matchTransition(fromState.value, toState.value, element, toState.params);
+    let isFallbackTransition = false;
+    if (!transition) {
+      if (!defaultToFallback)
+        return;
+      transition = trigger.fallbackTransition;
+      isFallbackTransition = true;
+    }
+    this._engine.totalQueuedPlayers++;
+    this._queue.push({
+      element,
+      triggerName,
+      transition,
+      fromState,
+      toState,
+      player,
+      isFallbackTransition
+    });
+    if (!isFallbackTransition) {
+      addClass(element, QUEUED_CLASSNAME);
+      player.onStart(() => {
+        removeClass(element, QUEUED_CLASSNAME);
+      });
+    }
+    player.onDone(() => {
+      let index = this.players.indexOf(player);
+      if (index >= 0) {
+        this.players.splice(index, 1);
+      }
+      const players = this._engine.playersByElement.get(element);
+      if (players) {
+        let index2 = players.indexOf(player);
+        if (index2 >= 0) {
+          players.splice(index2, 1);
+        }
+      }
+    });
+    this.players.push(player);
+    playersOnElement.push(player);
+    return player;
+  }
+  deregister(name) {
+    this._triggers.delete(name);
+    this._engine.statesByElement.forEach((stateMap) => stateMap.delete(name));
+    this._elementListeners.forEach((listeners, element) => {
+      this._elementListeners.set(element, listeners.filter((entry) => {
+        return entry.name != name;
+      }));
+    });
+  }
+  clearElementCache(element) {
+    this._engine.statesByElement.delete(element);
+    this._elementListeners.delete(element);
+    const elementPlayers = this._engine.playersByElement.get(element);
+    if (elementPlayers) {
+      elementPlayers.forEach((player) => player.destroy());
+      this._engine.playersByElement.delete(element);
+    }
+  }
+  _signalRemovalForInnerTriggers(rootElement, context) {
+    const elements = this._engine.driver.query(rootElement, NG_TRIGGER_SELECTOR, true);
+    elements.forEach((elm) => {
+      if (elm[REMOVAL_FLAG])
+        return;
+      const namespaces = this._engine.fetchNamespacesByElement(elm);
+      if (namespaces.size) {
+        namespaces.forEach((ns) => ns.triggerLeaveAnimation(elm, context, false, true));
+      } else {
+        this.clearElementCache(elm);
+      }
+    });
+    this._engine.afterFlushAnimationsDone(() => elements.forEach((elm) => this.clearElementCache(elm)));
+  }
+  triggerLeaveAnimation(element, context, destroyAfterComplete, defaultToFallback) {
+    const triggerStates = this._engine.statesByElement.get(element);
+    const previousTriggersValues = /* @__PURE__ */ new Map();
+    if (triggerStates) {
+      const players = [];
+      triggerStates.forEach((state, triggerName) => {
+        previousTriggersValues.set(triggerName, state.value);
+        if (this._triggers.has(triggerName)) {
+          const player = this.trigger(element, triggerName, VOID_VALUE, defaultToFallback);
+          if (player) {
+            players.push(player);
+          }
+        }
+      });
+      if (players.length) {
+        this._engine.markElementAsRemoved(this.id, element, true, context, previousTriggersValues);
+        if (destroyAfterComplete) {
+          optimizeGroupPlayer(players).onDone(() => this._engine.processLeaveNode(element));
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+  prepareLeaveAnimationListeners(element) {
+    const listeners = this._elementListeners.get(element);
+    const elementStates = this._engine.statesByElement.get(element);
+    if (listeners && elementStates) {
+      const visitedTriggers = /* @__PURE__ */ new Set();
+      listeners.forEach((listener) => {
+        const triggerName = listener.name;
+        if (visitedTriggers.has(triggerName))
+          return;
+        visitedTriggers.add(triggerName);
+        const trigger = this._triggers.get(triggerName);
+        const transition = trigger.fallbackTransition;
+        const fromState = elementStates.get(triggerName) || DEFAULT_STATE_VALUE;
+        const toState = new StateValue(VOID_VALUE);
+        const player = new TransitionAnimationPlayer(this.id, triggerName, element);
+        this._engine.totalQueuedPlayers++;
+        this._queue.push({
+          element,
+          triggerName,
+          transition,
+          fromState,
+          toState,
+          player,
+          isFallbackTransition: true
+        });
+      });
+    }
+  }
+  removeNode(element, context) {
+    const engine = this._engine;
+    if (element.childElementCount) {
+      this._signalRemovalForInnerTriggers(element, context);
+    }
+    if (this.triggerLeaveAnimation(element, context, true))
+      return;
+    let containsPotentialParentTransition = false;
+    if (engine.totalAnimations) {
+      const currentPlayers = engine.players.length ? engine.playersByQueriedElement.get(element) : [];
+      if (currentPlayers && currentPlayers.length) {
+        containsPotentialParentTransition = true;
+      } else {
+        let parent = element;
+        while (parent = parent.parentNode) {
+          const triggers = engine.statesByElement.get(parent);
+          if (triggers) {
+            containsPotentialParentTransition = true;
+            break;
+          }
+        }
+      }
+    }
+    this.prepareLeaveAnimationListeners(element);
+    if (containsPotentialParentTransition) {
+      engine.markElementAsRemoved(this.id, element, false, context);
+    } else {
+      const removalFlag = element[REMOVAL_FLAG];
+      if (!removalFlag || removalFlag === NULL_REMOVAL_STATE) {
+        engine.afterFlush(() => this.clearElementCache(element));
+        engine.destroyInnerAnimations(element);
+        engine._onRemovalComplete(element, context);
+      }
+    }
+  }
+  insertNode(element, parent) {
+    addClass(element, this._hostClassName);
+  }
+  drainQueuedTransitions(microtaskId) {
+    const instructions = [];
+    this._queue.forEach((entry) => {
+      const player = entry.player;
+      if (player.destroyed)
+        return;
+      const element = entry.element;
+      const listeners = this._elementListeners.get(element);
+      if (listeners) {
+        listeners.forEach((listener) => {
+          if (listener.name == entry.triggerName) {
+            const baseEvent = makeAnimationEvent(element, entry.triggerName, entry.fromState.value, entry.toState.value);
+            baseEvent["_data"] = microtaskId;
+            listenOnPlayer(entry.player, listener.phase, baseEvent, listener.callback);
+          }
+        });
+      }
+      if (player.markedForDestroy) {
+        this._engine.afterFlush(() => {
+          player.destroy();
+        });
+      } else {
+        instructions.push(entry);
+      }
+    });
+    this._queue = [];
+    return instructions.sort((a, b) => {
+      const d0 = a.transition.ast.depCount;
+      const d1 = b.transition.ast.depCount;
+      if (d0 == 0 || d1 == 0) {
+        return d0 - d1;
+      }
+      return this._engine.driver.containsElement(a.element, b.element) ? 1 : -1;
+    });
+  }
+  destroy(context) {
+    this.players.forEach((p) => p.destroy());
+    this._signalRemovalForInnerTriggers(this.hostElement, context);
+  }
+};
+var TransitionAnimationEngine = class {
+  /** @internal */
+  _onRemovalComplete(element, context) {
+    this.onRemovalComplete(element, context);
+  }
+  constructor(bodyNode, driver, _normalizer, scheduler) {
+    this.bodyNode = bodyNode;
+    this.driver = driver;
+    this._normalizer = _normalizer;
+    this.scheduler = scheduler;
+    this.players = [];
+    this.newHostElements = /* @__PURE__ */ new Map();
+    this.playersByElement = /* @__PURE__ */ new Map();
+    this.playersByQueriedElement = /* @__PURE__ */ new Map();
+    this.statesByElement = /* @__PURE__ */ new Map();
+    this.disabledNodes = /* @__PURE__ */ new Set();
+    this.totalAnimations = 0;
+    this.totalQueuedPlayers = 0;
+    this._namespaceLookup = {};
+    this._namespaceList = [];
+    this._flushFns = [];
+    this._whenQuietFns = [];
+    this.namespacesByHostElement = /* @__PURE__ */ new Map();
+    this.collectedEnterElements = [];
+    this.collectedLeaveElements = [];
+    this.onRemovalComplete = (element, context) => {
+    };
+  }
+  get queuedPlayers() {
+    const players = [];
+    this._namespaceList.forEach((ns) => {
+      ns.players.forEach((player) => {
+        if (player.queued) {
+          players.push(player);
+        }
+      });
+    });
+    return players;
+  }
+  createNamespace(namespaceId, hostElement) {
+    const ns = new AnimationTransitionNamespace(namespaceId, hostElement, this);
+    if (this.bodyNode && this.driver.containsElement(this.bodyNode, hostElement)) {
+      this._balanceNamespaceList(ns, hostElement);
+    } else {
+      this.newHostElements.set(hostElement, ns);
+      this.collectEnterElement(hostElement);
+    }
+    return this._namespaceLookup[namespaceId] = ns;
+  }
+  _balanceNamespaceList(ns, hostElement) {
+    const namespaceList = this._namespaceList;
+    const namespacesByHostElement = this.namespacesByHostElement;
+    const limit = namespaceList.length - 1;
+    if (limit >= 0) {
+      let found = false;
+      let ancestor = this.driver.getParentElement(hostElement);
+      while (ancestor) {
+        const ancestorNs = namespacesByHostElement.get(ancestor);
+        if (ancestorNs) {
+          const index = namespaceList.indexOf(ancestorNs);
+          namespaceList.splice(index + 1, 0, ns);
+          found = true;
+          break;
+        }
+        ancestor = this.driver.getParentElement(ancestor);
+      }
+      if (!found) {
+        namespaceList.unshift(ns);
+      }
+    } else {
+      namespaceList.push(ns);
+    }
+    namespacesByHostElement.set(hostElement, ns);
+    return ns;
+  }
+  register(namespaceId, hostElement) {
+    let ns = this._namespaceLookup[namespaceId];
+    if (!ns) {
+      ns = this.createNamespace(namespaceId, hostElement);
+    }
+    return ns;
+  }
+  registerTrigger(namespaceId, name, trigger) {
+    let ns = this._namespaceLookup[namespaceId];
+    if (ns && ns.register(name, trigger)) {
+      this.totalAnimations++;
+    }
+  }
+  destroy(namespaceId, context) {
+    if (!namespaceId)
+      return;
+    this.afterFlush(() => {
+    });
+    this.afterFlushAnimationsDone(() => {
+      const ns = this._fetchNamespace(namespaceId);
+      this.namespacesByHostElement.delete(ns.hostElement);
+      const index = this._namespaceList.indexOf(ns);
+      if (index >= 0) {
+        this._namespaceList.splice(index, 1);
+      }
+      ns.destroy(context);
+      delete this._namespaceLookup[namespaceId];
+    });
+  }
+  _fetchNamespace(id) {
+    return this._namespaceLookup[id];
+  }
+  fetchNamespacesByElement(element) {
+    const namespaces = /* @__PURE__ */ new Set();
+    const elementStates = this.statesByElement.get(element);
+    if (elementStates) {
+      for (let stateValue of elementStates.values()) {
+        if (stateValue.namespaceId) {
+          const ns = this._fetchNamespace(stateValue.namespaceId);
+          if (ns) {
+            namespaces.add(ns);
+          }
+        }
+      }
+    }
+    return namespaces;
+  }
+  trigger(namespaceId, element, name, value) {
+    if (isElementNode(element)) {
+      const ns = this._fetchNamespace(namespaceId);
+      if (ns) {
+        ns.trigger(element, name, value);
+        return true;
+      }
+    }
+    return false;
+  }
+  insertNode(namespaceId, element, parent, insertBefore) {
+    if (!isElementNode(element))
+      return;
+    const details = element[REMOVAL_FLAG];
+    if (details && details.setForRemoval) {
+      details.setForRemoval = false;
+      details.setForMove = true;
+      const index = this.collectedLeaveElements.indexOf(element);
+      if (index >= 0) {
+        this.collectedLeaveElements.splice(index, 1);
+      }
+    }
+    if (namespaceId) {
+      const ns = this._fetchNamespace(namespaceId);
+      if (ns) {
+        ns.insertNode(element, parent);
+      }
+    }
+    if (insertBefore) {
+      this.collectEnterElement(element);
+    }
+  }
+  collectEnterElement(element) {
+    this.collectedEnterElements.push(element);
+  }
+  markElementAsDisabled(element, value) {
+    if (value) {
+      if (!this.disabledNodes.has(element)) {
+        this.disabledNodes.add(element);
+        addClass(element, DISABLED_CLASSNAME);
+      }
+    } else if (this.disabledNodes.has(element)) {
+      this.disabledNodes.delete(element);
+      removeClass(element, DISABLED_CLASSNAME);
+    }
+  }
+  removeNode(namespaceId, element, context) {
+    if (isElementNode(element)) {
+      this.scheduler?.notify();
+      const ns = namespaceId ? this._fetchNamespace(namespaceId) : null;
+      if (ns) {
+        ns.removeNode(element, context);
+      } else {
+        this.markElementAsRemoved(namespaceId, element, false, context);
+      }
+      const hostNS = this.namespacesByHostElement.get(element);
+      if (hostNS && hostNS.id !== namespaceId) {
+        hostNS.removeNode(element, context);
+      }
+    } else {
+      this._onRemovalComplete(element, context);
+    }
+  }
+  markElementAsRemoved(namespaceId, element, hasAnimation, context, previousTriggersValues) {
+    this.collectedLeaveElements.push(element);
+    element[REMOVAL_FLAG] = {
+      namespaceId,
+      setForRemoval: context,
+      hasAnimation,
+      removedBeforeQueried: false,
+      previousTriggersValues
+    };
+  }
+  listen(namespaceId, element, name, phase, callback) {
+    if (isElementNode(element)) {
+      return this._fetchNamespace(namespaceId).listen(element, name, phase, callback);
+    }
+    return () => {
+    };
+  }
+  _buildInstruction(entry, subTimelines, enterClassName, leaveClassName, skipBuildAst) {
+    return entry.transition.build(this.driver, entry.element, entry.fromState.value, entry.toState.value, enterClassName, leaveClassName, entry.fromState.options, entry.toState.options, subTimelines, skipBuildAst);
+  }
+  destroyInnerAnimations(containerElement) {
+    let elements = this.driver.query(containerElement, NG_TRIGGER_SELECTOR, true);
+    elements.forEach((element) => this.destroyActiveAnimationsForElement(element));
+    if (this.playersByQueriedElement.size == 0)
+      return;
+    elements = this.driver.query(containerElement, NG_ANIMATING_SELECTOR, true);
+    elements.forEach((element) => this.finishActiveQueriedAnimationOnElement(element));
+  }
+  destroyActiveAnimationsForElement(element) {
+    const players = this.playersByElement.get(element);
+    if (players) {
+      players.forEach((player) => {
+        if (player.queued) {
+          player.markedForDestroy = true;
+        } else {
+          player.destroy();
+        }
+      });
+    }
+  }
+  finishActiveQueriedAnimationOnElement(element) {
+    const players = this.playersByQueriedElement.get(element);
+    if (players) {
+      players.forEach((player) => player.finish());
+    }
+  }
+  whenRenderingDone() {
+    return new Promise((resolve) => {
+      if (this.players.length) {
+        return optimizeGroupPlayer(this.players).onDone(() => resolve());
+      } else {
+        resolve();
+      }
+    });
+  }
+  processLeaveNode(element) {
+    const details = element[REMOVAL_FLAG];
+    if (details && details.setForRemoval) {
+      element[REMOVAL_FLAG] = NULL_REMOVAL_STATE;
+      if (details.namespaceId) {
+        this.destroyInnerAnimations(element);
+        const ns = this._fetchNamespace(details.namespaceId);
+        if (ns) {
+          ns.clearElementCache(element);
+        }
+      }
+      this._onRemovalComplete(element, details.setForRemoval);
+    }
+    if (element.classList?.contains(DISABLED_CLASSNAME)) {
+      this.markElementAsDisabled(element, false);
+    }
+    this.driver.query(element, DISABLED_SELECTOR, true).forEach((node) => {
+      this.markElementAsDisabled(node, false);
+    });
+  }
+  flush(microtaskId = -1) {
+    let players = [];
+    if (this.newHostElements.size) {
+      this.newHostElements.forEach((ns, element) => this._balanceNamespaceList(ns, element));
+      this.newHostElements.clear();
+    }
+    if (this.totalAnimations && this.collectedEnterElements.length) {
+      for (let i = 0; i < this.collectedEnterElements.length; i++) {
+        const elm = this.collectedEnterElements[i];
+        addClass(elm, STAR_CLASSNAME);
+      }
+    }
+    if (this._namespaceList.length && (this.totalQueuedPlayers || this.collectedLeaveElements.length)) {
+      const cleanupFns = [];
+      try {
+        players = this._flushAnimations(cleanupFns, microtaskId);
+      } finally {
+        for (let i = 0; i < cleanupFns.length; i++) {
+          cleanupFns[i]();
+        }
+      }
+    } else {
+      for (let i = 0; i < this.collectedLeaveElements.length; i++) {
+        const element = this.collectedLeaveElements[i];
+        this.processLeaveNode(element);
+      }
+    }
+    this.totalQueuedPlayers = 0;
+    this.collectedEnterElements.length = 0;
+    this.collectedLeaveElements.length = 0;
+    this._flushFns.forEach((fn) => fn());
+    this._flushFns = [];
+    if (this._whenQuietFns.length) {
+      const quietFns = this._whenQuietFns;
+      this._whenQuietFns = [];
+      if (players.length) {
+        optimizeGroupPlayer(players).onDone(() => {
+          quietFns.forEach((fn) => fn());
+        });
+      } else {
+        quietFns.forEach((fn) => fn());
+      }
+    }
+  }
+  reportError(errors) {
+    throw triggerTransitionsFailed(errors);
+  }
+  _flushAnimations(cleanupFns, microtaskId) {
+    const subTimelines = new ElementInstructionMap();
+    const skippedPlayers = [];
+    const skippedPlayersMap = /* @__PURE__ */ new Map();
+    const queuedInstructions = [];
+    const queriedElements = /* @__PURE__ */ new Map();
+    const allPreStyleElements = /* @__PURE__ */ new Map();
+    const allPostStyleElements = /* @__PURE__ */ new Map();
+    const disabledElementsSet = /* @__PURE__ */ new Set();
+    this.disabledNodes.forEach((node) => {
+      disabledElementsSet.add(node);
+      const nodesThatAreDisabled = this.driver.query(node, QUEUED_SELECTOR, true);
+      for (let i2 = 0; i2 < nodesThatAreDisabled.length; i2++) {
+        disabledElementsSet.add(nodesThatAreDisabled[i2]);
+      }
+    });
+    const bodyNode = this.bodyNode;
+    const allTriggerElements = Array.from(this.statesByElement.keys());
+    const enterNodeMap = buildRootMap(allTriggerElements, this.collectedEnterElements);
+    const enterNodeMapIds = /* @__PURE__ */ new Map();
+    let i = 0;
+    enterNodeMap.forEach((nodes, root) => {
+      const className = ENTER_CLASSNAME + i++;
+      enterNodeMapIds.set(root, className);
+      nodes.forEach((node) => addClass(node, className));
+    });
+    const allLeaveNodes = [];
+    const mergedLeaveNodes = /* @__PURE__ */ new Set();
+    const leaveNodesWithoutAnimations = /* @__PURE__ */ new Set();
+    for (let i2 = 0; i2 < this.collectedLeaveElements.length; i2++) {
+      const element = this.collectedLeaveElements[i2];
+      const details = element[REMOVAL_FLAG];
+      if (details && details.setForRemoval) {
+        allLeaveNodes.push(element);
+        mergedLeaveNodes.add(element);
+        if (details.hasAnimation) {
+          this.driver.query(element, STAR_SELECTOR, true).forEach((elm) => mergedLeaveNodes.add(elm));
+        } else {
+          leaveNodesWithoutAnimations.add(element);
+        }
+      }
+    }
+    const leaveNodeMapIds = /* @__PURE__ */ new Map();
+    const leaveNodeMap = buildRootMap(allTriggerElements, Array.from(mergedLeaveNodes));
+    leaveNodeMap.forEach((nodes, root) => {
+      const className = LEAVE_CLASSNAME + i++;
+      leaveNodeMapIds.set(root, className);
+      nodes.forEach((node) => addClass(node, className));
+    });
+    cleanupFns.push(() => {
+      enterNodeMap.forEach((nodes, root) => {
+        const className = enterNodeMapIds.get(root);
+        nodes.forEach((node) => removeClass(node, className));
+      });
+      leaveNodeMap.forEach((nodes, root) => {
+        const className = leaveNodeMapIds.get(root);
+        nodes.forEach((node) => removeClass(node, className));
+      });
+      allLeaveNodes.forEach((element) => {
+        this.processLeaveNode(element);
+      });
+    });
+    const allPlayers = [];
+    const erroneousTransitions = [];
+    for (let i2 = this._namespaceList.length - 1; i2 >= 0; i2--) {
+      const ns = this._namespaceList[i2];
+      ns.drainQueuedTransitions(microtaskId).forEach((entry) => {
+        const player = entry.player;
+        const element = entry.element;
+        allPlayers.push(player);
+        if (this.collectedEnterElements.length) {
+          const details = element[REMOVAL_FLAG];
+          if (details && details.setForMove) {
+            if (details.previousTriggersValues && details.previousTriggersValues.has(entry.triggerName)) {
+              const previousValue = details.previousTriggersValues.get(entry.triggerName);
+              const triggersWithStates = this.statesByElement.get(entry.element);
+              if (triggersWithStates && triggersWithStates.has(entry.triggerName)) {
+                const state = triggersWithStates.get(entry.triggerName);
+                state.value = previousValue;
+                triggersWithStates.set(entry.triggerName, state);
+              }
+            }
+            player.destroy();
+            return;
+          }
+        }
+        const nodeIsOrphaned = !bodyNode || !this.driver.containsElement(bodyNode, element);
+        const leaveClassName = leaveNodeMapIds.get(element);
+        const enterClassName = enterNodeMapIds.get(element);
+        const instruction = this._buildInstruction(entry, subTimelines, enterClassName, leaveClassName, nodeIsOrphaned);
+        if (instruction.errors && instruction.errors.length) {
+          erroneousTransitions.push(instruction);
+          return;
+        }
+        if (nodeIsOrphaned) {
+          player.onStart(() => eraseStyles(element, instruction.fromStyles));
+          player.onDestroy(() => setStyles(element, instruction.toStyles));
+          skippedPlayers.push(player);
+          return;
+        }
+        if (entry.isFallbackTransition) {
+          player.onStart(() => eraseStyles(element, instruction.fromStyles));
+          player.onDestroy(() => setStyles(element, instruction.toStyles));
+          skippedPlayers.push(player);
+          return;
+        }
+        const timelines = [];
+        instruction.timelines.forEach((tl) => {
+          tl.stretchStartingKeyframe = true;
+          if (!this.disabledNodes.has(tl.element)) {
+            timelines.push(tl);
+          }
+        });
+        instruction.timelines = timelines;
+        subTimelines.append(element, instruction.timelines);
+        const tuple = {
+          instruction,
+          player,
+          element
+        };
+        queuedInstructions.push(tuple);
+        instruction.queriedElements.forEach((element2) => getOrSetDefaultValue(queriedElements, element2, []).push(player));
+        instruction.preStyleProps.forEach((stringMap, element2) => {
+          if (stringMap.size) {
+            let setVal = allPreStyleElements.get(element2);
+            if (!setVal) {
+              allPreStyleElements.set(element2, setVal = /* @__PURE__ */ new Set());
+            }
+            stringMap.forEach((_, prop) => setVal.add(prop));
+          }
+        });
+        instruction.postStyleProps.forEach((stringMap, element2) => {
+          let setVal = allPostStyleElements.get(element2);
+          if (!setVal) {
+            allPostStyleElements.set(element2, setVal = /* @__PURE__ */ new Set());
+          }
+          stringMap.forEach((_, prop) => setVal.add(prop));
+        });
+      });
+    }
+    if (erroneousTransitions.length) {
+      const errors = [];
+      erroneousTransitions.forEach((instruction) => {
+        errors.push(transitionFailed(instruction.triggerName, instruction.errors));
+      });
+      allPlayers.forEach((player) => player.destroy());
+      this.reportError(errors);
+    }
+    const allPreviousPlayersMap = /* @__PURE__ */ new Map();
+    const animationElementMap = /* @__PURE__ */ new Map();
+    queuedInstructions.forEach((entry) => {
+      const element = entry.element;
+      if (subTimelines.has(element)) {
+        animationElementMap.set(element, element);
+        this._beforeAnimationBuild(entry.player.namespaceId, entry.instruction, allPreviousPlayersMap);
+      }
+    });
+    skippedPlayers.forEach((player) => {
+      const element = player.element;
+      const previousPlayers = this._getPreviousPlayers(element, false, player.namespaceId, player.triggerName, null);
+      previousPlayers.forEach((prevPlayer) => {
+        getOrSetDefaultValue(allPreviousPlayersMap, element, []).push(prevPlayer);
+        prevPlayer.destroy();
+      });
+    });
+    const replaceNodes = allLeaveNodes.filter((node) => {
+      return replacePostStylesAsPre(node, allPreStyleElements, allPostStyleElements);
+    });
+    const postStylesMap = /* @__PURE__ */ new Map();
+    const allLeaveQueriedNodes = cloakAndComputeStyles(postStylesMap, this.driver, leaveNodesWithoutAnimations, allPostStyleElements, AUTO_STYLE);
+    allLeaveQueriedNodes.forEach((node) => {
+      if (replacePostStylesAsPre(node, allPreStyleElements, allPostStyleElements)) {
+        replaceNodes.push(node);
+      }
+    });
+    const preStylesMap = /* @__PURE__ */ new Map();
+    enterNodeMap.forEach((nodes, root) => {
+      cloakAndComputeStyles(preStylesMap, this.driver, new Set(nodes), allPreStyleElements, \u0275PRE_STYLE);
+    });
+    replaceNodes.forEach((node) => {
+      const post = postStylesMap.get(node);
+      const pre = preStylesMap.get(node);
+      postStylesMap.set(node, new Map([...post?.entries() ?? [], ...pre?.entries() ?? []]));
+    });
+    const rootPlayers = [];
+    const subPlayers = [];
+    const NO_PARENT_ANIMATION_ELEMENT_DETECTED = {};
+    queuedInstructions.forEach((entry) => {
+      const {
+        element,
+        player,
+        instruction
+      } = entry;
+      if (subTimelines.has(element)) {
+        if (disabledElementsSet.has(element)) {
+          player.onDestroy(() => setStyles(element, instruction.toStyles));
+          player.disabled = true;
+          player.overrideTotalTime(instruction.totalTime);
+          skippedPlayers.push(player);
+          return;
+        }
+        let parentWithAnimation = NO_PARENT_ANIMATION_ELEMENT_DETECTED;
+        if (animationElementMap.size > 1) {
+          let elm = element;
+          const parentsToAdd = [];
+          while (elm = elm.parentNode) {
+            const detectedParent = animationElementMap.get(elm);
+            if (detectedParent) {
+              parentWithAnimation = detectedParent;
+              break;
+            }
+            parentsToAdd.push(elm);
+          }
+          parentsToAdd.forEach((parent) => animationElementMap.set(parent, parentWithAnimation));
+        }
+        const innerPlayer = this._buildAnimation(player.namespaceId, instruction, allPreviousPlayersMap, skippedPlayersMap, preStylesMap, postStylesMap);
+        player.setRealPlayer(innerPlayer);
+        if (parentWithAnimation === NO_PARENT_ANIMATION_ELEMENT_DETECTED) {
+          rootPlayers.push(player);
+        } else {
+          const parentPlayers = this.playersByElement.get(parentWithAnimation);
+          if (parentPlayers && parentPlayers.length) {
+            player.parentPlayer = optimizeGroupPlayer(parentPlayers);
+          }
+          skippedPlayers.push(player);
+        }
+      } else {
+        eraseStyles(element, instruction.fromStyles);
+        player.onDestroy(() => setStyles(element, instruction.toStyles));
+        subPlayers.push(player);
+        if (disabledElementsSet.has(element)) {
+          skippedPlayers.push(player);
+        }
+      }
+    });
+    subPlayers.forEach((player) => {
+      const playersForElement = skippedPlayersMap.get(player.element);
+      if (playersForElement && playersForElement.length) {
+        const innerPlayer = optimizeGroupPlayer(playersForElement);
+        player.setRealPlayer(innerPlayer);
+      }
+    });
+    skippedPlayers.forEach((player) => {
+      if (player.parentPlayer) {
+        player.syncPlayerEvents(player.parentPlayer);
+      } else {
+        player.destroy();
+      }
+    });
+    for (let i2 = 0; i2 < allLeaveNodes.length; i2++) {
+      const element = allLeaveNodes[i2];
+      const details = element[REMOVAL_FLAG];
+      removeClass(element, LEAVE_CLASSNAME);
+      if (details && details.hasAnimation)
+        continue;
+      let players = [];
+      if (queriedElements.size) {
+        let queriedPlayerResults = queriedElements.get(element);
+        if (queriedPlayerResults && queriedPlayerResults.length) {
+          players.push(...queriedPlayerResults);
+        }
+        let queriedInnerElements = this.driver.query(element, NG_ANIMATING_SELECTOR, true);
+        for (let j = 0; j < queriedInnerElements.length; j++) {
+          let queriedPlayers = queriedElements.get(queriedInnerElements[j]);
+          if (queriedPlayers && queriedPlayers.length) {
+            players.push(...queriedPlayers);
+          }
+        }
+      }
+      const activePlayers = players.filter((p) => !p.destroyed);
+      if (activePlayers.length) {
+        removeNodesAfterAnimationDone(this, element, activePlayers);
+      } else {
+        this.processLeaveNode(element);
+      }
+    }
+    allLeaveNodes.length = 0;
+    rootPlayers.forEach((player) => {
+      this.players.push(player);
+      player.onDone(() => {
+        player.destroy();
+        const index = this.players.indexOf(player);
+        this.players.splice(index, 1);
+      });
+      player.play();
+    });
+    return rootPlayers;
+  }
+  afterFlush(callback) {
+    this._flushFns.push(callback);
+  }
+  afterFlushAnimationsDone(callback) {
+    this._whenQuietFns.push(callback);
+  }
+  _getPreviousPlayers(element, isQueriedElement, namespaceId, triggerName, toStateValue) {
+    let players = [];
+    if (isQueriedElement) {
+      const queriedElementPlayers = this.playersByQueriedElement.get(element);
+      if (queriedElementPlayers) {
+        players = queriedElementPlayers;
+      }
+    } else {
+      const elementPlayers = this.playersByElement.get(element);
+      if (elementPlayers) {
+        const isRemovalAnimation = !toStateValue || toStateValue == VOID_VALUE;
+        elementPlayers.forEach((player) => {
+          if (player.queued)
+            return;
+          if (!isRemovalAnimation && player.triggerName != triggerName)
+            return;
+          players.push(player);
+        });
+      }
+    }
+    if (namespaceId || triggerName) {
+      players = players.filter((player) => {
+        if (namespaceId && namespaceId != player.namespaceId)
+          return false;
+        if (triggerName && triggerName != player.triggerName)
+          return false;
+        return true;
+      });
+    }
+    return players;
+  }
+  _beforeAnimationBuild(namespaceId, instruction, allPreviousPlayersMap) {
+    const triggerName = instruction.triggerName;
+    const rootElement = instruction.element;
+    const targetNameSpaceId = instruction.isRemovalTransition ? void 0 : namespaceId;
+    const targetTriggerName = instruction.isRemovalTransition ? void 0 : triggerName;
+    for (const timelineInstruction of instruction.timelines) {
+      const element = timelineInstruction.element;
+      const isQueriedElement = element !== rootElement;
+      const players = getOrSetDefaultValue(allPreviousPlayersMap, element, []);
+      const previousPlayers = this._getPreviousPlayers(element, isQueriedElement, targetNameSpaceId, targetTriggerName, instruction.toState);
+      previousPlayers.forEach((player) => {
+        const realPlayer = player.getRealPlayer();
+        if (realPlayer.beforeDestroy) {
+          realPlayer.beforeDestroy();
+        }
+        player.destroy();
+        players.push(player);
+      });
+    }
+    eraseStyles(rootElement, instruction.fromStyles);
+  }
+  _buildAnimation(namespaceId, instruction, allPreviousPlayersMap, skippedPlayersMap, preStylesMap, postStylesMap) {
+    const triggerName = instruction.triggerName;
+    const rootElement = instruction.element;
+    const allQueriedPlayers = [];
+    const allConsumedElements = /* @__PURE__ */ new Set();
+    const allSubElements = /* @__PURE__ */ new Set();
+    const allNewPlayers = instruction.timelines.map((timelineInstruction) => {
+      const element = timelineInstruction.element;
+      allConsumedElements.add(element);
+      const details = element[REMOVAL_FLAG];
+      if (details && details.removedBeforeQueried)
+        return new NoopAnimationPlayer(timelineInstruction.duration, timelineInstruction.delay);
+      const isQueriedElement = element !== rootElement;
+      const previousPlayers = flattenGroupPlayers((allPreviousPlayersMap.get(element) || EMPTY_PLAYER_ARRAY).map((p) => p.getRealPlayer())).filter((p) => {
+        const pp = p;
+        return pp.element ? pp.element === element : false;
+      });
+      const preStyles = preStylesMap.get(element);
+      const postStyles = postStylesMap.get(element);
+      const keyframes = normalizeKeyframes$1(this._normalizer, timelineInstruction.keyframes, preStyles, postStyles);
+      const player2 = this._buildPlayer(timelineInstruction, keyframes, previousPlayers);
+      if (timelineInstruction.subTimeline && skippedPlayersMap) {
+        allSubElements.add(element);
+      }
+      if (isQueriedElement) {
+        const wrappedPlayer = new TransitionAnimationPlayer(namespaceId, triggerName, element);
+        wrappedPlayer.setRealPlayer(player2);
+        allQueriedPlayers.push(wrappedPlayer);
+      }
+      return player2;
+    });
+    allQueriedPlayers.forEach((player2) => {
+      getOrSetDefaultValue(this.playersByQueriedElement, player2.element, []).push(player2);
+      player2.onDone(() => deleteOrUnsetInMap(this.playersByQueriedElement, player2.element, player2));
+    });
+    allConsumedElements.forEach((element) => addClass(element, NG_ANIMATING_CLASSNAME));
+    const player = optimizeGroupPlayer(allNewPlayers);
+    player.onDestroy(() => {
+      allConsumedElements.forEach((element) => removeClass(element, NG_ANIMATING_CLASSNAME));
+      setStyles(rootElement, instruction.toStyles);
+    });
+    allSubElements.forEach((element) => {
+      getOrSetDefaultValue(skippedPlayersMap, element, []).push(player);
+    });
+    return player;
+  }
+  _buildPlayer(instruction, keyframes, previousPlayers) {
+    if (keyframes.length > 0) {
+      return this.driver.animate(instruction.element, keyframes, instruction.duration, instruction.delay, instruction.easing, previousPlayers);
+    }
+    return new NoopAnimationPlayer(instruction.duration, instruction.delay);
+  }
+};
+var TransitionAnimationPlayer = class {
+  constructor(namespaceId, triggerName, element) {
+    this.namespaceId = namespaceId;
+    this.triggerName = triggerName;
+    this.element = element;
+    this._player = new NoopAnimationPlayer();
+    this._containsRealPlayer = false;
+    this._queuedCallbacks = /* @__PURE__ */ new Map();
+    this.destroyed = false;
+    this.parentPlayer = null;
+    this.markedForDestroy = false;
+    this.disabled = false;
+    this.queued = true;
+    this.totalTime = 0;
+  }
+  setRealPlayer(player) {
+    if (this._containsRealPlayer)
+      return;
+    this._player = player;
+    this._queuedCallbacks.forEach((callbacks, phase) => {
+      callbacks.forEach((callback) => listenOnPlayer(player, phase, void 0, callback));
+    });
+    this._queuedCallbacks.clear();
+    this._containsRealPlayer = true;
+    this.overrideTotalTime(player.totalTime);
+    this.queued = false;
+  }
+  getRealPlayer() {
+    return this._player;
+  }
+  overrideTotalTime(totalTime) {
+    this.totalTime = totalTime;
+  }
+  syncPlayerEvents(player) {
+    const p = this._player;
+    if (p.triggerCallback) {
+      player.onStart(() => p.triggerCallback("start"));
+    }
+    player.onDone(() => this.finish());
+    player.onDestroy(() => this.destroy());
+  }
+  _queueEvent(name, callback) {
+    getOrSetDefaultValue(this._queuedCallbacks, name, []).push(callback);
+  }
+  onDone(fn) {
+    if (this.queued) {
+      this._queueEvent("done", fn);
+    }
+    this._player.onDone(fn);
+  }
+  onStart(fn) {
+    if (this.queued) {
+      this._queueEvent("start", fn);
+    }
+    this._player.onStart(fn);
+  }
+  onDestroy(fn) {
+    if (this.queued) {
+      this._queueEvent("destroy", fn);
+    }
+    this._player.onDestroy(fn);
+  }
+  init() {
+    this._player.init();
+  }
+  hasStarted() {
+    return this.queued ? false : this._player.hasStarted();
+  }
+  play() {
+    !this.queued && this._player.play();
+  }
+  pause() {
+    !this.queued && this._player.pause();
+  }
+  restart() {
+    !this.queued && this._player.restart();
+  }
+  finish() {
+    this._player.finish();
+  }
+  destroy() {
+    this.destroyed = true;
+    this._player.destroy();
+  }
+  reset() {
+    !this.queued && this._player.reset();
+  }
+  setPosition(p) {
+    if (!this.queued) {
+      this._player.setPosition(p);
+    }
+  }
+  getPosition() {
+    return this.queued ? 0 : this._player.getPosition();
+  }
+  /** @internal */
+  triggerCallback(phaseName) {
+    const p = this._player;
+    if (p.triggerCallback) {
+      p.triggerCallback(phaseName);
+    }
+  }
+};
+function deleteOrUnsetInMap(map, key, value) {
+  let currentValues = map.get(key);
+  if (currentValues) {
+    if (currentValues.length) {
+      const index = currentValues.indexOf(value);
+      currentValues.splice(index, 1);
+    }
+    if (currentValues.length == 0) {
+      map.delete(key);
+    }
+  }
+  return currentValues;
+}
+function normalizeTriggerValue(value) {
+  return value != null ? value : null;
+}
+function isElementNode(node) {
+  return node && node["nodeType"] === 1;
+}
+function isTriggerEventValid(eventName) {
+  return eventName == "start" || eventName == "done";
+}
+function cloakElement(element, value) {
+  const oldValue = element.style.display;
+  element.style.display = value != null ? value : "none";
+  return oldValue;
+}
+function cloakAndComputeStyles(valuesMap, driver, elements, elementPropsMap, defaultStyle) {
+  const cloakVals = [];
+  elements.forEach((element) => cloakVals.push(cloakElement(element)));
+  const failedElements = [];
+  elementPropsMap.forEach((props, element) => {
+    const styles = /* @__PURE__ */ new Map();
+    props.forEach((prop) => {
+      const value = driver.computeStyle(element, prop, defaultStyle);
+      styles.set(prop, value);
+      if (!value || value.length == 0) {
+        element[REMOVAL_FLAG] = NULL_REMOVED_QUERIED_STATE;
+        failedElements.push(element);
+      }
+    });
+    valuesMap.set(element, styles);
+  });
+  let i = 0;
+  elements.forEach((element) => cloakElement(element, cloakVals[i++]));
+  return failedElements;
+}
+function buildRootMap(roots, nodes) {
+  const rootMap = /* @__PURE__ */ new Map();
+  roots.forEach((root) => rootMap.set(root, []));
+  if (nodes.length == 0)
+    return rootMap;
+  const NULL_NODE = 1;
+  const nodeSet = new Set(nodes);
+  const localRootMap = /* @__PURE__ */ new Map();
+  function getRoot(node) {
+    if (!node)
+      return NULL_NODE;
+    let root = localRootMap.get(node);
+    if (root)
+      return root;
+    const parent = node.parentNode;
+    if (rootMap.has(parent)) {
+      root = parent;
+    } else if (nodeSet.has(parent)) {
+      root = NULL_NODE;
+    } else {
+      root = getRoot(parent);
+    }
+    localRootMap.set(node, root);
+    return root;
+  }
+  nodes.forEach((node) => {
+    const root = getRoot(node);
+    if (root !== NULL_NODE) {
+      rootMap.get(root).push(node);
+    }
+  });
+  return rootMap;
+}
+function addClass(element, className) {
+  element.classList?.add(className);
+}
+function removeClass(element, className) {
+  element.classList?.remove(className);
+}
+function removeNodesAfterAnimationDone(engine, element, players) {
+  optimizeGroupPlayer(players).onDone(() => engine.processLeaveNode(element));
+}
+function flattenGroupPlayers(players) {
+  const finalPlayers = [];
+  _flattenGroupPlayersRecur(players, finalPlayers);
+  return finalPlayers;
+}
+function _flattenGroupPlayersRecur(players, finalPlayers) {
+  for (let i = 0; i < players.length; i++) {
+    const player = players[i];
+    if (player instanceof AnimationGroupPlayer) {
+      _flattenGroupPlayersRecur(player.players, finalPlayers);
+    } else {
+      finalPlayers.push(player);
+    }
+  }
+}
+function objEquals(a, b) {
+  const k1 = Object.keys(a);
+  const k2 = Object.keys(b);
+  if (k1.length != k2.length)
+    return false;
+  for (let i = 0; i < k1.length; i++) {
+    const prop = k1[i];
+    if (!b.hasOwnProperty(prop) || a[prop] !== b[prop])
+      return false;
+  }
+  return true;
+}
+function replacePostStylesAsPre(element, allPreStyleElements, allPostStyleElements) {
+  const postEntry = allPostStyleElements.get(element);
+  if (!postEntry)
+    return false;
+  let preEntry = allPreStyleElements.get(element);
+  if (preEntry) {
+    postEntry.forEach((data) => preEntry.add(data));
+  } else {
+    allPreStyleElements.set(element, postEntry);
+  }
+  allPostStyleElements.delete(element);
+  return true;
+}
+var AnimationEngine = class {
+  constructor(doc, _driver, _normalizer, scheduler) {
+    this._driver = _driver;
+    this._normalizer = _normalizer;
+    this._triggerCache = {};
+    this.onRemovalComplete = (element, context) => {
+    };
+    this._transitionEngine = new TransitionAnimationEngine(doc.body, _driver, _normalizer, scheduler);
+    this._timelineEngine = new TimelineAnimationEngine(doc.body, _driver, _normalizer);
+    this._transitionEngine.onRemovalComplete = (element, context) => this.onRemovalComplete(element, context);
+  }
+  registerTrigger(componentId, namespaceId, hostElement, name, metadata) {
+    const cacheKey = componentId + "-" + name;
+    let trigger = this._triggerCache[cacheKey];
+    if (!trigger) {
+      const errors = [];
+      const warnings = [];
+      const ast = buildAnimationAst(this._driver, metadata, errors, warnings);
+      if (errors.length) {
+        throw triggerBuildFailed(name, errors);
+      }
+      if (warnings.length) {
+        warnTriggerBuild(name, warnings);
+      }
+      trigger = buildTrigger(name, ast, this._normalizer);
+      this._triggerCache[cacheKey] = trigger;
+    }
+    this._transitionEngine.registerTrigger(namespaceId, name, trigger);
+  }
+  register(namespaceId, hostElement) {
+    this._transitionEngine.register(namespaceId, hostElement);
+  }
+  destroy(namespaceId, context) {
+    this._transitionEngine.destroy(namespaceId, context);
+  }
+  onInsert(namespaceId, element, parent, insertBefore) {
+    this._transitionEngine.insertNode(namespaceId, element, parent, insertBefore);
+  }
+  onRemove(namespaceId, element, context) {
+    this._transitionEngine.removeNode(namespaceId, element, context);
+  }
+  disableAnimations(element, disable) {
+    this._transitionEngine.markElementAsDisabled(element, disable);
+  }
+  process(namespaceId, element, property, value) {
+    if (property.charAt(0) == "@") {
+      const [id, action] = parseTimelineCommand(property);
+      const args = value;
+      this._timelineEngine.command(id, element, action, args);
+    } else {
+      this._transitionEngine.trigger(namespaceId, element, property, value);
+    }
+  }
+  listen(namespaceId, element, eventName, eventPhase, callback) {
+    if (eventName.charAt(0) == "@") {
+      const [id, action] = parseTimelineCommand(eventName);
+      return this._timelineEngine.listen(id, element, action, callback);
+    }
+    return this._transitionEngine.listen(namespaceId, element, eventName, eventPhase, callback);
+  }
+  flush(microtaskId = -1) {
+    this._transitionEngine.flush(microtaskId);
+  }
+  get players() {
+    return [...this._transitionEngine.players, ...this._timelineEngine.players];
+  }
+  whenRenderingDone() {
+    return this._transitionEngine.whenRenderingDone();
+  }
+  afterFlushAnimationsDone(cb) {
+    this._transitionEngine.afterFlushAnimationsDone(cb);
+  }
+};
+function packageNonAnimatableStyles(element, styles) {
+  let startStyles = null;
+  let endStyles = null;
+  if (Array.isArray(styles) && styles.length) {
+    startStyles = filterNonAnimatableStyles(styles[0]);
+    if (styles.length > 1) {
+      endStyles = filterNonAnimatableStyles(styles[styles.length - 1]);
+    }
+  } else if (styles instanceof Map) {
+    startStyles = filterNonAnimatableStyles(styles);
+  }
+  return startStyles || endStyles ? new SpecialCasedStyles(element, startStyles, endStyles) : null;
+}
+var SpecialCasedStyles = class _SpecialCasedStyles {
+  static {
+    this.initialStylesByElement = /* @__PURE__ */ new WeakMap();
+  }
+  constructor(_element, _startStyles, _endStyles) {
+    this._element = _element;
+    this._startStyles = _startStyles;
+    this._endStyles = _endStyles;
+    this._state = 0;
+    let initialStyles = _SpecialCasedStyles.initialStylesByElement.get(_element);
+    if (!initialStyles) {
+      _SpecialCasedStyles.initialStylesByElement.set(_element, initialStyles = /* @__PURE__ */ new Map());
+    }
+    this._initialStyles = initialStyles;
+  }
+  start() {
+    if (this._state < 1) {
+      if (this._startStyles) {
+        setStyles(this._element, this._startStyles, this._initialStyles);
+      }
+      this._state = 1;
+    }
+  }
+  finish() {
+    this.start();
+    if (this._state < 2) {
+      setStyles(this._element, this._initialStyles);
+      if (this._endStyles) {
+        setStyles(this._element, this._endStyles);
+        this._endStyles = null;
+      }
+      this._state = 1;
+    }
+  }
+  destroy() {
+    this.finish();
+    if (this._state < 3) {
+      _SpecialCasedStyles.initialStylesByElement.delete(this._element);
+      if (this._startStyles) {
+        eraseStyles(this._element, this._startStyles);
+        this._endStyles = null;
+      }
+      if (this._endStyles) {
+        eraseStyles(this._element, this._endStyles);
+        this._endStyles = null;
+      }
+      setStyles(this._element, this._initialStyles);
+      this._state = 3;
+    }
+  }
+};
+function filterNonAnimatableStyles(styles) {
+  let result = null;
+  styles.forEach((val, prop) => {
+    if (isNonAnimatableStyle(prop)) {
+      result = result || /* @__PURE__ */ new Map();
+      result.set(prop, val);
+    }
+  });
+  return result;
+}
+function isNonAnimatableStyle(prop) {
+  return prop === "display" || prop === "position";
+}
+var WebAnimationsPlayer = class {
+  constructor(element, keyframes, options, _specialStyles) {
+    this.element = element;
+    this.keyframes = keyframes;
+    this.options = options;
+    this._specialStyles = _specialStyles;
+    this._onDoneFns = [];
+    this._onStartFns = [];
+    this._onDestroyFns = [];
+    this._initialized = false;
+    this._finished = false;
+    this._started = false;
+    this._destroyed = false;
+    this._originalOnDoneFns = [];
+    this._originalOnStartFns = [];
+    this.time = 0;
+    this.parentPlayer = null;
+    this.currentSnapshot = /* @__PURE__ */ new Map();
+    this._duration = options["duration"];
+    this._delay = options["delay"] || 0;
+    this.time = this._duration + this._delay;
+  }
+  _onFinish() {
+    if (!this._finished) {
+      this._finished = true;
+      this._onDoneFns.forEach((fn) => fn());
+      this._onDoneFns = [];
+    }
+  }
+  init() {
+    this._buildPlayer();
+    this._preparePlayerBeforeStart();
+  }
+  _buildPlayer() {
+    if (this._initialized)
+      return;
+    this._initialized = true;
+    const keyframes = this.keyframes;
+    this.domPlayer = this._triggerWebAnimation(this.element, keyframes, this.options);
+    this._finalKeyframe = keyframes.length ? keyframes[keyframes.length - 1] : /* @__PURE__ */ new Map();
+    const onFinish = () => this._onFinish();
+    this.domPlayer.addEventListener("finish", onFinish);
+    this.onDestroy(() => {
+      this.domPlayer.removeEventListener("finish", onFinish);
+    });
+  }
+  _preparePlayerBeforeStart() {
+    if (this._delay) {
+      this._resetDomPlayerState();
+    } else {
+      this.domPlayer.pause();
+    }
+  }
+  _convertKeyframesToObject(keyframes) {
+    const kfs = [];
+    keyframes.forEach((frame) => {
+      kfs.push(Object.fromEntries(frame));
+    });
+    return kfs;
+  }
+  /** @internal */
+  _triggerWebAnimation(element, keyframes, options) {
+    return element.animate(this._convertKeyframesToObject(keyframes), options);
+  }
+  onStart(fn) {
+    this._originalOnStartFns.push(fn);
+    this._onStartFns.push(fn);
+  }
+  onDone(fn) {
+    this._originalOnDoneFns.push(fn);
+    this._onDoneFns.push(fn);
+  }
+  onDestroy(fn) {
+    this._onDestroyFns.push(fn);
+  }
+  play() {
+    this._buildPlayer();
+    if (!this.hasStarted()) {
+      this._onStartFns.forEach((fn) => fn());
+      this._onStartFns = [];
+      this._started = true;
+      if (this._specialStyles) {
+        this._specialStyles.start();
+      }
+    }
+    this.domPlayer.play();
+  }
+  pause() {
+    this.init();
+    this.domPlayer.pause();
+  }
+  finish() {
+    this.init();
+    if (this._specialStyles) {
+      this._specialStyles.finish();
+    }
+    this._onFinish();
+    this.domPlayer.finish();
+  }
+  reset() {
+    this._resetDomPlayerState();
+    this._destroyed = false;
+    this._finished = false;
+    this._started = false;
+    this._onStartFns = this._originalOnStartFns;
+    this._onDoneFns = this._originalOnDoneFns;
+  }
+  _resetDomPlayerState() {
+    if (this.domPlayer) {
+      this.domPlayer.cancel();
+    }
+  }
+  restart() {
+    this.reset();
+    this.play();
+  }
+  hasStarted() {
+    return this._started;
+  }
+  destroy() {
+    if (!this._destroyed) {
+      this._destroyed = true;
+      this._resetDomPlayerState();
+      this._onFinish();
+      if (this._specialStyles) {
+        this._specialStyles.destroy();
+      }
+      this._onDestroyFns.forEach((fn) => fn());
+      this._onDestroyFns = [];
+    }
+  }
+  setPosition(p) {
+    if (this.domPlayer === void 0) {
+      this.init();
+    }
+    this.domPlayer.currentTime = p * this.time;
+  }
+  getPosition() {
+    return +(this.domPlayer.currentTime ?? 0) / this.time;
+  }
+  get totalTime() {
+    return this._delay + this._duration;
+  }
+  beforeDestroy() {
+    const styles = /* @__PURE__ */ new Map();
+    if (this.hasStarted()) {
+      const finalKeyframe = this._finalKeyframe;
+      finalKeyframe.forEach((val, prop) => {
+        if (prop !== "offset") {
+          styles.set(prop, this._finished ? val : computeStyle(this.element, prop));
+        }
+      });
+    }
+    this.currentSnapshot = styles;
+  }
+  /** @internal */
+  triggerCallback(phaseName) {
+    const methods = phaseName === "start" ? this._onStartFns : this._onDoneFns;
+    methods.forEach((fn) => fn());
+    methods.length = 0;
+  }
+};
+var WebAnimationsDriver = class {
+  validateStyleProperty(prop) {
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      return validateStyleProperty(prop);
     }
     return true;
   }
-  let results = [];
-  for (let i = 0; i < apis.length; i++) {
-    results[i] = patchEventTargetMethods(apis[i], patchOptions);
-  }
-  return results;
-}
-function findEventTasks(target, eventName) {
-  if (!eventName) {
-    const foundTasks = [];
-    for (let prop in target) {
-      const match = EVENT_NAME_SYMBOL_REGX.exec(prop);
-      let evtName = match && match[1];
-      if (evtName && (!eventName || evtName === eventName)) {
-        const tasks = target[prop];
-        if (tasks) {
-          for (let i = 0; i < tasks.length; i++) {
-            foundTasks.push(tasks[i]);
-          }
-        }
-      }
+  validateAnimatableStyleProperty(prop) {
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      const cssProp = camelCaseToDashCase(prop);
+      return validateWebAnimatableStyleProperty(cssProp);
     }
-    return foundTasks;
+    return true;
   }
-  let symbolEventName = zoneSymbolEventNames[eventName];
-  if (!symbolEventName) {
-    prepareEventNames(eventName);
-    symbolEventName = zoneSymbolEventNames[eventName];
+  matchesElement(_element, _selector) {
+    return false;
   }
-  const captureFalseTasks = target[symbolEventName[FALSE_STR]];
-  const captureTrueTasks = target[symbolEventName[TRUE_STR]];
-  if (!captureFalseTasks) {
-    return captureTrueTasks ? captureTrueTasks.slice() : [];
-  } else {
-    return captureTrueTasks ? captureFalseTasks.concat(captureTrueTasks) : captureFalseTasks.slice();
+  containsElement(elm1, elm2) {
+    return containsElement(elm1, elm2);
   }
-}
-function patchQueueMicrotask(global2, api) {
-  api.patchMethod(global2, "queueMicrotask", (delegate) => {
-    return function(self2, args) {
-      Zone.current.scheduleMicroTask("queueMicrotask", args[0]);
+  getParentElement(element) {
+    return getParentElement(element);
+  }
+  query(element, selector, multi) {
+    return invokeQuery(element, selector, multi);
+  }
+  computeStyle(element, prop, defaultValue) {
+    return computeStyle(element, prop);
+  }
+  animate(element, keyframes, duration, delay, easing, previousPlayers = []) {
+    const fill = delay == 0 ? "both" : "forwards";
+    const playerOptions = {
+      duration,
+      delay,
+      fill
     };
-  });
-}
-var taskSymbol = zoneSymbol("zoneTask");
-function patchTimer(window2, setName, cancelName, nameSuffix) {
-  let setNative = null;
-  let clearNative = null;
-  setName += nameSuffix;
-  cancelName += nameSuffix;
-  const tasksByHandleId = {};
-  function scheduleTask(task) {
-    const data = task.data;
-    data.args[0] = function() {
-      return task.invoke.apply(this, arguments);
-    };
-    const handleOrId = setNative.apply(window2, data.args);
-    if (isNumber(handleOrId)) {
-      data.handleId = handleOrId;
-    } else {
-      data.handle = handleOrId;
-      data.isRefreshable = isFunction(handleOrId.refresh);
+    if (easing) {
+      playerOptions["easing"] = easing;
     }
-    return task;
-  }
-  function clearTask(task) {
-    const { handle, handleId } = task.data;
-    return clearNative.call(window2, handle ?? handleId);
-  }
-  setNative = patchMethod(window2, setName, (delegate) => function(self2, args) {
-    if (isFunction(args[0])) {
-      const options = {
-        isRefreshable: false,
-        isPeriodic: nameSuffix === "Interval",
-        delay: nameSuffix === "Timeout" || nameSuffix === "Interval" ? args[1] || 0 : void 0,
-        args
-      };
-      const callback = args[0];
-      args[0] = function timer() {
-        try {
-          return callback.apply(this, arguments);
-        } finally {
-          const { handle: handle2, handleId: handleId2, isPeriodic: isPeriodic2, isRefreshable: isRefreshable2 } = options;
-          if (!isPeriodic2 && !isRefreshable2) {
-            if (handleId2) {
-              delete tasksByHandleId[handleId2];
-            } else if (handle2) {
-              handle2[taskSymbol] = null;
-            }
-          }
-        }
-      };
-      const task = scheduleMacroTaskWithCurrentZone(setName, args[0], options, scheduleTask, clearTask);
-      if (!task) {
-        return task;
-      }
-      const { handleId, handle, isRefreshable, isPeriodic } = task.data;
-      if (handleId) {
-        tasksByHandleId[handleId] = task;
-      } else if (handle) {
-        handle[taskSymbol] = task;
-        if (isRefreshable && !isPeriodic) {
-          const originalRefresh = handle.refresh;
-          handle.refresh = function() {
-            const { zone, state } = task;
-            if (state === "notScheduled") {
-              task._state = "scheduled";
-              zone._updateTaskCount(task, 1);
-            } else if (state === "running") {
-              task._state = "scheduling";
-            }
-            return originalRefresh.call(this);
-          };
-        }
-      }
-      return handle ?? handleId ?? task;
-    } else {
-      return delegate.apply(window2, args);
+    const previousStyles = /* @__PURE__ */ new Map();
+    const previousWebAnimationPlayers = previousPlayers.filter((player) => player instanceof WebAnimationsPlayer);
+    if (allowPreviousPlayerStylesMerge(duration, delay)) {
+      previousWebAnimationPlayers.forEach((player) => {
+        player.currentSnapshot.forEach((val, prop) => previousStyles.set(prop, val));
+      });
     }
-  });
-  clearNative = patchMethod(window2, cancelName, (delegate) => function(self2, args) {
-    const id = args[0];
-    let task;
-    if (isNumber(id)) {
-      task = tasksByHandleId[id];
-      delete tasksByHandleId[id];
+    let _keyframes = normalizeKeyframes(keyframes).map((styles) => new Map(styles));
+    _keyframes = balancePreviousStylesIntoKeyframes(element, _keyframes, previousStyles);
+    const specialStyles = packageNonAnimatableStyles(element, _keyframes);
+    return new WebAnimationsPlayer(element, _keyframes, playerOptions, specialStyles);
+  }
+};
+var ANIMATION_PREFIX = "@";
+var DISABLE_ANIMATIONS_FLAG = "@.disabled";
+var BaseAnimationRenderer = class {
+  constructor(namespaceId, delegate, engine, _onDestroy) {
+    this.namespaceId = namespaceId;
+    this.delegate = delegate;
+    this.engine = engine;
+    this._onDestroy = _onDestroy;
+    this.\u0275type = 0;
+  }
+  get data() {
+    return this.delegate.data;
+  }
+  destroyNode(node) {
+    this.delegate.destroyNode?.(node);
+  }
+  destroy() {
+    this.engine.destroy(this.namespaceId, this.delegate);
+    this.engine.afterFlushAnimationsDone(() => {
+      queueMicrotask(() => {
+        this.delegate.destroy();
+      });
+    });
+    this._onDestroy?.();
+  }
+  createElement(name, namespace) {
+    return this.delegate.createElement(name, namespace);
+  }
+  createComment(value) {
+    return this.delegate.createComment(value);
+  }
+  createText(value) {
+    return this.delegate.createText(value);
+  }
+  appendChild(parent, newChild) {
+    this.delegate.appendChild(parent, newChild);
+    this.engine.onInsert(this.namespaceId, newChild, parent, false);
+  }
+  insertBefore(parent, newChild, refChild, isMove = true) {
+    this.delegate.insertBefore(parent, newChild, refChild);
+    this.engine.onInsert(this.namespaceId, newChild, parent, isMove);
+  }
+  removeChild(parent, oldChild, isHostElement) {
+    this.engine.onRemove(this.namespaceId, oldChild, this.delegate);
+  }
+  selectRootElement(selectorOrNode, preserveContent) {
+    return this.delegate.selectRootElement(selectorOrNode, preserveContent);
+  }
+  parentNode(node) {
+    return this.delegate.parentNode(node);
+  }
+  nextSibling(node) {
+    return this.delegate.nextSibling(node);
+  }
+  setAttribute(el, name, value, namespace) {
+    this.delegate.setAttribute(el, name, value, namespace);
+  }
+  removeAttribute(el, name, namespace) {
+    this.delegate.removeAttribute(el, name, namespace);
+  }
+  addClass(el, name) {
+    this.delegate.addClass(el, name);
+  }
+  removeClass(el, name) {
+    this.delegate.removeClass(el, name);
+  }
+  setStyle(el, style2, value, flags) {
+    this.delegate.setStyle(el, style2, value, flags);
+  }
+  removeStyle(el, style2, flags) {
+    this.delegate.removeStyle(el, style2, flags);
+  }
+  setProperty(el, name, value) {
+    if (name.charAt(0) == ANIMATION_PREFIX && name == DISABLE_ANIMATIONS_FLAG) {
+      this.disableAnimations(el, !!value);
     } else {
-      task = id?.[taskSymbol];
-      if (task) {
-        id[taskSymbol] = null;
+      this.delegate.setProperty(el, name, value);
+    }
+  }
+  setValue(node, value) {
+    this.delegate.setValue(node, value);
+  }
+  listen(target, eventName, callback) {
+    return this.delegate.listen(target, eventName, callback);
+  }
+  disableAnimations(element, value) {
+    this.engine.disableAnimations(element, value);
+  }
+};
+var AnimationRenderer = class extends BaseAnimationRenderer {
+  constructor(factory, namespaceId, delegate, engine, onDestroy) {
+    super(namespaceId, delegate, engine, onDestroy);
+    this.factory = factory;
+    this.namespaceId = namespaceId;
+  }
+  setProperty(el, name, value) {
+    if (name.charAt(0) == ANIMATION_PREFIX) {
+      if (name.charAt(1) == "." && name == DISABLE_ANIMATIONS_FLAG) {
+        value = value === void 0 ? true : !!value;
+        this.disableAnimations(el, value);
       } else {
-        task = id;
-      }
-    }
-    if (task?.type) {
-      if (task.cancelFn) {
-        task.zone.cancelTask(task);
+        this.engine.process(this.namespaceId, el, name.slice(1), value);
       }
     } else {
-      delegate.apply(window2, args);
+      this.delegate.setProperty(el, name, value);
     }
-  });
-}
-function patchEvents(Zone2) {
-  Zone2.__load_patch("EventEmitter", (global2, Zone3, api) => {
-    const EE_ADD_LISTENER = "addListener";
-    const EE_PREPEND_LISTENER = "prependListener";
-    const EE_REMOVE_LISTENER = "removeListener";
-    const EE_REMOVE_ALL_LISTENER = "removeAllListeners";
-    const EE_LISTENERS = "listeners";
-    const EE_ON = "on";
-    const EE_OFF = "off";
-    const compareTaskCallbackVsDelegate = function(task, delegate) {
-      return task.callback === delegate || task.callback.listener === delegate;
-    };
-    const eventNameToString = function(eventName) {
-      if (typeof eventName === "string") {
-        return eventName;
+  }
+  listen(target, eventName, callback) {
+    if (eventName.charAt(0) == ANIMATION_PREFIX) {
+      const element = resolveElementFromTarget(target);
+      let name = eventName.slice(1);
+      let phase = "";
+      if (name.charAt(0) != ANIMATION_PREFIX) {
+        [name, phase] = parseTriggerCallbackName(name);
       }
-      if (!eventName) {
-        return "";
-      }
-      return eventName.toString().replace("(", "_").replace(")", "_");
-    };
-    function patchEventEmitterMethods(obj) {
-      const result = patchEventTarget(global2, api, [obj], {
-        useG: false,
-        add: EE_ADD_LISTENER,
-        rm: EE_REMOVE_LISTENER,
-        prepend: EE_PREPEND_LISTENER,
-        rmAll: EE_REMOVE_ALL_LISTENER,
-        listeners: EE_LISTENERS,
-        chkDup: false,
-        rt: true,
-        diff: compareTaskCallbackVsDelegate,
-        eventNameToString
+      return this.engine.listen(this.namespaceId, element, name, phase, (event) => {
+        const countId = event["_data"] || -1;
+        this.factory.scheduleListenerCallback(countId, callback, event);
       });
-      if (result && result[0]) {
-        obj[EE_ON] = obj[EE_ADD_LISTENER];
-        obj[EE_OFF] = obj[EE_REMOVE_LISTENER];
-      }
     }
-    let events;
-    try {
-      events = __require("events");
-    } catch (err) {
-    }
-    if (events && events.EventEmitter) {
-      patchEventEmitterMethods(events.EventEmitter.prototype);
-    }
-  });
+    return this.delegate.listen(target, eventName, callback);
+  }
+};
+function resolveElementFromTarget(target) {
+  switch (target) {
+    case "body":
+      return document.body;
+    case "document":
+      return document;
+    case "window":
+      return window;
+    default:
+      return target;
+  }
 }
-function patchFs(Zone2) {
-  Zone2.__load_patch("fs", (global2, Zone3, api) => {
-    let fs;
-    try {
-      fs = __require("fs");
-    } catch (err) {
+function parseTriggerCallbackName(triggerName) {
+  const dotIndex = triggerName.indexOf(".");
+  const trigger = triggerName.substring(0, dotIndex);
+  const phase = triggerName.slice(dotIndex + 1);
+  return [trigger, phase];
+}
+var AnimationRendererFactory = class {
+  constructor(delegate, engine, _zone) {
+    this.delegate = delegate;
+    this.engine = engine;
+    this._zone = _zone;
+    this._currentId = 0;
+    this._microtaskId = 1;
+    this._animationCallbacksBuffer = [];
+    this._rendererCache = /* @__PURE__ */ new Map();
+    this._cdRecurDepth = 0;
+    engine.onRemovalComplete = (element, delegate2) => {
+      const parentNode = delegate2?.parentNode(element);
+      if (parentNode) {
+        delegate2.removeChild(parentNode, element);
+      }
+    };
+  }
+  createRenderer(hostElement, type) {
+    const EMPTY_NAMESPACE_ID = "";
+    const delegate = this.delegate.createRenderer(hostElement, type);
+    if (!hostElement || !type?.data?.["animation"]) {
+      const cache = this._rendererCache;
+      let renderer = cache.get(delegate);
+      if (!renderer) {
+        const onRendererDestroy = () => cache.delete(delegate);
+        renderer = new BaseAnimationRenderer(EMPTY_NAMESPACE_ID, delegate, this.engine, onRendererDestroy);
+        cache.set(delegate, renderer);
+      }
+      return renderer;
     }
-    if (!fs)
-      return;
-    const TO_PATCH_MACROTASK_METHODS = [
-      "access",
-      "appendFile",
-      "chmod",
-      "chown",
-      "close",
-      "exists",
-      "fchmod",
-      "fchown",
-      "fdatasync",
-      "fstat",
-      "fsync",
-      "ftruncate",
-      "futimes",
-      "lchmod",
-      "lchown",
-      "lutimes",
-      "link",
-      "lstat",
-      "mkdir",
-      "mkdtemp",
-      "open",
-      "opendir",
-      "read",
-      "readdir",
-      "readFile",
-      "readlink",
-      "realpath",
-      "rename",
-      "rmdir",
-      "stat",
-      "symlink",
-      "truncate",
-      "unlink",
-      "utimes",
-      "write",
-      "writeFile",
-      "writev"
-    ];
-    TO_PATCH_MACROTASK_METHODS.filter((name) => !!fs[name] && typeof fs[name] === "function").forEach((name) => {
-      patchMacroTask(fs, name, (self2, args) => {
-        return {
-          name: "fs." + name,
-          args,
-          cbIdx: args.length > 0 ? args.length - 1 : -1,
-          target: self2
-        };
-      });
+    const componentId = type.id;
+    const namespaceId = type.id + "-" + this._currentId;
+    this._currentId++;
+    this.engine.register(namespaceId, hostElement);
+    const registerTrigger = (trigger) => {
+      if (Array.isArray(trigger)) {
+        trigger.forEach(registerTrigger);
+      } else {
+        this.engine.registerTrigger(componentId, namespaceId, hostElement, trigger.name, trigger);
+      }
+    };
+    const animationTriggers = type.data["animation"];
+    animationTriggers.forEach(registerTrigger);
+    return new AnimationRenderer(this, namespaceId, delegate, this.engine);
+  }
+  begin() {
+    this._cdRecurDepth++;
+    if (this.delegate.begin) {
+      this.delegate.begin();
+    }
+  }
+  _scheduleCountTask() {
+    queueMicrotask(() => {
+      this._microtaskId++;
     });
-    const realpathOriginalDelegate = fs.realpath?.[api.symbol("OriginalDelegate")];
-    if (realpathOriginalDelegate?.native) {
-      fs.realpath.native = realpathOriginalDelegate.native;
-      patchMacroTask(fs.realpath, "native", (self2, args) => ({
-        args,
-        target: self2,
-        cbIdx: args.length > 0 ? args.length - 1 : -1,
-        name: "fs.realpath.native"
-      }));
-    }
-  });
-}
-function patchNodeUtil(Zone2) {
-  Zone2.__load_patch("node_util", (global2, Zone3, api) => {
-    api.patchOnProperties = patchOnProperties;
-    api.patchMethod = patchMethod;
-    api.bindArguments = bindArguments;
-    api.patchMacroTask = patchMacroTask;
-    setShouldCopySymbolProperties(true);
-  });
-}
-var set = "set";
-var clear = "clear";
-function patchNode(Zone2) {
-  patchNodeUtil(Zone2);
-  patchEvents(Zone2);
-  patchFs(Zone2);
-  Zone2.__load_patch("node_timers", (global2, Zone3) => {
-    let globalUseTimeoutFromTimer = false;
-    try {
-      const timers = __require("timers");
-      let globalEqualTimersTimeout = global2.setTimeout === timers.setTimeout;
-      if (!globalEqualTimersTimeout && !isMix) {
-        const originSetTimeout = timers.setTimeout;
-        timers.setTimeout = function() {
-          globalUseTimeoutFromTimer = true;
-          return originSetTimeout.apply(this, arguments);
-        };
-        const detectTimeout = global2.setTimeout(() => {
-        }, 100);
-        clearTimeout(detectTimeout);
-        timers.setTimeout = originSetTimeout;
-      }
-      patchTimer(timers, set, clear, "Timeout");
-      patchTimer(timers, set, clear, "Interval");
-      patchTimer(timers, set, clear, "Immediate");
-    } catch (error) {
-    }
-    if (isMix) {
+  }
+  /** @internal */
+  scheduleListenerCallback(count, fn, data) {
+    if (count >= 0 && count < this._microtaskId) {
+      this._zone.run(() => fn(data));
       return;
     }
-    if (!globalUseTimeoutFromTimer) {
-      patchTimer(global2, set, clear, "Timeout");
-      patchTimer(global2, set, clear, "Interval");
-      patchTimer(global2, set, clear, "Immediate");
-    } else {
-      global2[Zone3.__symbol__("setTimeout")] = global2.setTimeout;
-      global2[Zone3.__symbol__("setInterval")] = global2.setInterval;
-      global2[Zone3.__symbol__("setImmediate")] = global2.setImmediate;
-    }
-  });
-  Zone2.__load_patch("nextTick", () => {
-    patchMicroTask(process, "nextTick", (self2, args) => {
-      return {
-        name: "process.nextTick",
-        args,
-        cbIdx: args.length > 0 && typeof args[0] === "function" ? 0 : -1,
-        target: process
-      };
-    });
-  });
-  Zone2.__load_patch("handleUnhandledPromiseRejection", (global2, Zone3, api) => {
-    Zone3[api.symbol("unhandledPromiseRejectionHandler")] = findProcessPromiseRejectionHandler("unhandledRejection");
-    Zone3[api.symbol("rejectionHandledHandler")] = findProcessPromiseRejectionHandler("rejectionHandled");
-    function findProcessPromiseRejectionHandler(evtName) {
-      return function(e) {
-        const eventTasks = findEventTasks(process, evtName);
-        eventTasks.forEach((eventTask) => {
-          if (evtName === "unhandledRejection") {
-            eventTask.invoke(e.rejection, e.promise);
-          } else if (evtName === "rejectionHandled") {
-            eventTask.invoke(e.promise);
-          }
-        });
-      };
-    }
-  });
-  Zone2.__load_patch("crypto", () => {
-    let crypto;
-    try {
-      crypto = __require("crypto");
-    } catch (err) {
-    }
-    if (crypto) {
-      const methodNames = ["randomBytes", "pbkdf2"];
-      methodNames.forEach((name) => {
-        patchMacroTask(crypto, name, (self2, args) => {
-          return {
-            name: "crypto." + name,
-            args,
-            cbIdx: args.length > 0 && typeof args[args.length - 1] === "function" ? args.length - 1 : -1,
-            target: crypto
-          };
+    const animationCallbacksBuffer = this._animationCallbacksBuffer;
+    if (animationCallbacksBuffer.length == 0) {
+      queueMicrotask(() => {
+        this._zone.run(() => {
+          animationCallbacksBuffer.forEach((tuple) => {
+            const [fn2, data2] = tuple;
+            fn2(data2);
+          });
+          this._animationCallbacksBuffer = [];
         });
       });
     }
-  });
-  Zone2.__load_patch("console", (global2, Zone3) => {
-    const consoleMethods = [
-      "dir",
-      "log",
-      "info",
-      "error",
-      "warn",
-      "assert",
-      "debug",
-      "timeEnd",
-      "trace"
-    ];
-    consoleMethods.forEach((m) => {
-      const originalMethod = console[Zone3.__symbol__(m)] = console[m];
-      if (originalMethod) {
-        console[m] = function() {
-          const args = ArraySlice.call(arguments);
-          if (Zone3.current === Zone3.root) {
-            return originalMethod.apply(this, args);
-          } else {
-            return Zone3.root.run(originalMethod, this, args);
-          }
-        };
-      }
-    });
-  });
-  Zone2.__load_patch("queueMicrotask", (global2, Zone3, api) => {
-    patchQueueMicrotask(global2, api);
-  });
-}
-function rollupMain() {
-  const Zone2 = loadZone();
-  patchNode(Zone2);
-  patchPromise(Zone2);
-  patchToString(Zone2);
-  return Zone2;
-}
-rollupMain();
+    animationCallbacksBuffer.push([fn, data]);
+  }
+  end() {
+    this._cdRecurDepth--;
+    if (this._cdRecurDepth == 0) {
+      this._zone.runOutsideAngular(() => {
+        this._scheduleCountTask();
+        this.engine.flush(this._microtaskId);
+      });
+    }
+    if (this.delegate.end) {
+      this.delegate.end();
+    }
+  }
+  whenRenderingDone() {
+    return this.engine.whenRenderingDone();
+  }
+};
 
-// node_modules/@angular/platform-server/fesm2022/init.mjs
+// node_modules/@angular/platform-browser/fesm2022/animations.mjs
+var InjectableAnimationEngine = class _InjectableAnimationEngine extends AnimationEngine {
+  // The `ApplicationRef` is injected here explicitly to force the dependency ordering.
+  // Since the `ApplicationRef` should be created earlier before the `AnimationEngine`, they
+  // both have `ngOnDestroy` hooks and `flush()` must be called after all views are destroyed.
+  constructor(doc, driver, normalizer) {
+    super(doc, driver, normalizer, inject(ChangeDetectionScheduler, {
+      optional: true
+    }));
+  }
+  ngOnDestroy() {
+    this.flush();
+  }
+  static {
+    this.\u0275fac = function InjectableAnimationEngine_Factory(t) {
+      return new (t || _InjectableAnimationEngine)(\u0275\u0275inject(DOCUMENT), \u0275\u0275inject(AnimationDriver), \u0275\u0275inject(AnimationStyleNormalizer));
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _InjectableAnimationEngine,
+      factory: _InjectableAnimationEngine.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(InjectableAnimationEngine, [{
+    type: Injectable
+  }], () => [{
+    type: Document,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT]
+    }]
+  }, {
+    type: AnimationDriver
+  }, {
+    type: AnimationStyleNormalizer
+  }], null);
+})();
+function instantiateDefaultStyleNormalizer() {
+  return new WebAnimationsStyleNormalizer();
+}
+function instantiateRendererFactory(renderer, engine, zone) {
+  return new AnimationRendererFactory(renderer, engine, zone);
+}
+var SHARED_ANIMATION_PROVIDERS = [{
+  provide: AnimationStyleNormalizer,
+  useFactory: instantiateDefaultStyleNormalizer
+}, {
+  provide: AnimationEngine,
+  useClass: InjectableAnimationEngine
+}, {
+  provide: RendererFactory2,
+  useFactory: instantiateRendererFactory,
+  deps: [DomRendererFactory2, AnimationEngine, NgZone]
+}];
+var BROWSER_ANIMATIONS_PROVIDERS = [{
+  provide: AnimationDriver,
+  useFactory: () => new WebAnimationsDriver()
+}, {
+  provide: ANIMATION_MODULE_TYPE,
+  useValue: "BrowserAnimations"
+}, ...SHARED_ANIMATION_PROVIDERS];
+var BROWSER_NOOP_ANIMATIONS_PROVIDERS = [{
+  provide: AnimationDriver,
+  useClass: NoopAnimationDriver
+}, {
+  provide: ANIMATION_MODULE_TYPE,
+  useValue: "NoopAnimations"
+}, ...SHARED_ANIMATION_PROVIDERS];
+var BrowserAnimationsModule = class _BrowserAnimationsModule {
+  /**
+   * Configures the module based on the specified object.
+   *
+   * @param config Object used to configure the behavior of the `BrowserAnimationsModule`.
+   * @see {@link BrowserAnimationsModuleConfig}
+   *
+   * @usageNotes
+   * When registering the `BrowserAnimationsModule`, you can use the `withConfig`
+   * function as follows:
+   * ```
+   * @NgModule({
+   *   imports: [BrowserAnimationsModule.withConfig(config)]
+   * })
+   * class MyNgModule {}
+   * ```
+   */
+  static withConfig(config) {
+    return {
+      ngModule: _BrowserAnimationsModule,
+      providers: config.disableAnimations ? BROWSER_NOOP_ANIMATIONS_PROVIDERS : BROWSER_ANIMATIONS_PROVIDERS
+    };
+  }
+  static {
+    this.\u0275fac = function BrowserAnimationsModule_Factory(t) {
+      return new (t || _BrowserAnimationsModule)();
+    };
+  }
+  static {
+    this.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+      type: _BrowserAnimationsModule
+    });
+  }
+  static {
+    this.\u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({
+      providers: BROWSER_ANIMATIONS_PROVIDERS,
+      imports: [BrowserModule]
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(BrowserAnimationsModule, [{
+    type: NgModule,
+    args: [{
+      exports: [BrowserModule],
+      providers: BROWSER_ANIMATIONS_PROVIDERS
+    }]
+  }], null, null);
+})();
+var NoopAnimationsModule = class _NoopAnimationsModule {
+  static {
+    this.\u0275fac = function NoopAnimationsModule_Factory(t) {
+      return new (t || _NoopAnimationsModule)();
+    };
+  }
+  static {
+    this.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+      type: _NoopAnimationsModule
+    });
+  }
+  static {
+    this.\u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({
+      providers: BROWSER_NOOP_ANIMATIONS_PROVIDERS,
+      imports: [BrowserModule]
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(NoopAnimationsModule, [{
+    type: NgModule,
+    args: [{
+      exports: [BrowserModule],
+      providers: BROWSER_NOOP_ANIMATIONS_PROVIDERS
+    }]
+  }], null, null);
+})();
+function provideNoopAnimations() {
+  return [...BROWSER_NOOP_ANIMATIONS_PROVIDERS];
+}
+
+// node_modules/@angular/platform-server/fesm2022/platform-server.mjs
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __commonJS = (cb, mod) => function __require2() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = {
+    exports: {}
+  }).exports, mod), mod.exports;
 };
 var require_Event = __commonJS({
   "external/npm/node_modules/domino/lib/Event.js"(exports, module) {
@@ -2199,31 +4626,41 @@ var require_Event = __commonJS({
       }
     }
     Event.prototype = Object.create(Object.prototype, {
-      constructor: { value: Event },
-      stopPropagation: { value: function stopPropagation() {
-        this._propagationStopped = true;
-      } },
-      stopImmediatePropagation: { value: function stopImmediatePropagation() {
-        this._propagationStopped = true;
-        this._immediatePropagationStopped = true;
-      } },
-      preventDefault: { value: function preventDefault() {
-        if (this.cancelable)
-          this.defaultPrevented = true;
-      } },
-      initEvent: { value: function initEvent(type, bubbles, cancelable) {
-        this._initialized = true;
-        if (this._dispatching)
-          return;
-        this._propagationStopped = false;
-        this._immediatePropagationStopped = false;
-        this.defaultPrevented = false;
-        this.isTrusted = false;
-        this.target = null;
-        this.type = type;
-        this.bubbles = bubbles;
-        this.cancelable = cancelable;
-      } }
+      constructor: {
+        value: Event
+      },
+      stopPropagation: {
+        value: function stopPropagation() {
+          this._propagationStopped = true;
+        }
+      },
+      stopImmediatePropagation: {
+        value: function stopImmediatePropagation() {
+          this._propagationStopped = true;
+          this._immediatePropagationStopped = true;
+        }
+      },
+      preventDefault: {
+        value: function preventDefault() {
+          if (this.cancelable)
+            this.defaultPrevented = true;
+        }
+      },
+      initEvent: {
+        value: function initEvent(type, bubbles, cancelable) {
+          this._initialized = true;
+          if (this._dispatching)
+            return;
+          this._propagationStopped = false;
+          this._immediatePropagationStopped = false;
+          this.defaultPrevented = false;
+          this.isTrusted = false;
+          this.target = null;
+          this.type = type;
+          this.bubbles = bubbles;
+          this.cancelable = cancelable;
+        }
+      }
     });
   }
 });
@@ -2238,12 +4675,16 @@ var require_UIEvent = __commonJS({
       this.detail = 0;
     }
     UIEvent.prototype = Object.create(Event.prototype, {
-      constructor: { value: UIEvent },
-      initUIEvent: { value: function(type, bubbles, cancelable, view, detail) {
-        this.initEvent(type, bubbles, cancelable);
-        this.view = view;
-        this.detail = detail;
-      } }
+      constructor: {
+        value: UIEvent
+      },
+      initUIEvent: {
+        value: function(type, bubbles, cancelable, view, detail) {
+          this.initEvent(type, bubbles, cancelable);
+          this.view = view;
+          this.detail = detail;
+        }
+      }
     });
   }
 });
@@ -2261,48 +4702,54 @@ var require_MouseEvent = __commonJS({
       this.relatedTarget = null;
     }
     MouseEvent.prototype = Object.create(UIEvent.prototype, {
-      constructor: { value: MouseEvent },
-      initMouseEvent: { value: function(type, bubbles, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget) {
-        this.initEvent(type, bubbles, cancelable, view, detail);
-        this.screenX = screenX;
-        this.screenY = screenY;
-        this.clientX = clientX;
-        this.clientY = clientY;
-        this.ctrlKey = ctrlKey;
-        this.altKey = altKey;
-        this.shiftKey = shiftKey;
-        this.metaKey = metaKey;
-        this.button = button;
-        switch (button) {
-          case 0:
-            this.buttons = 1;
-            break;
-          case 1:
-            this.buttons = 4;
-            break;
-          case 2:
-            this.buttons = 2;
-            break;
-          default:
-            this.buttons = 0;
-            break;
+      constructor: {
+        value: MouseEvent
+      },
+      initMouseEvent: {
+        value: function(type, bubbles, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget) {
+          this.initEvent(type, bubbles, cancelable, view, detail);
+          this.screenX = screenX;
+          this.screenY = screenY;
+          this.clientX = clientX;
+          this.clientY = clientY;
+          this.ctrlKey = ctrlKey;
+          this.altKey = altKey;
+          this.shiftKey = shiftKey;
+          this.metaKey = metaKey;
+          this.button = button;
+          switch (button) {
+            case 0:
+              this.buttons = 1;
+              break;
+            case 1:
+              this.buttons = 4;
+              break;
+            case 2:
+              this.buttons = 2;
+              break;
+            default:
+              this.buttons = 0;
+              break;
+          }
+          this.relatedTarget = relatedTarget;
         }
-        this.relatedTarget = relatedTarget;
-      } },
-      getModifierState: { value: function(key) {
-        switch (key) {
-          case "Alt":
-            return this.altKey;
-          case "Control":
-            return this.ctrlKey;
-          case "Shift":
-            return this.shiftKey;
-          case "Meta":
-            return this.metaKey;
-          default:
-            return false;
+      },
+      getModifierState: {
+        value: function(key) {
+          switch (key) {
+            case "Alt":
+              return this.altKey;
+            case "Control":
+              return this.ctrlKey;
+            case "Shift":
+              return this.shiftKey;
+            case "Meta":
+              return this.metaKey;
+            default:
+              return false;
+          }
         }
-      } }
+      }
     });
   }
 });
@@ -2331,62 +4778,8 @@ var require_DOMException = __commonJS({
     var TIMEOUT_ERR = 23;
     var INVALID_NODE_TYPE_ERR = 24;
     var DATA_CLONE_ERR = 25;
-    var names = [
-      null,
-      "INDEX_SIZE_ERR",
-      null,
-      "HIERARCHY_REQUEST_ERR",
-      "WRONG_DOCUMENT_ERR",
-      "INVALID_CHARACTER_ERR",
-      null,
-      "NO_MODIFICATION_ALLOWED_ERR",
-      "NOT_FOUND_ERR",
-      "NOT_SUPPORTED_ERR",
-      "INUSE_ATTRIBUTE_ERR",
-      "INVALID_STATE_ERR",
-      "SYNTAX_ERR",
-      "INVALID_MODIFICATION_ERR",
-      "NAMESPACE_ERR",
-      "INVALID_ACCESS_ERR",
-      null,
-      "TYPE_MISMATCH_ERR",
-      "SECURITY_ERR",
-      "NETWORK_ERR",
-      "ABORT_ERR",
-      "URL_MISMATCH_ERR",
-      "QUOTA_EXCEEDED_ERR",
-      "TIMEOUT_ERR",
-      "INVALID_NODE_TYPE_ERR",
-      "DATA_CLONE_ERR"
-    ];
-    var messages = [
-      null,
-      "INDEX_SIZE_ERR (1): the index is not in the allowed range",
-      null,
-      "HIERARCHY_REQUEST_ERR (3): the operation would yield an incorrect nodes model",
-      "WRONG_DOCUMENT_ERR (4): the object is in the wrong Document, a call to importNode is required",
-      "INVALID_CHARACTER_ERR (5): the string contains invalid characters",
-      null,
-      "NO_MODIFICATION_ALLOWED_ERR (7): the object can not be modified",
-      "NOT_FOUND_ERR (8): the object can not be found here",
-      "NOT_SUPPORTED_ERR (9): this operation is not supported",
-      "INUSE_ATTRIBUTE_ERR (10): setAttributeNode called on owned Attribute",
-      "INVALID_STATE_ERR (11): the object is in an invalid state",
-      "SYNTAX_ERR (12): the string did not match the expected pattern",
-      "INVALID_MODIFICATION_ERR (13): the object can not be modified in this way",
-      "NAMESPACE_ERR (14): the operation is not allowed by Namespaces in XML",
-      "INVALID_ACCESS_ERR (15): the object does not support the operation or argument",
-      null,
-      "TYPE_MISMATCH_ERR (17): the type of the object does not match the expected type",
-      "SECURITY_ERR (18): the operation is insecure",
-      "NETWORK_ERR (19): a network error occurred",
-      "ABORT_ERR (20): the user aborted an operation",
-      "URL_MISMATCH_ERR (21): the given URL does not match another URL",
-      "QUOTA_EXCEEDED_ERR (22): the quota has been exceeded",
-      "TIMEOUT_ERR (23): a timeout occurred",
-      "INVALID_NODE_TYPE_ERR (24): the supplied node is invalid or has an invalid ancestor for this operation",
-      "DATA_CLONE_ERR (25): the object can not be cloned."
-    ];
+    var names = [null, "INDEX_SIZE_ERR", null, "HIERARCHY_REQUEST_ERR", "WRONG_DOCUMENT_ERR", "INVALID_CHARACTER_ERR", null, "NO_MODIFICATION_ALLOWED_ERR", "NOT_FOUND_ERR", "NOT_SUPPORTED_ERR", "INUSE_ATTRIBUTE_ERR", "INVALID_STATE_ERR", "SYNTAX_ERR", "INVALID_MODIFICATION_ERR", "NAMESPACE_ERR", "INVALID_ACCESS_ERR", null, "TYPE_MISMATCH_ERR", "SECURITY_ERR", "NETWORK_ERR", "ABORT_ERR", "URL_MISMATCH_ERR", "QUOTA_EXCEEDED_ERR", "TIMEOUT_ERR", "INVALID_NODE_TYPE_ERR", "DATA_CLONE_ERR"];
+    var messages = [null, "INDEX_SIZE_ERR (1): the index is not in the allowed range", null, "HIERARCHY_REQUEST_ERR (3): the operation would yield an incorrect nodes model", "WRONG_DOCUMENT_ERR (4): the object is in the wrong Document, a call to importNode is required", "INVALID_CHARACTER_ERR (5): the string contains invalid characters", null, "NO_MODIFICATION_ALLOWED_ERR (7): the object can not be modified", "NOT_FOUND_ERR (8): the object can not be found here", "NOT_SUPPORTED_ERR (9): this operation is not supported", "INUSE_ATTRIBUTE_ERR (10): setAttributeNode called on owned Attribute", "INVALID_STATE_ERR (11): the object is in an invalid state", "SYNTAX_ERR (12): the string did not match the expected pattern", "INVALID_MODIFICATION_ERR (13): the object can not be modified in this way", "NAMESPACE_ERR (14): the operation is not allowed by Namespaces in XML", "INVALID_ACCESS_ERR (15): the object does not support the operation or argument", null, "TYPE_MISMATCH_ERR (17): the type of the object does not match the expected type", "SECURITY_ERR (18): the operation is insecure", "NETWORK_ERR (19): a network error occurred", "ABORT_ERR (20): the user aborted an operation", "URL_MISMATCH_ERR (21): the given URL does not match another URL", "QUOTA_EXCEEDED_ERR (22): the quota has been exceeded", "TIMEOUT_ERR (23): a timeout occurred", "INVALID_NODE_TYPE_ERR (24): the supplied node is invalid or has an invalid ancestor for this operation", "DATA_CLONE_ERR (25): the object can not be cloned."];
     var constants = {
       INDEX_SIZE_ERR,
       DOMSTRING_SIZE_ERR: 2,
@@ -2423,7 +4816,9 @@ var require_DOMException = __commonJS({
     }
     DOMException.prototype.__proto__ = Error.prototype;
     for (c in constants) {
-      v = { value: constants[c] };
+      v = {
+        value: constants[c]
+      };
       Object.defineProperty(DOMException, c, v);
       Object.defineProperty(DOMException.prototype, c, v);
     }
@@ -2526,7 +4921,10 @@ var require_utils = __commonJS({
     };
     exports.expose = function(src, c) {
       for (var n in src) {
-        Object.defineProperty(c.prototype, n, { value: src[n], writable: isApiWritable });
+        Object.defineProperty(c.prototype, n, {
+          value: src[n],
+          writable: isApiWritable
+        });
       }
     };
     exports.merge = function(a, b) {
@@ -2574,7 +4972,10 @@ var require_EventTarget = __commonJS({
           if (l.listener === listener && l.capture === capture)
             return;
         }
-        var obj = { listener, capture };
+        var obj = {
+          listener,
+          capture
+        };
         if (typeof listener === "function")
           obj.f = listener;
         list.push(obj);
@@ -2716,23 +5117,7 @@ var require_EventTarget = __commonJS({
           activated._pre_click_activation_steps();
         }
         var click = this.ownerDocument.createEvent("MouseEvent");
-        click.initMouseEvent(
-          "click",
-          true,
-          true,
-          this.ownerDocument.defaultView,
-          1,
-          event.screenX,
-          event.screenY,
-          event.clientX,
-          event.clientY,
-          event.ctrlKey,
-          event.altKey,
-          event.shiftKey,
-          event.metaKey,
-          event.button,
-          null
-        );
+        click.initMouseEvent("click", true, true, this.ownerDocument.defaultView, 1, event.screenX, event.screenY, event.clientX, event.clientY, event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, null);
         var result = this._dispatchEvent(click, true);
         if (activated) {
           if (result) {
@@ -3014,13 +5399,23 @@ var require_Node = __commonJS({
     var DOCUMENT_POSITION_CONTAINED_BY = Node.DOCUMENT_POSITION_CONTAINED_BY = 16;
     var DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 32;
     Node.prototype = Object.create(EventTarget.prototype, {
-      baseURI: { get: utils.nyi },
-      parentElement: { get: function() {
-        return this.parentNode && this.parentNode.nodeType === ELEMENT_NODE ? this.parentNode : null;
-      } },
-      hasChildNodes: { value: utils.shouldOverride },
-      firstChild: { get: utils.shouldOverride },
-      lastChild: { get: utils.shouldOverride },
+      baseURI: {
+        get: utils.nyi
+      },
+      parentElement: {
+        get: function() {
+          return this.parentNode && this.parentNode.nodeType === ELEMENT_NODE ? this.parentNode : null;
+        }
+      },
+      hasChildNodes: {
+        value: utils.shouldOverride
+      },
+      firstChild: {
+        get: utils.shouldOverride
+      },
+      lastChild: {
+        get: utils.shouldOverride
+      },
       isConnected: {
         get: function() {
           let node = this;
@@ -3036,22 +5431,26 @@ var require_Node = __commonJS({
           return false;
         }
       },
-      previousSibling: { get: function() {
-        var parent = this.parentNode;
-        if (!parent)
-          return null;
-        if (this === parent.firstChild)
-          return null;
-        return this._previousSibling;
-      } },
-      nextSibling: { get: function() {
-        var parent = this.parentNode, next = this._nextSibling;
-        if (!parent)
-          return null;
-        if (next === parent.firstChild)
-          return null;
-        return next;
-      } },
+      previousSibling: {
+        get: function() {
+          var parent = this.parentNode;
+          if (!parent)
+            return null;
+          if (this === parent.firstChild)
+            return null;
+          return this._previousSibling;
+        }
+      },
+      nextSibling: {
+        get: function() {
+          var parent = this.parentNode, next = this._nextSibling;
+          if (!parent)
+            return null;
+          if (next === parent.firstChild)
+            return null;
+          return next;
+        }
+      },
       textContent: {
         get: function() {
           return null;
@@ -3066,482 +5465,572 @@ var require_Node = __commonJS({
         set: function(v) {
         }
       },
-      _countChildrenOfType: { value: function(type) {
-        var sum = 0;
-        for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-          if (kid.nodeType === type)
-            sum++;
+      _countChildrenOfType: {
+        value: function(type) {
+          var sum = 0;
+          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+            if (kid.nodeType === type)
+              sum++;
+          }
+          return sum;
         }
-        return sum;
-      } },
-      _ensureInsertValid: { value: function _ensureInsertValid(node, child, isPreinsert) {
-        var parent = this, i, kid;
-        if (!node.nodeType)
-          throw new TypeError("not a node");
-        switch (parent.nodeType) {
-          case DOCUMENT_NODE:
-          case DOCUMENT_FRAGMENT_NODE:
-          case ELEMENT_NODE:
-            break;
-          default:
-            utils.HierarchyRequestError();
-        }
-        if (node.isAncestor(parent))
-          utils.HierarchyRequestError();
-        if (child !== null || !isPreinsert) {
-          if (child.parentNode !== parent)
-            utils.NotFoundError();
-        }
-        switch (node.nodeType) {
-          case DOCUMENT_FRAGMENT_NODE:
-          case DOCUMENT_TYPE_NODE:
-          case ELEMENT_NODE:
-          case TEXT_NODE:
-          case PROCESSING_INSTRUCTION_NODE:
-          case COMMENT_NODE:
-            break;
-          default:
-            utils.HierarchyRequestError();
-        }
-        if (parent.nodeType === DOCUMENT_NODE) {
-          switch (node.nodeType) {
-            case TEXT_NODE:
-              utils.HierarchyRequestError();
-              break;
+      },
+      _ensureInsertValid: {
+        value: function _ensureInsertValid(node, child, isPreinsert) {
+          var parent = this, i, kid;
+          if (!node.nodeType)
+            throw new TypeError("not a node");
+          switch (parent.nodeType) {
+            case DOCUMENT_NODE:
             case DOCUMENT_FRAGMENT_NODE:
-              if (node._countChildrenOfType(TEXT_NODE) > 0)
+            case ELEMENT_NODE:
+              break;
+            default:
+              utils.HierarchyRequestError();
+          }
+          if (node.isAncestor(parent))
+            utils.HierarchyRequestError();
+          if (child !== null || !isPreinsert) {
+            if (child.parentNode !== parent)
+              utils.NotFoundError();
+          }
+          switch (node.nodeType) {
+            case DOCUMENT_FRAGMENT_NODE:
+            case DOCUMENT_TYPE_NODE:
+            case ELEMENT_NODE:
+            case TEXT_NODE:
+            case PROCESSING_INSTRUCTION_NODE:
+            case COMMENT_NODE:
+              break;
+            default:
+              utils.HierarchyRequestError();
+          }
+          if (parent.nodeType === DOCUMENT_NODE) {
+            switch (node.nodeType) {
+              case TEXT_NODE:
                 utils.HierarchyRequestError();
-              switch (node._countChildrenOfType(ELEMENT_NODE)) {
-                case 0:
-                  break;
-                case 1:
-                  if (child !== null) {
-                    if (isPreinsert && child.nodeType === DOCUMENT_TYPE_NODE)
-                      utils.HierarchyRequestError();
-                    for (kid = child.nextSibling; kid !== null; kid = kid.nextSibling) {
-                      if (kid.nodeType === DOCUMENT_TYPE_NODE)
+                break;
+              case DOCUMENT_FRAGMENT_NODE:
+                if (node._countChildrenOfType(TEXT_NODE) > 0)
+                  utils.HierarchyRequestError();
+                switch (node._countChildrenOfType(ELEMENT_NODE)) {
+                  case 0:
+                    break;
+                  case 1:
+                    if (child !== null) {
+                      if (isPreinsert && child.nodeType === DOCUMENT_TYPE_NODE)
+                        utils.HierarchyRequestError();
+                      for (kid = child.nextSibling; kid !== null; kid = kid.nextSibling) {
+                        if (kid.nodeType === DOCUMENT_TYPE_NODE)
+                          utils.HierarchyRequestError();
+                      }
+                    }
+                    i = parent._countChildrenOfType(ELEMENT_NODE);
+                    if (isPreinsert) {
+                      if (i > 0)
+                        utils.HierarchyRequestError();
+                    } else {
+                      if (i > 1 || i === 1 && child.nodeType !== ELEMENT_NODE)
                         utils.HierarchyRequestError();
                     }
-                  }
-                  i = parent._countChildrenOfType(ELEMENT_NODE);
-                  if (isPreinsert) {
-                    if (i > 0)
-                      utils.HierarchyRequestError();
-                  } else {
-                    if (i > 1 || i === 1 && child.nodeType !== ELEMENT_NODE)
-                      utils.HierarchyRequestError();
-                  }
-                  break;
-                default:
-                  utils.HierarchyRequestError();
-              }
-              break;
-            case ELEMENT_NODE:
-              if (child !== null) {
-                if (isPreinsert && child.nodeType === DOCUMENT_TYPE_NODE)
-                  utils.HierarchyRequestError();
-                for (kid = child.nextSibling; kid !== null; kid = kid.nextSibling) {
-                  if (kid.nodeType === DOCUMENT_TYPE_NODE)
-                    utils.HierarchyRequestError();
-                }
-              }
-              i = parent._countChildrenOfType(ELEMENT_NODE);
-              if (isPreinsert) {
-                if (i > 0)
-                  utils.HierarchyRequestError();
-              } else {
-                if (i > 1 || i === 1 && child.nodeType !== ELEMENT_NODE)
-                  utils.HierarchyRequestError();
-              }
-              break;
-            case DOCUMENT_TYPE_NODE:
-              if (child === null) {
-                if (parent._countChildrenOfType(ELEMENT_NODE))
-                  utils.HierarchyRequestError();
-              } else {
-                for (kid = parent.firstChild; kid !== null; kid = kid.nextSibling) {
-                  if (kid === child)
                     break;
-                  if (kid.nodeType === ELEMENT_NODE)
+                  default:
                     utils.HierarchyRequestError();
                 }
-              }
-              i = parent._countChildrenOfType(DOCUMENT_TYPE_NODE);
-              if (isPreinsert) {
-                if (i > 0)
-                  utils.HierarchyRequestError();
-              } else {
-                if (i > 1 || i === 1 && child.nodeType !== DOCUMENT_TYPE_NODE)
-                  utils.HierarchyRequestError();
-              }
-              break;
+                break;
+              case ELEMENT_NODE:
+                if (child !== null) {
+                  if (isPreinsert && child.nodeType === DOCUMENT_TYPE_NODE)
+                    utils.HierarchyRequestError();
+                  for (kid = child.nextSibling; kid !== null; kid = kid.nextSibling) {
+                    if (kid.nodeType === DOCUMENT_TYPE_NODE)
+                      utils.HierarchyRequestError();
+                  }
+                }
+                i = parent._countChildrenOfType(ELEMENT_NODE);
+                if (isPreinsert) {
+                  if (i > 0)
+                    utils.HierarchyRequestError();
+                } else {
+                  if (i > 1 || i === 1 && child.nodeType !== ELEMENT_NODE)
+                    utils.HierarchyRequestError();
+                }
+                break;
+              case DOCUMENT_TYPE_NODE:
+                if (child === null) {
+                  if (parent._countChildrenOfType(ELEMENT_NODE))
+                    utils.HierarchyRequestError();
+                } else {
+                  for (kid = parent.firstChild; kid !== null; kid = kid.nextSibling) {
+                    if (kid === child)
+                      break;
+                    if (kid.nodeType === ELEMENT_NODE)
+                      utils.HierarchyRequestError();
+                  }
+                }
+                i = parent._countChildrenOfType(DOCUMENT_TYPE_NODE);
+                if (isPreinsert) {
+                  if (i > 0)
+                    utils.HierarchyRequestError();
+                } else {
+                  if (i > 1 || i === 1 && child.nodeType !== DOCUMENT_TYPE_NODE)
+                    utils.HierarchyRequestError();
+                }
+                break;
+            }
+          } else {
+            if (node.nodeType === DOCUMENT_TYPE_NODE)
+              utils.HierarchyRequestError();
           }
-        } else {
-          if (node.nodeType === DOCUMENT_TYPE_NODE)
-            utils.HierarchyRequestError();
         }
-      } },
-      insertBefore: { value: function insertBefore(node, child) {
-        var parent = this;
-        parent._ensureInsertValid(node, child, true);
-        var refChild = child;
-        if (refChild === node) {
-          refChild = node.nextSibling;
-        }
-        parent.doc.adoptNode(node);
-        node._insertOrReplace(parent, refChild, false);
-        return node;
-      } },
-      appendChild: { value: function(child) {
-        return this.insertBefore(child, null);
-      } },
-      _appendChild: { value: function(child) {
-        child._insertOrReplace(this, null, false);
-      } },
-      removeChild: { value: function removeChild(child) {
-        var parent = this;
-        if (!child.nodeType)
-          throw new TypeError("not a node");
-        if (child.parentNode !== parent)
-          utils.NotFoundError();
-        child.remove();
-        return child;
-      } },
-      replaceChild: { value: function replaceChild(node, child) {
-        var parent = this;
-        parent._ensureInsertValid(node, child, false);
-        if (node.doc !== parent.doc) {
+      },
+      insertBefore: {
+        value: function insertBefore(node, child) {
+          var parent = this;
+          parent._ensureInsertValid(node, child, true);
+          var refChild = child;
+          if (refChild === node) {
+            refChild = node.nextSibling;
+          }
           parent.doc.adoptNode(node);
+          node._insertOrReplace(parent, refChild, false);
+          return node;
         }
-        node._insertOrReplace(parent, child, true);
-        return child;
-      } },
-      contains: { value: function contains(node) {
-        if (node === null) {
-          return false;
+      },
+      appendChild: {
+        value: function(child) {
+          return this.insertBefore(child, null);
         }
-        if (this === node) {
-          return true;
+      },
+      _appendChild: {
+        value: function(child) {
+          child._insertOrReplace(this, null, false);
         }
-        return (this.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY) !== 0;
-      } },
-      compareDocumentPosition: { value: function compareDocumentPosition(that) {
-        if (this === that)
-          return 0;
-        if (this.doc !== that.doc || this.rooted !== that.rooted)
-          return DOCUMENT_POSITION_DISCONNECTED + DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-        var these = [], those = [];
-        for (var n = this; n !== null; n = n.parentNode)
-          these.push(n);
-        for (n = that; n !== null; n = n.parentNode)
-          those.push(n);
-        these.reverse();
-        those.reverse();
-        if (these[0] !== those[0])
-          return DOCUMENT_POSITION_DISCONNECTED + DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-        n = Math.min(these.length, those.length);
-        for (var i = 1; i < n; i++) {
-          if (these[i] !== those[i]) {
-            if (these[i].index < those[i].index)
-              return DOCUMENT_POSITION_FOLLOWING;
-            else
-              return DOCUMENT_POSITION_PRECEDING;
+      },
+      removeChild: {
+        value: function removeChild(child) {
+          var parent = this;
+          if (!child.nodeType)
+            throw new TypeError("not a node");
+          if (child.parentNode !== parent)
+            utils.NotFoundError();
+          child.remove();
+          return child;
+        }
+      },
+      replaceChild: {
+        value: function replaceChild(node, child) {
+          var parent = this;
+          parent._ensureInsertValid(node, child, false);
+          if (node.doc !== parent.doc) {
+            parent.doc.adoptNode(node);
           }
+          node._insertOrReplace(parent, child, true);
+          return child;
         }
-        if (these.length < those.length)
-          return DOCUMENT_POSITION_FOLLOWING + DOCUMENT_POSITION_CONTAINED_BY;
-        else
-          return DOCUMENT_POSITION_PRECEDING + DOCUMENT_POSITION_CONTAINS;
-      } },
-      isSameNode: { value: function isSameNode(node) {
-        return this === node;
-      } },
-      isEqualNode: { value: function isEqualNode(node) {
-        if (!node)
-          return false;
-        if (node.nodeType !== this.nodeType)
-          return false;
-        if (!this.isEqual(node))
-          return false;
-        for (var c1 = this.firstChild, c2 = node.firstChild; c1 && c2; c1 = c1.nextSibling, c2 = c2.nextSibling) {
-          if (!c1.isEqualNode(c2))
+      },
+      contains: {
+        value: function contains(node) {
+          if (node === null) {
             return false;
-        }
-        return c1 === null && c2 === null;
-      } },
-      cloneNode: { value: function(deep) {
-        var clone = this.clone();
-        if (deep) {
-          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-            clone._appendChild(kid.cloneNode(true));
           }
-        }
-        return clone;
-      } },
-      lookupPrefix: { value: function lookupPrefix(ns) {
-        var e;
-        if (ns === "" || ns === null || ns === void 0)
-          return null;
-        switch (this.nodeType) {
-          case ELEMENT_NODE:
-            return this._lookupNamespacePrefix(ns, this);
-          case DOCUMENT_NODE:
-            e = this.documentElement;
-            return e ? e.lookupPrefix(ns) : null;
-          case ENTITY_NODE:
-          case NOTATION_NODE:
-          case DOCUMENT_FRAGMENT_NODE:
-          case DOCUMENT_TYPE_NODE:
-            return null;
-          case ATTRIBUTE_NODE:
-            e = this.ownerElement;
-            return e ? e.lookupPrefix(ns) : null;
-          default:
-            e = this.parentElement;
-            return e ? e.lookupPrefix(ns) : null;
-        }
-      } },
-      lookupNamespaceURI: { value: function lookupNamespaceURI(prefix) {
-        if (prefix === "" || prefix === void 0) {
-          prefix = null;
-        }
-        var e;
-        switch (this.nodeType) {
-          case ELEMENT_NODE:
-            return utils.shouldOverride();
-          case DOCUMENT_NODE:
-            e = this.documentElement;
-            return e ? e.lookupNamespaceURI(prefix) : null;
-          case ENTITY_NODE:
-          case NOTATION_NODE:
-          case DOCUMENT_TYPE_NODE:
-          case DOCUMENT_FRAGMENT_NODE:
-            return null;
-          case ATTRIBUTE_NODE:
-            e = this.ownerElement;
-            return e ? e.lookupNamespaceURI(prefix) : null;
-          default:
-            e = this.parentElement;
-            return e ? e.lookupNamespaceURI(prefix) : null;
-        }
-      } },
-      isDefaultNamespace: { value: function isDefaultNamespace(ns) {
-        if (ns === "" || ns === void 0) {
-          ns = null;
-        }
-        var defaultNamespace = this.lookupNamespaceURI(null);
-        return defaultNamespace === ns;
-      } },
-      index: { get: function() {
-        var parent = this.parentNode;
-        if (this === parent.firstChild)
-          return 0;
-        var kids = parent.childNodes;
-        if (this._index === void 0 || kids[this._index] !== this) {
-          for (var i = 0; i < kids.length; i++) {
-            kids[i]._index = i;
-          }
-          utils.assert(kids[this._index] === this);
-        }
-        return this._index;
-      } },
-      isAncestor: { value: function(that) {
-        if (this.doc !== that.doc)
-          return false;
-        if (this.rooted !== that.rooted)
-          return false;
-        for (var e = that; e; e = e.parentNode) {
-          if (e === this)
+          if (this === node) {
             return true;
+          }
+          return (this.compareDocumentPosition(node) & DOCUMENT_POSITION_CONTAINED_BY) !== 0;
         }
-        return false;
-      } },
-      ensureSameDoc: { value: function(that) {
-        if (that.ownerDocument === null) {
-          that.ownerDocument = this.doc;
-        } else if (that.ownerDocument !== this.doc) {
-          utils.WrongDocumentError();
-        }
-      } },
-      removeChildren: { value: utils.shouldOverride },
-      _insertOrReplace: { value: function _insertOrReplace(parent, before, isReplace) {
-        var child = this, before_index, i;
-        if (child.nodeType === DOCUMENT_FRAGMENT_NODE && child.rooted) {
-          utils.HierarchyRequestError();
-        }
-        if (parent._childNodes) {
-          before_index = before === null ? parent._childNodes.length : before.index;
-          if (child.parentNode === parent) {
-            var child_index = child.index;
-            if (child_index < before_index) {
-              before_index--;
+      },
+      compareDocumentPosition: {
+        value: function compareDocumentPosition(that) {
+          if (this === that)
+            return 0;
+          if (this.doc !== that.doc || this.rooted !== that.rooted)
+            return DOCUMENT_POSITION_DISCONNECTED + DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+          var these = [], those = [];
+          for (var n = this; n !== null; n = n.parentNode)
+            these.push(n);
+          for (n = that; n !== null; n = n.parentNode)
+            those.push(n);
+          these.reverse();
+          those.reverse();
+          if (these[0] !== those[0])
+            return DOCUMENT_POSITION_DISCONNECTED + DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+          n = Math.min(these.length, those.length);
+          for (var i = 1; i < n; i++) {
+            if (these[i] !== those[i]) {
+              if (these[i].index < those[i].index)
+                return DOCUMENT_POSITION_FOLLOWING;
+              else
+                return DOCUMENT_POSITION_PRECEDING;
             }
           }
+          if (these.length < those.length)
+            return DOCUMENT_POSITION_FOLLOWING + DOCUMENT_POSITION_CONTAINED_BY;
+          else
+            return DOCUMENT_POSITION_PRECEDING + DOCUMENT_POSITION_CONTAINS;
         }
-        if (isReplace) {
-          if (before.rooted)
-            before.doc.mutateRemove(before);
-          before.parentNode = null;
+      },
+      isSameNode: {
+        value: function isSameNode(node) {
+          return this === node;
         }
-        var n = before;
-        if (n === null) {
-          n = parent.firstChild;
-        }
-        var bothRooted = child.rooted && parent.rooted;
-        if (child.nodeType === DOCUMENT_FRAGMENT_NODE) {
-          var spliceArgs = [0, isReplace ? 1 : 0], next;
-          for (var kid = child.firstChild; kid !== null; kid = next) {
-            next = kid.nextSibling;
-            spliceArgs.push(kid);
-            kid.parentNode = parent;
+      },
+      isEqualNode: {
+        value: function isEqualNode(node) {
+          if (!node)
+            return false;
+          if (node.nodeType !== this.nodeType)
+            return false;
+          if (!this.isEqual(node))
+            return false;
+          for (var c1 = this.firstChild, c2 = node.firstChild; c1 && c2; c1 = c1.nextSibling, c2 = c2.nextSibling) {
+            if (!c1.isEqualNode(c2))
+              return false;
           }
-          var len = spliceArgs.length;
-          if (isReplace) {
-            LinkedList.replace(n, len > 2 ? spliceArgs[2] : null);
-          } else if (len > 2 && n !== null) {
-            LinkedList.insertBefore(spliceArgs[2], n);
+          return c1 === null && c2 === null;
+        }
+      },
+      cloneNode: {
+        value: function(deep) {
+          var clone = this.clone();
+          if (deep) {
+            for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+              clone._appendChild(kid.cloneNode(true));
+            }
+          }
+          return clone;
+        }
+      },
+      lookupPrefix: {
+        value: function lookupPrefix(ns) {
+          var e;
+          if (ns === "" || ns === null || ns === void 0)
+            return null;
+          switch (this.nodeType) {
+            case ELEMENT_NODE:
+              return this._lookupNamespacePrefix(ns, this);
+            case DOCUMENT_NODE:
+              e = this.documentElement;
+              return e ? e.lookupPrefix(ns) : null;
+            case ENTITY_NODE:
+            case NOTATION_NODE:
+            case DOCUMENT_FRAGMENT_NODE:
+            case DOCUMENT_TYPE_NODE:
+              return null;
+            case ATTRIBUTE_NODE:
+              e = this.ownerElement;
+              return e ? e.lookupPrefix(ns) : null;
+            default:
+              e = this.parentElement;
+              return e ? e.lookupPrefix(ns) : null;
+          }
+        }
+      },
+      lookupNamespaceURI: {
+        value: function lookupNamespaceURI(prefix) {
+          if (prefix === "" || prefix === void 0) {
+            prefix = null;
+          }
+          var e;
+          switch (this.nodeType) {
+            case ELEMENT_NODE:
+              return utils.shouldOverride();
+            case DOCUMENT_NODE:
+              e = this.documentElement;
+              return e ? e.lookupNamespaceURI(prefix) : null;
+            case ENTITY_NODE:
+            case NOTATION_NODE:
+            case DOCUMENT_TYPE_NODE:
+            case DOCUMENT_FRAGMENT_NODE:
+              return null;
+            case ATTRIBUTE_NODE:
+              e = this.ownerElement;
+              return e ? e.lookupNamespaceURI(prefix) : null;
+            default:
+              e = this.parentElement;
+              return e ? e.lookupNamespaceURI(prefix) : null;
+          }
+        }
+      },
+      isDefaultNamespace: {
+        value: function isDefaultNamespace(ns) {
+          if (ns === "" || ns === void 0) {
+            ns = null;
+          }
+          var defaultNamespace = this.lookupNamespaceURI(null);
+          return defaultNamespace === ns;
+        }
+      },
+      index: {
+        get: function() {
+          var parent = this.parentNode;
+          if (this === parent.firstChild)
+            return 0;
+          var kids = parent.childNodes;
+          if (this._index === void 0 || kids[this._index] !== this) {
+            for (var i = 0; i < kids.length; i++) {
+              kids[i]._index = i;
+            }
+            utils.assert(kids[this._index] === this);
+          }
+          return this._index;
+        }
+      },
+      isAncestor: {
+        value: function(that) {
+          if (this.doc !== that.doc)
+            return false;
+          if (this.rooted !== that.rooted)
+            return false;
+          for (var e = that; e; e = e.parentNode) {
+            if (e === this)
+              return true;
+          }
+          return false;
+        }
+      },
+      ensureSameDoc: {
+        value: function(that) {
+          if (that.ownerDocument === null) {
+            that.ownerDocument = this.doc;
+          } else if (that.ownerDocument !== this.doc) {
+            utils.WrongDocumentError();
+          }
+        }
+      },
+      removeChildren: {
+        value: utils.shouldOverride
+      },
+      _insertOrReplace: {
+        value: function _insertOrReplace(parent, before, isReplace) {
+          var child = this, before_index, i;
+          if (child.nodeType === DOCUMENT_FRAGMENT_NODE && child.rooted) {
+            utils.HierarchyRequestError();
           }
           if (parent._childNodes) {
-            spliceArgs[0] = before === null ? parent._childNodes.length : before._index;
-            parent._childNodes.splice.apply(parent._childNodes, spliceArgs);
-            for (i = 2; i < len; i++) {
-              spliceArgs[i]._index = spliceArgs[0] + (i - 2);
-            }
-          } else if (parent._firstChild === before) {
-            if (len > 2) {
-              parent._firstChild = spliceArgs[2];
-            } else if (isReplace) {
-              parent._firstChild = null;
+            before_index = before === null ? parent._childNodes.length : before.index;
+            if (child.parentNode === parent) {
+              var child_index = child.index;
+              if (child_index < before_index) {
+                before_index--;
+              }
             }
           }
-          if (child._childNodes) {
-            child._childNodes.length = 0;
-          } else {
-            child._firstChild = null;
-          }
-          if (parent.rooted) {
-            parent.modify();
-            for (i = 2; i < len; i++) {
-              parent.doc.mutateInsert(spliceArgs[i]);
-            }
-          }
-        } else {
-          if (before === child) {
-            return;
-          }
-          if (bothRooted) {
-            child._remove();
-          } else if (child.parentNode) {
-            child.remove();
-          }
-          child.parentNode = parent;
           if (isReplace) {
-            LinkedList.replace(n, child);
+            if (before.rooted)
+              before.doc.mutateRemove(before);
+            before.parentNode = null;
+          }
+          var n = before;
+          if (n === null) {
+            n = parent.firstChild;
+          }
+          var bothRooted = child.rooted && parent.rooted;
+          if (child.nodeType === DOCUMENT_FRAGMENT_NODE) {
+            var spliceArgs = [0, isReplace ? 1 : 0], next;
+            for (var kid = child.firstChild; kid !== null; kid = next) {
+              next = kid.nextSibling;
+              spliceArgs.push(kid);
+              kid.parentNode = parent;
+            }
+            var len = spliceArgs.length;
+            if (isReplace) {
+              LinkedList.replace(n, len > 2 ? spliceArgs[2] : null);
+            } else if (len > 2 && n !== null) {
+              LinkedList.insertBefore(spliceArgs[2], n);
+            }
             if (parent._childNodes) {
-              child._index = before_index;
-              parent._childNodes[before_index] = child;
+              spliceArgs[0] = before === null ? parent._childNodes.length : before._index;
+              parent._childNodes.splice.apply(parent._childNodes, spliceArgs);
+              for (i = 2; i < len; i++) {
+                spliceArgs[i]._index = spliceArgs[0] + (i - 2);
+              }
             } else if (parent._firstChild === before) {
-              parent._firstChild = child;
+              if (len > 2) {
+                parent._firstChild = spliceArgs[2];
+              } else if (isReplace) {
+                parent._firstChild = null;
+              }
+            }
+            if (child._childNodes) {
+              child._childNodes.length = 0;
+            } else {
+              child._firstChild = null;
+            }
+            if (parent.rooted) {
+              parent.modify();
+              for (i = 2; i < len; i++) {
+                parent.doc.mutateInsert(spliceArgs[i]);
+              }
             }
           } else {
-            if (n !== null) {
-              LinkedList.insertBefore(child, n);
+            if (before === child) {
+              return;
             }
-            if (parent._childNodes) {
-              child._index = before_index;
-              parent._childNodes.splice(before_index, 0, child);
-            } else if (parent._firstChild === before) {
-              parent._firstChild = child;
+            if (bothRooted) {
+              child._remove();
+            } else if (child.parentNode) {
+              child.remove();
+            }
+            child.parentNode = parent;
+            if (isReplace) {
+              LinkedList.replace(n, child);
+              if (parent._childNodes) {
+                child._index = before_index;
+                parent._childNodes[before_index] = child;
+              } else if (parent._firstChild === before) {
+                parent._firstChild = child;
+              }
+            } else {
+              if (n !== null) {
+                LinkedList.insertBefore(child, n);
+              }
+              if (parent._childNodes) {
+                child._index = before_index;
+                parent._childNodes.splice(before_index, 0, child);
+              } else if (parent._firstChild === before) {
+                parent._firstChild = child;
+              }
+            }
+            if (bothRooted) {
+              parent.modify();
+              parent.doc.mutateMove(child);
+            } else if (parent.rooted) {
+              parent.modify();
+              parent.doc.mutateInsert(child);
             }
           }
-          if (bothRooted) {
-            parent.modify();
-            parent.doc.mutateMove(child);
-          } else if (parent.rooted) {
-            parent.modify();
-            parent.doc.mutateInsert(child);
+        }
+      },
+      lastModTime: {
+        get: function() {
+          if (!this._lastModTime) {
+            this._lastModTime = this.doc.modclock;
           }
+          return this._lastModTime;
         }
-      } },
-      lastModTime: { get: function() {
-        if (!this._lastModTime) {
-          this._lastModTime = this.doc.modclock;
-        }
-        return this._lastModTime;
-      } },
-      modify: { value: function() {
-        if (this.doc.modclock) {
-          var time = ++this.doc.modclock;
-          for (var n = this; n; n = n.parentElement) {
-            if (n._lastModTime) {
-              n._lastModTime = time;
+      },
+      modify: {
+        value: function() {
+          if (this.doc.modclock) {
+            var time = ++this.doc.modclock;
+            for (var n = this; n; n = n.parentElement) {
+              if (n._lastModTime) {
+                n._lastModTime = time;
+              }
             }
           }
         }
-      } },
-      doc: { get: function() {
-        return this.ownerDocument || this;
-      } },
-      rooted: { get: function() {
-        return !!this._nid;
-      } },
-      normalize: { value: function() {
-        var next;
-        for (var child = this.firstChild; child !== null; child = next) {
-          next = child.nextSibling;
-          if (child.normalize) {
-            child.normalize();
-          }
-          if (child.nodeType !== Node.TEXT_NODE) {
-            continue;
-          }
-          if (child.nodeValue === "") {
-            this.removeChild(child);
-            continue;
-          }
-          var prevChild = child.previousSibling;
-          if (prevChild === null) {
-            continue;
-          } else if (prevChild.nodeType === Node.TEXT_NODE) {
-            prevChild.appendData(child.nodeValue);
-            this.removeChild(child);
+      },
+      doc: {
+        get: function() {
+          return this.ownerDocument || this;
+        }
+      },
+      rooted: {
+        get: function() {
+          return !!this._nid;
+        }
+      },
+      normalize: {
+        value: function() {
+          var next;
+          for (var child = this.firstChild; child !== null; child = next) {
+            next = child.nextSibling;
+            if (child.normalize) {
+              child.normalize();
+            }
+            if (child.nodeType !== Node.TEXT_NODE) {
+              continue;
+            }
+            if (child.nodeValue === "") {
+              this.removeChild(child);
+              continue;
+            }
+            var prevChild = child.previousSibling;
+            if (prevChild === null) {
+              continue;
+            } else if (prevChild.nodeType === Node.TEXT_NODE) {
+              prevChild.appendData(child.nodeValue);
+              this.removeChild(child);
+            }
           }
         }
-      } },
-      serialize: { value: function() {
-        if (this._innerHTML) {
-          return this._innerHTML;
+      },
+      serialize: {
+        value: function() {
+          if (this._innerHTML) {
+            return this._innerHTML;
+          }
+          var s = "";
+          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+            s += NodeUtils.serializeOne(kid, this);
+          }
+          return s;
         }
-        var s = "";
-        for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-          s += NodeUtils.serializeOne(kid, this);
-        }
-        return s;
-      } },
+      },
       outerHTML: {
         get: function() {
-          return NodeUtils.serializeOne(this, { nodeType: 0 });
+          return NodeUtils.serializeOne(this, {
+            nodeType: 0
+          });
         },
         set: utils.nyi
       },
-      ELEMENT_NODE: { value: ELEMENT_NODE },
-      ATTRIBUTE_NODE: { value: ATTRIBUTE_NODE },
-      TEXT_NODE: { value: TEXT_NODE },
-      CDATA_SECTION_NODE: { value: CDATA_SECTION_NODE },
-      ENTITY_REFERENCE_NODE: { value: ENTITY_REFERENCE_NODE },
-      ENTITY_NODE: { value: ENTITY_NODE },
-      PROCESSING_INSTRUCTION_NODE: { value: PROCESSING_INSTRUCTION_NODE },
-      COMMENT_NODE: { value: COMMENT_NODE },
-      DOCUMENT_NODE: { value: DOCUMENT_NODE },
-      DOCUMENT_TYPE_NODE: { value: DOCUMENT_TYPE_NODE },
-      DOCUMENT_FRAGMENT_NODE: { value: DOCUMENT_FRAGMENT_NODE },
-      NOTATION_NODE: { value: NOTATION_NODE },
-      DOCUMENT_POSITION_DISCONNECTED: { value: DOCUMENT_POSITION_DISCONNECTED },
-      DOCUMENT_POSITION_PRECEDING: { value: DOCUMENT_POSITION_PRECEDING },
-      DOCUMENT_POSITION_FOLLOWING: { value: DOCUMENT_POSITION_FOLLOWING },
-      DOCUMENT_POSITION_CONTAINS: { value: DOCUMENT_POSITION_CONTAINS },
-      DOCUMENT_POSITION_CONTAINED_BY: { value: DOCUMENT_POSITION_CONTAINED_BY },
-      DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: { value: DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC }
+      ELEMENT_NODE: {
+        value: ELEMENT_NODE
+      },
+      ATTRIBUTE_NODE: {
+        value: ATTRIBUTE_NODE
+      },
+      TEXT_NODE: {
+        value: TEXT_NODE
+      },
+      CDATA_SECTION_NODE: {
+        value: CDATA_SECTION_NODE
+      },
+      ENTITY_REFERENCE_NODE: {
+        value: ENTITY_REFERENCE_NODE
+      },
+      ENTITY_NODE: {
+        value: ENTITY_NODE
+      },
+      PROCESSING_INSTRUCTION_NODE: {
+        value: PROCESSING_INSTRUCTION_NODE
+      },
+      COMMENT_NODE: {
+        value: COMMENT_NODE
+      },
+      DOCUMENT_NODE: {
+        value: DOCUMENT_NODE
+      },
+      DOCUMENT_TYPE_NODE: {
+        value: DOCUMENT_TYPE_NODE
+      },
+      DOCUMENT_FRAGMENT_NODE: {
+        value: DOCUMENT_FRAGMENT_NODE
+      },
+      NOTATION_NODE: {
+        value: NOTATION_NODE
+      },
+      DOCUMENT_POSITION_DISCONNECTED: {
+        value: DOCUMENT_POSITION_DISCONNECTED
+      },
+      DOCUMENT_POSITION_PRECEDING: {
+        value: DOCUMENT_POSITION_PRECEDING
+      },
+      DOCUMENT_POSITION_FOLLOWING: {
+        value: DOCUMENT_POSITION_FOLLOWING
+      },
+      DOCUMENT_POSITION_CONTAINS: {
+        value: DOCUMENT_POSITION_CONTAINS
+      },
+      DOCUMENT_POSITION_CONTAINED_BY: {
+        value: DOCUMENT_POSITION_CONTAINED_BY
+      },
+      DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC: {
+        value: DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+      }
     });
   }
 });
@@ -3601,61 +6090,73 @@ var require_ContainerNode = __commonJS({
       this._firstChild = this._childNodes = null;
     }
     ContainerNode.prototype = Object.create(Node.prototype, {
-      hasChildNodes: { value: function() {
-        if (this._childNodes) {
-          return this._childNodes.length > 0;
+      hasChildNodes: {
+        value: function() {
+          if (this._childNodes) {
+            return this._childNodes.length > 0;
+          }
+          return this._firstChild !== null;
         }
-        return this._firstChild !== null;
-      } },
-      childNodes: { get: function() {
-        this._ensureChildNodes();
-        return this._childNodes;
-      } },
-      firstChild: { get: function() {
-        if (this._childNodes) {
-          return this._childNodes.length === 0 ? null : this._childNodes[0];
+      },
+      childNodes: {
+        get: function() {
+          this._ensureChildNodes();
+          return this._childNodes;
         }
-        return this._firstChild;
-      } },
-      lastChild: { get: function() {
-        var kids = this._childNodes, first;
-        if (kids) {
-          return kids.length === 0 ? null : kids[kids.length - 1];
+      },
+      firstChild: {
+        get: function() {
+          if (this._childNodes) {
+            return this._childNodes.length === 0 ? null : this._childNodes[0];
+          }
+          return this._firstChild;
         }
-        first = this._firstChild;
-        if (first === null) {
-          return null;
+      },
+      lastChild: {
+        get: function() {
+          var kids = this._childNodes, first;
+          if (kids) {
+            return kids.length === 0 ? null : kids[kids.length - 1];
+          }
+          first = this._firstChild;
+          if (first === null) {
+            return null;
+          }
+          return first._previousSibling;
         }
-        return first._previousSibling;
-      } },
-      _ensureChildNodes: { value: function() {
-        if (this._childNodes) {
-          return;
-        }
-        var first = this._firstChild, kid = first, childNodes = this._childNodes = new NodeList();
-        if (first)
-          do {
-            childNodes.push(kid);
-            kid = kid._nextSibling;
-          } while (kid !== first);
-        this._firstChild = null;
-      } },
-      removeChildren: { value: function removeChildren() {
-        var root = this.rooted ? this.ownerDocument : null, next = this.firstChild, kid;
-        while (next !== null) {
-          kid = next;
-          next = kid.nextSibling;
-          if (root)
-            root.mutateRemove(kid);
-          kid.parentNode = null;
-        }
-        if (this._childNodes) {
-          this._childNodes.length = 0;
-        } else {
+      },
+      _ensureChildNodes: {
+        value: function() {
+          if (this._childNodes) {
+            return;
+          }
+          var first = this._firstChild, kid = first, childNodes = this._childNodes = new NodeList();
+          if (first)
+            do {
+              childNodes.push(kid);
+              kid = kid._nextSibling;
+            } while (kid !== first);
           this._firstChild = null;
         }
-        this.modify();
-      } }
+      },
+      removeChildren: {
+        value: function removeChildren() {
+          var root = this.rooted ? this.ownerDocument : null, next = this.firstChild, kid;
+          while (next !== null) {
+            kid = next;
+            next = kid.nextSibling;
+            if (root)
+              root.mutateRemove(kid);
+            kid.parentNode = null;
+          }
+          if (this._childNodes) {
+            this._childNodes.length = 0;
+          } else {
+            this._firstChild = null;
+          }
+          this.modify();
+        }
+      }
     });
   }
 });
@@ -3860,56 +6361,66 @@ var require_FilteredElementList = __commonJS({
       this.traverse();
     }
     FilteredElementList.prototype = Object.create(Object.prototype, {
-      length: { get: function() {
-        this.checkcache();
-        if (!this.done)
-          this.traverse();
-        return this.cache.length;
-      } },
-      item: { value: function(n) {
-        this.checkcache();
-        if (!this.done && n >= this.cache.length) {
-          this.traverse();
+      length: {
+        get: function() {
+          this.checkcache();
+          if (!this.done)
+            this.traverse();
+          return this.cache.length;
         }
-        return this.cache[n];
-      } },
-      checkcache: { value: function() {
-        if (this.lastModTime !== this.root.lastModTime) {
-          for (var i = this.cache.length - 1; i >= 0; i--) {
-            this[i] = void 0;
+      },
+      item: {
+        value: function(n) {
+          this.checkcache();
+          if (!this.done && n >= this.cache.length) {
+            this.traverse();
           }
-          this.cache.length = 0;
-          this.done = false;
-          this.lastModTime = this.root.lastModTime;
+          return this.cache[n];
         }
-      } },
-      traverse: { value: function(n) {
-        if (n !== void 0)
-          n++;
-        var elt;
-        while ((elt = this.next()) !== null) {
-          this[this.cache.length] = elt;
-          this.cache.push(elt);
-          if (n && this.cache.length === n)
-            return;
-        }
-        this.done = true;
-      } },
-      next: { value: function() {
-        var start = this.cache.length === 0 ? this.root : this.cache[this.cache.length - 1];
-        var elt;
-        if (start.nodeType === Node.DOCUMENT_NODE)
-          elt = start.documentElement;
-        else
-          elt = start.nextElement(this.root);
-        while (elt) {
-          if (this.filter(elt)) {
-            return elt;
+      },
+      checkcache: {
+        value: function() {
+          if (this.lastModTime !== this.root.lastModTime) {
+            for (var i = this.cache.length - 1; i >= 0; i--) {
+              this[i] = void 0;
+            }
+            this.cache.length = 0;
+            this.done = false;
+            this.lastModTime = this.root.lastModTime;
           }
-          elt = elt.nextElement(this.root);
         }
-        return null;
-      } }
+      },
+      traverse: {
+        value: function(n) {
+          if (n !== void 0)
+            n++;
+          var elt;
+          while ((elt = this.next()) !== null) {
+            this[this.cache.length] = elt;
+            this.cache.push(elt);
+            if (n && this.cache.length === n)
+              return;
+          }
+          this.done = true;
+        }
+      },
+      next: {
+        value: function() {
+          var start = this.cache.length === 0 ? this.root : this.cache[this.cache.length - 1];
+          var elt;
+          if (start.nodeType === Node.DOCUMENT_NODE)
+            elt = start.documentElement;
+          else
+            elt = start.nextElement(this.root);
+          while (elt) {
+            if (this.filter(elt)) {
+              return elt;
+            }
+            elt = elt.nextElement(this.root);
+          }
+          return null;
+        }
+      }
     });
   }
 });
@@ -3926,86 +6437,102 @@ var require_DOMTokenList = __commonJS({
       this._update();
     }
     Object.defineProperties(DOMTokenList.prototype, {
-      length: { get: function() {
-        return this._length;
-      } },
-      item: { value: function(index) {
-        var list = getList(this);
-        if (index < 0 || index >= list.length) {
-          return null;
+      length: {
+        get: function() {
+          return this._length;
         }
-        return list[index];
-      } },
-      contains: { value: function(token) {
-        token = String(token);
-        var list = getList(this);
-        return list.indexOf(token) > -1;
-      } },
-      add: { value: function() {
-        var list = getList(this);
-        for (var i = 0, len = arguments.length; i < len; i++) {
-          var token = handleErrors(arguments[i]);
-          if (list.indexOf(token) < 0) {
-            list.push(token);
+      },
+      item: {
+        value: function(index) {
+          var list = getList(this);
+          if (index < 0 || index >= list.length) {
+            return null;
           }
+          return list[index];
         }
-        this._update(list);
-      } },
-      remove: { value: function() {
-        var list = getList(this);
-        for (var i = 0, len = arguments.length; i < len; i++) {
-          var token = handleErrors(arguments[i]);
-          var index = list.indexOf(token);
-          if (index > -1) {
-            list.splice(index, 1);
+      },
+      contains: {
+        value: function(token) {
+          token = String(token);
+          var list = getList(this);
+          return list.indexOf(token) > -1;
+        }
+      },
+      add: {
+        value: function() {
+          var list = getList(this);
+          for (var i = 0, len = arguments.length; i < len; i++) {
+            var token = handleErrors(arguments[i]);
+            if (list.indexOf(token) < 0) {
+              list.push(token);
+            }
           }
+          this._update(list);
         }
-        this._update(list);
-      } },
-      toggle: { value: function toggle(token, force) {
-        token = handleErrors(token);
-        if (this.contains(token)) {
-          if (force === void 0 || force === false) {
-            this.remove(token);
+      },
+      remove: {
+        value: function() {
+          var list = getList(this);
+          for (var i = 0, len = arguments.length; i < len; i++) {
+            var token = handleErrors(arguments[i]);
+            var index = list.indexOf(token);
+            if (index > -1) {
+              list.splice(index, 1);
+            }
+          }
+          this._update(list);
+        }
+      },
+      toggle: {
+        value: function toggle(token, force) {
+          token = handleErrors(token);
+          if (this.contains(token)) {
+            if (force === void 0 || force === false) {
+              this.remove(token);
+              return false;
+            }
+            return true;
+          } else {
+            if (force === void 0 || force === true) {
+              this.add(token);
+              return true;
+            }
             return false;
           }
-          return true;
-        } else {
-          if (force === void 0 || force === true) {
-            this.add(token);
-            return true;
+        }
+      },
+      replace: {
+        value: function replace(token, newToken) {
+          if (String(newToken) === "") {
+            utils.SyntaxError();
           }
-          return false;
-        }
-      } },
-      replace: { value: function replace(token, newToken) {
-        if (String(newToken) === "") {
-          utils.SyntaxError();
-        }
-        token = handleErrors(token);
-        newToken = handleErrors(newToken);
-        var list = getList(this);
-        var idx = list.indexOf(token);
-        if (idx < 0) {
-          return false;
-        }
-        var idx2 = list.indexOf(newToken);
-        if (idx2 < 0) {
-          list[idx] = newToken;
-        } else {
-          if (idx < idx2) {
+          token = handleErrors(token);
+          newToken = handleErrors(newToken);
+          var list = getList(this);
+          var idx = list.indexOf(token);
+          if (idx < 0) {
+            return false;
+          }
+          var idx2 = list.indexOf(newToken);
+          if (idx2 < 0) {
             list[idx] = newToken;
-            list.splice(idx2, 1);
           } else {
-            list.splice(idx, 1);
+            if (idx < idx2) {
+              list[idx] = newToken;
+              list.splice(idx2, 1);
+            } else {
+              list.splice(idx, 1);
+            }
           }
+          this._update(list);
+          return true;
         }
-        this._update(list);
-        return true;
-      } },
-      toString: { value: function() {
-        return this._getString();
-      } },
+      },
+      toString: {
+        value: function() {
+          return this._getString();
+        }
+      },
       value: {
         get: function() {
           return this._getString();
@@ -4015,15 +6542,17 @@ var require_DOMTokenList = __commonJS({
           this._update();
         }
       },
-      _update: { value: function(list) {
-        if (list) {
-          fixIndex(this, list);
-          this._setString(list.join(" ").trim());
-        } else {
-          fixIndex(this, getList(this));
+      _update: {
+        value: function(list) {
+          if (list) {
+            fixIndex(this, list);
+            this._setString(list.join(" ").trim());
+          } else {
+            fixIndex(this, getList(this));
+          }
+          this._lastStringValue = this._getString();
         }
-        this._lastStringValue = this._getString();
-      } }
+      }
     });
     function fixIndex(clist, list) {
       var oldLength = clist._length;
@@ -4080,9 +6609,11 @@ var require_select = __commonJS({
   "external/npm/node_modules/domino/lib/select.js"(exports, module) {
     "use strict";
     var window2 = Object.create(null, {
-      location: { get: function() {
-        throw new Error("window.location is not supported.");
-      } }
+      location: {
+        get: function() {
+          throw new Error("window.location is not supported.");
+        }
+      }
     });
     var compareDocumentPosition = function(a, b) {
       return a.compareDocumentPosition(b);
@@ -4814,7 +7345,9 @@ var require_select = __commonJS({
     exports.operators = operators;
     exports.combinators = combinators;
     exports.matches = function(el, sel) {
-      var test = { sel };
+      var test = {
+        sel
+      };
       do {
         test = compile(test.sel);
         if (test(el)) {
@@ -4830,88 +7363,98 @@ var require_ChildNode = __commonJS({
     "use strict";
     var Node = require_Node();
     var LinkedList = require_LinkedList();
-    var createDocumentFragmentFromArguments = function(document, args) {
-      var docFrag = document.createDocumentFragment();
+    var createDocumentFragmentFromArguments = function(document2, args) {
+      var docFrag = document2.createDocumentFragment();
       for (var i = 0; i < args.length; i++) {
         var argItem = args[i];
-        var isNode2 = argItem instanceof Node;
-        docFrag.appendChild(isNode2 ? argItem : document.createTextNode(String(argItem)));
+        var isNode = argItem instanceof Node;
+        docFrag.appendChild(isNode ? argItem : document2.createTextNode(String(argItem)));
       }
       return docFrag;
     };
     var ChildNode = {
-      after: { value: function after() {
-        var argArr = Array.prototype.slice.call(arguments);
-        var parentNode = this.parentNode, nextSibling = this.nextSibling;
-        if (parentNode === null) {
-          return;
-        }
-        while (nextSibling && argArr.some(function(v) {
-          return v === nextSibling;
-        }))
-          nextSibling = nextSibling.nextSibling;
-        var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
-        parentNode.insertBefore(docFrag, nextSibling);
-      } },
-      before: { value: function before() {
-        var argArr = Array.prototype.slice.call(arguments);
-        var parentNode = this.parentNode, prevSibling = this.previousSibling;
-        if (parentNode === null) {
-          return;
-        }
-        while (prevSibling && argArr.some(function(v) {
-          return v === prevSibling;
-        }))
-          prevSibling = prevSibling.previousSibling;
-        var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
-        var nextSibling = prevSibling ? prevSibling.nextSibling : parentNode.firstChild;
-        parentNode.insertBefore(docFrag, nextSibling);
-      } },
-      remove: { value: function remove() {
-        if (this.parentNode === null)
-          return;
-        if (this.doc) {
-          this.doc._preremoveNodeIterators(this);
-          if (this.rooted) {
-            this.doc.mutateRemove(this);
+      after: {
+        value: function after() {
+          var argArr = Array.prototype.slice.call(arguments);
+          var parentNode = this.parentNode, nextSibling = this.nextSibling;
+          if (parentNode === null) {
+            return;
           }
-        }
-        this._remove();
-        this.parentNode = null;
-      } },
-      _remove: { value: function _remove() {
-        var parent = this.parentNode;
-        if (parent === null)
-          return;
-        if (parent._childNodes) {
-          parent._childNodes.splice(this.index, 1);
-        } else if (parent._firstChild === this) {
-          if (this._nextSibling === this) {
-            parent._firstChild = null;
-          } else {
-            parent._firstChild = this._nextSibling;
-          }
-        }
-        LinkedList.remove(this);
-        parent.modify();
-      } },
-      replaceWith: { value: function replaceWith() {
-        var argArr = Array.prototype.slice.call(arguments);
-        var parentNode = this.parentNode, nextSibling = this.nextSibling;
-        if (parentNode === null) {
-          return;
-        }
-        while (nextSibling && argArr.some(function(v) {
-          return v === nextSibling;
-        }))
-          nextSibling = nextSibling.nextSibling;
-        var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
-        if (this.parentNode === parentNode) {
-          parentNode.replaceChild(docFrag, this);
-        } else {
+          while (nextSibling && argArr.some(function(v) {
+            return v === nextSibling;
+          }))
+            nextSibling = nextSibling.nextSibling;
+          var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
           parentNode.insertBefore(docFrag, nextSibling);
         }
-      } }
+      },
+      before: {
+        value: function before() {
+          var argArr = Array.prototype.slice.call(arguments);
+          var parentNode = this.parentNode, prevSibling = this.previousSibling;
+          if (parentNode === null) {
+            return;
+          }
+          while (prevSibling && argArr.some(function(v) {
+            return v === prevSibling;
+          }))
+            prevSibling = prevSibling.previousSibling;
+          var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
+          var nextSibling = prevSibling ? prevSibling.nextSibling : parentNode.firstChild;
+          parentNode.insertBefore(docFrag, nextSibling);
+        }
+      },
+      remove: {
+        value: function remove() {
+          if (this.parentNode === null)
+            return;
+          if (this.doc) {
+            this.doc._preremoveNodeIterators(this);
+            if (this.rooted) {
+              this.doc.mutateRemove(this);
+            }
+          }
+          this._remove();
+          this.parentNode = null;
+        }
+      },
+      _remove: {
+        value: function _remove() {
+          var parent = this.parentNode;
+          if (parent === null)
+            return;
+          if (parent._childNodes) {
+            parent._childNodes.splice(this.index, 1);
+          } else if (parent._firstChild === this) {
+            if (this._nextSibling === this) {
+              parent._firstChild = null;
+            } else {
+              parent._firstChild = this._nextSibling;
+            }
+          }
+          LinkedList.remove(this);
+          parent.modify();
+        }
+      },
+      replaceWith: {
+        value: function replaceWith() {
+          var argArr = Array.prototype.slice.call(arguments);
+          var parentNode = this.parentNode, nextSibling = this.nextSibling;
+          if (parentNode === null) {
+            return;
+          }
+          while (nextSibling && argArr.some(function(v) {
+            return v === nextSibling;
+          }))
+            nextSibling = nextSibling.nextSibling;
+          var docFrag = createDocumentFragmentFromArguments(this.doc, argArr);
+          if (this.parentNode === parentNode) {
+            parentNode.replaceChild(docFrag, this);
+          } else {
+            parentNode.insertBefore(docFrag, nextSibling);
+          }
+        }
+      }
     };
     module.exports = ChildNode;
   }
@@ -4921,24 +7464,28 @@ var require_NonDocumentTypeChildNode = __commonJS({
     "use strict";
     var Node = require_Node();
     var NonDocumentTypeChildNode = {
-      nextElementSibling: { get: function() {
-        if (this.parentNode) {
-          for (var kid = this.nextSibling; kid !== null; kid = kid.nextSibling) {
-            if (kid.nodeType === Node.ELEMENT_NODE)
-              return kid;
+      nextElementSibling: {
+        get: function() {
+          if (this.parentNode) {
+            for (var kid = this.nextSibling; kid !== null; kid = kid.nextSibling) {
+              if (kid.nodeType === Node.ELEMENT_NODE)
+                return kid;
+            }
           }
+          return null;
         }
-        return null;
-      } },
-      previousElementSibling: { get: function() {
-        if (this.parentNode) {
-          for (var kid = this.previousSibling; kid !== null; kid = kid.previousSibling) {
-            if (kid.nodeType === Node.ELEMENT_NODE)
-              return kid;
+      },
+      previousElementSibling: {
+        get: function() {
+          if (this.parentNode) {
+            for (var kid = this.previousSibling; kid !== null; kid = kid.previousSibling) {
+              if (kid.nodeType === Node.ELEMENT_NODE)
+                return kid;
+            }
           }
+          return null;
         }
-        return null;
-      } }
+      }
     };
     module.exports = NonDocumentTypeChildNode;
   }
@@ -4952,32 +7499,48 @@ var require_NamedNodeMap = __commonJS({
       this.element = element;
     }
     Object.defineProperties(NamedNodeMap.prototype, {
-      length: { get: utils.shouldOverride },
-      item: { value: utils.shouldOverride },
-      getNamedItem: { value: function getNamedItem(qualifiedName) {
-        return this.element.getAttributeNode(qualifiedName);
-      } },
-      getNamedItemNS: { value: function getNamedItemNS(namespace, localName) {
-        return this.element.getAttributeNodeNS(namespace, localName);
-      } },
-      setNamedItem: { value: utils.nyi },
-      setNamedItemNS: { value: utils.nyi },
-      removeNamedItem: { value: function removeNamedItem(qualifiedName) {
-        var attr = this.element.getAttributeNode(qualifiedName);
-        if (attr) {
-          this.element.removeAttribute(qualifiedName);
-          return attr;
+      length: {
+        get: utils.shouldOverride
+      },
+      item: {
+        value: utils.shouldOverride
+      },
+      getNamedItem: {
+        value: function getNamedItem(qualifiedName) {
+          return this.element.getAttributeNode(qualifiedName);
         }
-        utils.NotFoundError();
-      } },
-      removeNamedItemNS: { value: function removeNamedItemNS(ns, lname) {
-        var attr = this.element.getAttributeNodeNS(ns, lname);
-        if (attr) {
-          this.element.removeAttributeNS(ns, lname);
-          return attr;
+      },
+      getNamedItemNS: {
+        value: function getNamedItemNS(namespace, localName) {
+          return this.element.getAttributeNodeNS(namespace, localName);
         }
-        utils.NotFoundError();
-      } }
+      },
+      setNamedItem: {
+        value: utils.nyi
+      },
+      setNamedItemNS: {
+        value: utils.nyi
+      },
+      removeNamedItem: {
+        value: function removeNamedItem(qualifiedName) {
+          var attr = this.element.getAttributeNode(qualifiedName);
+          if (attr) {
+            this.element.removeAttribute(qualifiedName);
+            return attr;
+          }
+          utils.NotFoundError();
+        }
+      },
+      removeNamedItemNS: {
+        value: function removeNamedItemNS(ns, lname) {
+          var attr = this.element.getAttributeNodeNS(ns, lname);
+          if (attr) {
+            this.element.removeAttributeNS(ns, lname);
+            return attr;
+          }
+          utils.NotFoundError();
+        }
+      }
     });
   }
 });
@@ -5022,31 +7585,37 @@ var require_Element = __commonJS({
       }
     }
     Element.prototype = Object.create(ContainerNode.prototype, {
-      isHTML: { get: function isHTML() {
-        return this.namespaceURI === NAMESPACE.HTML && this.ownerDocument.isHTML;
-      } },
-      tagName: { get: function tagName() {
-        if (this._tagName === void 0) {
-          var tn;
-          if (this.prefix === null) {
-            tn = this.localName;
-          } else {
-            tn = this.prefix + ":" + this.localName;
-          }
-          if (this.isHTML) {
-            var up = uppercaseCache[tn];
-            if (!up) {
-              uppercaseCache[tn] = up = utils.toASCIIUpperCase(tn);
-            }
-            tn = up;
-          }
-          this._tagName = tn;
+      isHTML: {
+        get: function isHTML() {
+          return this.namespaceURI === NAMESPACE.HTML && this.ownerDocument.isHTML;
         }
-        return this._tagName;
-      } },
-      nodeName: { get: function() {
-        return this.tagName;
-      } },
+      },
+      tagName: {
+        get: function tagName() {
+          if (this._tagName === void 0) {
+            var tn;
+            if (this.prefix === null) {
+              tn = this.localName;
+            } else {
+              tn = this.prefix + ":" + this.localName;
+            }
+            if (this.isHTML) {
+              var up = uppercaseCache[tn];
+              if (!up) {
+                uppercaseCache[tn] = up = utils.toASCIIUpperCase(tn);
+              }
+              tn = up;
+            }
+            this._tagName = tn;
+          }
+          return this._tagName;
+        }
+      },
+      nodeName: {
+        get: function() {
+          return this.tagName;
+        }
+      },
       nodeValue: {
         get: function() {
           return null;
@@ -5088,10 +7657,12 @@ var require_Element = __commonJS({
       },
       outerHTML: {
         get: function() {
-          return NodeUtils.serializeOne(this, { nodeType: 0 });
+          return NodeUtils.serializeOne(this, {
+            nodeType: 0
+          });
         },
         set: function(v) {
-          var document = this.ownerDocument;
+          var document2 = this.ownerDocument;
           var parent = this.parentNode;
           if (parent === null) {
             return;
@@ -5102,609 +7673,690 @@ var require_Element = __commonJS({
           if (parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
             parent = parent.ownerDocument.createElement("body");
           }
-          var parser = document.implementation.mozHTMLParser(
-            document._address,
-            parent
-          );
+          var parser = document2.implementation.mozHTMLParser(document2._address, parent);
           parser.parse(v === null ? "" : String(v), true);
           this.replaceWith(parser._asDocumentFragment());
         }
       },
-      _insertAdjacent: { value: function _insertAdjacent(position, node) {
-        var first = false;
-        switch (position) {
-          case "beforebegin":
-            first = true;
-          case "afterend":
-            var parent = this.parentNode;
-            if (parent === null) {
+      _insertAdjacent: {
+        value: function _insertAdjacent(position, node) {
+          var first = false;
+          switch (position) {
+            case "beforebegin":
+              first = true;
+            case "afterend":
+              var parent = this.parentNode;
+              if (parent === null) {
+                return null;
+              }
+              return parent.insertBefore(node, first ? this : this.nextSibling);
+            case "afterbegin":
+              first = true;
+            case "beforeend":
+              return this.insertBefore(node, first ? this.firstChild : null);
+            default:
+              return utils.SyntaxError();
+          }
+        }
+      },
+      insertAdjacentElement: {
+        value: function insertAdjacentElement(position, element) {
+          if (element.nodeType !== Node.ELEMENT_NODE) {
+            throw new TypeError("not an element");
+          }
+          position = utils.toASCIILowerCase(String(position));
+          return this._insertAdjacent(position, element);
+        }
+      },
+      insertAdjacentText: {
+        value: function insertAdjacentText(position, data) {
+          var textNode = this.ownerDocument.createTextNode(data);
+          position = utils.toASCIILowerCase(String(position));
+          this._insertAdjacent(position, textNode);
+        }
+      },
+      insertAdjacentHTML: {
+        value: function insertAdjacentHTML(position, text) {
+          position = utils.toASCIILowerCase(String(position));
+          text = String(text);
+          var context;
+          switch (position) {
+            case "beforebegin":
+            case "afterend":
+              context = this.parentNode;
+              if (context === null || context.nodeType === Node.DOCUMENT_NODE) {
+                utils.NoModificationAllowedError();
+              }
+              break;
+            case "afterbegin":
+            case "beforeend":
+              context = this;
+              break;
+            default:
+              utils.SyntaxError();
+          }
+          if (!(context instanceof Element) || context.ownerDocument.isHTML && context.localName === "html" && context.namespaceURI === NAMESPACE.HTML) {
+            context = context.ownerDocument.createElementNS(NAMESPACE.HTML, "body");
+          }
+          var parser = this.ownerDocument.implementation.mozHTMLParser(this.ownerDocument._address, context);
+          parser.parse(text, true);
+          this._insertAdjacent(position, parser._asDocumentFragment());
+        }
+      },
+      children: {
+        get: function() {
+          if (!this._children) {
+            this._children = new ChildrenCollection(this);
+          }
+          return this._children;
+        }
+      },
+      attributes: {
+        get: function() {
+          if (!this._attributes) {
+            this._attributes = new AttributesArray(this);
+          }
+          return this._attributes;
+        }
+      },
+      firstElementChild: {
+        get: function() {
+          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+            if (kid.nodeType === Node.ELEMENT_NODE)
+              return kid;
+          }
+          return null;
+        }
+      },
+      lastElementChild: {
+        get: function() {
+          for (var kid = this.lastChild; kid !== null; kid = kid.previousSibling) {
+            if (kid.nodeType === Node.ELEMENT_NODE)
+              return kid;
+          }
+          return null;
+        }
+      },
+      childElementCount: {
+        get: function() {
+          return this.children.length;
+        }
+      },
+      nextElement: {
+        value: function(root) {
+          if (!root)
+            root = this.ownerDocument.documentElement;
+          var next = this.firstElementChild;
+          if (!next) {
+            if (this === root)
               return null;
-            }
-            return parent.insertBefore(node, first ? this : this.nextSibling);
-          case "afterbegin":
-            first = true;
-          case "beforeend":
-            return this.insertBefore(node, first ? this.firstChild : null);
-          default:
-            return utils.SyntaxError();
-        }
-      } },
-      insertAdjacentElement: { value: function insertAdjacentElement(position, element) {
-        if (element.nodeType !== Node.ELEMENT_NODE) {
-          throw new TypeError("not an element");
-        }
-        position = utils.toASCIILowerCase(String(position));
-        return this._insertAdjacent(position, element);
-      } },
-      insertAdjacentText: { value: function insertAdjacentText(position, data) {
-        var textNode = this.ownerDocument.createTextNode(data);
-        position = utils.toASCIILowerCase(String(position));
-        this._insertAdjacent(position, textNode);
-      } },
-      insertAdjacentHTML: { value: function insertAdjacentHTML(position, text) {
-        position = utils.toASCIILowerCase(String(position));
-        text = String(text);
-        var context;
-        switch (position) {
-          case "beforebegin":
-          case "afterend":
-            context = this.parentNode;
-            if (context === null || context.nodeType === Node.DOCUMENT_NODE) {
-              utils.NoModificationAllowedError();
-            }
-            break;
-          case "afterbegin":
-          case "beforeend":
-            context = this;
-            break;
-          default:
-            utils.SyntaxError();
-        }
-        if (!(context instanceof Element) || context.ownerDocument.isHTML && context.localName === "html" && context.namespaceURI === NAMESPACE.HTML) {
-          context = context.ownerDocument.createElementNS(NAMESPACE.HTML, "body");
-        }
-        var parser = this.ownerDocument.implementation.mozHTMLParser(
-          this.ownerDocument._address,
-          context
-        );
-        parser.parse(text, true);
-        this._insertAdjacent(position, parser._asDocumentFragment());
-      } },
-      children: { get: function() {
-        if (!this._children) {
-          this._children = new ChildrenCollection(this);
-        }
-        return this._children;
-      } },
-      attributes: { get: function() {
-        if (!this._attributes) {
-          this._attributes = new AttributesArray(this);
-        }
-        return this._attributes;
-      } },
-      firstElementChild: { get: function() {
-        for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-          if (kid.nodeType === Node.ELEMENT_NODE)
-            return kid;
-        }
-        return null;
-      } },
-      lastElementChild: { get: function() {
-        for (var kid = this.lastChild; kid !== null; kid = kid.previousSibling) {
-          if (kid.nodeType === Node.ELEMENT_NODE)
-            return kid;
-        }
-        return null;
-      } },
-      childElementCount: { get: function() {
-        return this.children.length;
-      } },
-      nextElement: { value: function(root) {
-        if (!root)
-          root = this.ownerDocument.documentElement;
-        var next = this.firstElementChild;
-        if (!next) {
-          if (this === root)
-            return null;
-          next = this.nextElementSibling;
-        }
-        if (next)
-          return next;
-        for (var parent = this.parentElement; parent && parent !== root; parent = parent.parentElement) {
-          next = parent.nextElementSibling;
+            next = this.nextElementSibling;
+          }
           if (next)
             return next;
-        }
-        return null;
-      } },
-      getElementsByTagName: { value: function getElementsByTagName(lname) {
-        var filter;
-        if (!lname)
-          return new NodeList();
-        if (lname === "*")
-          filter = function() {
-            return true;
-          };
-        else if (this.isHTML)
-          filter = htmlLocalNameElementFilter(lname);
-        else
-          filter = localNameElementFilter(lname);
-        return new FilteredElementList(this, filter);
-      } },
-      getElementsByTagNameNS: { value: function getElementsByTagNameNS(ns, lname) {
-        var filter;
-        if (ns === "*" && lname === "*")
-          filter = function() {
-            return true;
-          };
-        else if (ns === "*")
-          filter = localNameElementFilter(lname);
-        else if (lname === "*")
-          filter = namespaceElementFilter(ns);
-        else
-          filter = namespaceLocalNameElementFilter(ns, lname);
-        return new FilteredElementList(this, filter);
-      } },
-      getElementsByClassName: { value: function getElementsByClassName(names) {
-        names = String(names).trim();
-        if (names === "") {
-          var result = new NodeList();
-          return result;
-        }
-        names = names.split(/[ \t\r\n\f]+/);
-        return new FilteredElementList(this, classNamesElementFilter(names));
-      } },
-      getElementsByName: { value: function getElementsByName(name) {
-        return new FilteredElementList(this, elementNameFilter(String(name)));
-      } },
-      clone: { value: function clone() {
-        var e;
-        if (this.namespaceURI !== NAMESPACE.HTML || this.prefix || !this.ownerDocument.isHTML) {
-          e = this.ownerDocument.createElementNS(
-            this.namespaceURI,
-            this.prefix !== null ? this.prefix + ":" + this.localName : this.localName
-          );
-        } else {
-          e = this.ownerDocument.createElement(this.localName);
-        }
-        for (var i = 0, n = this._attrKeys.length; i < n; i++) {
-          var lname = this._attrKeys[i];
-          var a = this._attrsByLName[lname];
-          var b = a.cloneNode();
-          b._setOwnerElement(e);
-          e._attrsByLName[lname] = b;
-          e._addQName(b);
-        }
-        e._attrKeys = this._attrKeys.concat();
-        return e;
-      } },
-      isEqual: { value: function isEqual(that) {
-        if (this.localName !== that.localName || this.namespaceURI !== that.namespaceURI || this.prefix !== that.prefix || this._numattrs !== that._numattrs)
-          return false;
-        for (var i = 0, n = this._numattrs; i < n; i++) {
-          var a = this._attr(i);
-          if (!that.hasAttributeNS(a.namespaceURI, a.localName))
-            return false;
-          if (that.getAttributeNS(a.namespaceURI, a.localName) !== a.value)
-            return false;
-        }
-        return true;
-      } },
-      _lookupNamespacePrefix: { value: function _lookupNamespacePrefix(ns, originalElement) {
-        if (this.namespaceURI && this.namespaceURI === ns && this.prefix !== null && originalElement.lookupNamespaceURI(this.prefix) === ns) {
-          return this.prefix;
-        }
-        for (var i = 0, n = this._numattrs; i < n; i++) {
-          var a = this._attr(i);
-          if (a.prefix === "xmlns" && a.value === ns && originalElement.lookupNamespaceURI(a.localName) === ns) {
-            return a.localName;
+          for (var parent = this.parentElement; parent && parent !== root; parent = parent.parentElement) {
+            next = parent.nextElementSibling;
+            if (next)
+              return next;
           }
-        }
-        var parent = this.parentElement;
-        return parent ? parent._lookupNamespacePrefix(ns, originalElement) : null;
-      } },
-      lookupNamespaceURI: { value: function lookupNamespaceURI(prefix) {
-        if (prefix === "" || prefix === void 0) {
-          prefix = null;
-        }
-        if (this.namespaceURI !== null && this.prefix === prefix)
-          return this.namespaceURI;
-        for (var i = 0, n = this._numattrs; i < n; i++) {
-          var a = this._attr(i);
-          if (a.namespaceURI === NAMESPACE.XMLNS) {
-            if (a.prefix === "xmlns" && a.localName === prefix || prefix === null && a.prefix === null && a.localName === "xmlns") {
-              return a.value || null;
-            }
-          }
-        }
-        var parent = this.parentElement;
-        return parent ? parent.lookupNamespaceURI(prefix) : null;
-      } },
-      getAttribute: { value: function getAttribute(qname) {
-        var attr = this.getAttributeNode(qname);
-        return attr ? attr.value : null;
-      } },
-      getAttributeNS: { value: function getAttributeNS(ns, lname) {
-        var attr = this.getAttributeNodeNS(ns, lname);
-        return attr ? attr.value : null;
-      } },
-      getAttributeNode: { value: function getAttributeNode(qname) {
-        qname = String(qname);
-        if (/[A-Z]/.test(qname) && this.isHTML)
-          qname = utils.toASCIILowerCase(qname);
-        var attr = this._attrsByQName[qname];
-        if (!attr)
           return null;
-        if (Array.isArray(attr))
-          attr = attr[0];
-        return attr;
-      } },
-      getAttributeNodeNS: { value: function getAttributeNodeNS(ns, lname) {
-        ns = ns === void 0 || ns === null ? "" : String(ns);
-        lname = String(lname);
-        var attr = this._attrsByLName[ns + "|" + lname];
-        return attr ? attr : null;
-      } },
-      hasAttribute: { value: function hasAttribute(qname) {
-        qname = String(qname);
-        if (/[A-Z]/.test(qname) && this.isHTML)
-          qname = utils.toASCIILowerCase(qname);
-        return this._attrsByQName[qname] !== void 0;
-      } },
-      hasAttributeNS: { value: function hasAttributeNS(ns, lname) {
-        ns = ns === void 0 || ns === null ? "" : String(ns);
-        lname = String(lname);
-        var key = ns + "|" + lname;
-        return this._attrsByLName[key] !== void 0;
-      } },
-      hasAttributes: { value: function hasAttributes() {
-        return this._numattrs > 0;
-      } },
-      toggleAttribute: { value: function toggleAttribute(qname, force) {
-        qname = String(qname);
-        if (!xml.isValidName(qname))
-          utils.InvalidCharacterError();
-        if (/[A-Z]/.test(qname) && this.isHTML)
-          qname = utils.toASCIILowerCase(qname);
-        var a = this._attrsByQName[qname];
-        if (a === void 0) {
-          if (force === void 0 || force === true) {
-            this._setAttribute(qname, "");
-            return true;
+        }
+      },
+      getElementsByTagName: {
+        value: function getElementsByTagName(lname) {
+          var filter;
+          if (!lname)
+            return new NodeList();
+          if (lname === "*")
+            filter = function() {
+              return true;
+            };
+          else if (this.isHTML)
+            filter = htmlLocalNameElementFilter(lname);
+          else
+            filter = localNameElementFilter(lname);
+          return new FilteredElementList(this, filter);
+        }
+      },
+      getElementsByTagNameNS: {
+        value: function getElementsByTagNameNS(ns, lname) {
+          var filter;
+          if (ns === "*" && lname === "*")
+            filter = function() {
+              return true;
+            };
+          else if (ns === "*")
+            filter = localNameElementFilter(lname);
+          else if (lname === "*")
+            filter = namespaceElementFilter(ns);
+          else
+            filter = namespaceLocalNameElementFilter(ns, lname);
+          return new FilteredElementList(this, filter);
+        }
+      },
+      getElementsByClassName: {
+        value: function getElementsByClassName(names) {
+          names = String(names).trim();
+          if (names === "") {
+            var result = new NodeList();
+            return result;
           }
-          return false;
-        } else {
-          if (force === void 0 || force === false) {
-            this.removeAttribute(qname);
+          names = names.split(/[ \t\r\n\f]+/);
+          return new FilteredElementList(this, classNamesElementFilter(names));
+        }
+      },
+      getElementsByName: {
+        value: function getElementsByName(name) {
+          return new FilteredElementList(this, elementNameFilter(String(name)));
+        }
+      },
+      clone: {
+        value: function clone() {
+          var e;
+          if (this.namespaceURI !== NAMESPACE.HTML || this.prefix || !this.ownerDocument.isHTML) {
+            e = this.ownerDocument.createElementNS(this.namespaceURI, this.prefix !== null ? this.prefix + ":" + this.localName : this.localName);
+          } else {
+            e = this.ownerDocument.createElement(this.localName);
+          }
+          for (var i = 0, n = this._attrKeys.length; i < n; i++) {
+            var lname = this._attrKeys[i];
+            var a = this._attrsByLName[lname];
+            var b = a.cloneNode();
+            b._setOwnerElement(e);
+            e._attrsByLName[lname] = b;
+            e._addQName(b);
+          }
+          e._attrKeys = this._attrKeys.concat();
+          return e;
+        }
+      },
+      isEqual: {
+        value: function isEqual(that) {
+          if (this.localName !== that.localName || this.namespaceURI !== that.namespaceURI || this.prefix !== that.prefix || this._numattrs !== that._numattrs)
             return false;
+          for (var i = 0, n = this._numattrs; i < n; i++) {
+            var a = this._attr(i);
+            if (!that.hasAttributeNS(a.namespaceURI, a.localName))
+              return false;
+            if (that.getAttributeNS(a.namespaceURI, a.localName) !== a.value)
+              return false;
           }
           return true;
         }
-      } },
-      _setAttribute: { value: function _setAttribute(qname, value) {
-        var attr = this._attrsByQName[qname];
-        var isnew;
-        if (!attr) {
-          attr = this._newattr(qname);
-          isnew = true;
-        } else {
+      },
+      _lookupNamespacePrefix: {
+        value: function _lookupNamespacePrefix(ns, originalElement) {
+          if (this.namespaceURI && this.namespaceURI === ns && this.prefix !== null && originalElement.lookupNamespaceURI(this.prefix) === ns) {
+            return this.prefix;
+          }
+          for (var i = 0, n = this._numattrs; i < n; i++) {
+            var a = this._attr(i);
+            if (a.prefix === "xmlns" && a.value === ns && originalElement.lookupNamespaceURI(a.localName) === ns) {
+              return a.localName;
+            }
+          }
+          var parent = this.parentElement;
+          return parent ? parent._lookupNamespacePrefix(ns, originalElement) : null;
+        }
+      },
+      lookupNamespaceURI: {
+        value: function lookupNamespaceURI(prefix) {
+          if (prefix === "" || prefix === void 0) {
+            prefix = null;
+          }
+          if (this.namespaceURI !== null && this.prefix === prefix)
+            return this.namespaceURI;
+          for (var i = 0, n = this._numattrs; i < n; i++) {
+            var a = this._attr(i);
+            if (a.namespaceURI === NAMESPACE.XMLNS) {
+              if (a.prefix === "xmlns" && a.localName === prefix || prefix === null && a.prefix === null && a.localName === "xmlns") {
+                return a.value || null;
+              }
+            }
+          }
+          var parent = this.parentElement;
+          return parent ? parent.lookupNamespaceURI(prefix) : null;
+        }
+      },
+      getAttribute: {
+        value: function getAttribute(qname) {
+          var attr = this.getAttributeNode(qname);
+          return attr ? attr.value : null;
+        }
+      },
+      getAttributeNS: {
+        value: function getAttributeNS(ns, lname) {
+          var attr = this.getAttributeNodeNS(ns, lname);
+          return attr ? attr.value : null;
+        }
+      },
+      getAttributeNode: {
+        value: function getAttributeNode(qname) {
+          qname = String(qname);
+          if (/[A-Z]/.test(qname) && this.isHTML)
+            qname = utils.toASCIILowerCase(qname);
+          var attr = this._attrsByQName[qname];
+          if (!attr)
+            return null;
           if (Array.isArray(attr))
             attr = attr[0];
+          return attr;
         }
-        attr.value = value;
-        if (this._attributes)
-          this._attributes[qname] = attr;
-        if (isnew && this._newattrhook)
-          this._newattrhook(qname, value);
-      } },
-      setAttribute: { value: function setAttribute(qname, value) {
-        qname = String(qname);
-        if (!xml.isValidName(qname))
-          utils.InvalidCharacterError();
-        if (/[A-Z]/.test(qname) && this.isHTML)
-          qname = utils.toASCIILowerCase(qname);
-        this._setAttribute(qname, String(value));
-      } },
-      _setAttributeNS: { value: function _setAttributeNS(ns, qname, value) {
-        var pos = qname.indexOf(":"), prefix, lname;
-        if (pos < 0) {
-          prefix = null;
-          lname = qname;
-        } else {
-          prefix = qname.substring(0, pos);
-          lname = qname.substring(pos + 1);
+      },
+      getAttributeNodeNS: {
+        value: function getAttributeNodeNS(ns, lname) {
+          ns = ns === void 0 || ns === null ? "" : String(ns);
+          lname = String(lname);
+          var attr = this._attrsByLName[ns + "|" + lname];
+          return attr ? attr : null;
         }
-        if (ns === "" || ns === void 0)
-          ns = null;
-        var key = (ns === null ? "" : ns) + "|" + lname;
-        var attr = this._attrsByLName[key];
-        var isnew;
-        if (!attr) {
-          attr = new Attr(this, lname, prefix, ns);
-          isnew = true;
+      },
+      hasAttribute: {
+        value: function hasAttribute(qname) {
+          qname = String(qname);
+          if (/[A-Z]/.test(qname) && this.isHTML)
+            qname = utils.toASCIILowerCase(qname);
+          return this._attrsByQName[qname] !== void 0;
+        }
+      },
+      hasAttributeNS: {
+        value: function hasAttributeNS(ns, lname) {
+          ns = ns === void 0 || ns === null ? "" : String(ns);
+          lname = String(lname);
+          var key = ns + "|" + lname;
+          return this._attrsByLName[key] !== void 0;
+        }
+      },
+      hasAttributes: {
+        value: function hasAttributes() {
+          return this._numattrs > 0;
+        }
+      },
+      toggleAttribute: {
+        value: function toggleAttribute(qname, force) {
+          qname = String(qname);
+          if (!xml.isValidName(qname))
+            utils.InvalidCharacterError();
+          if (/[A-Z]/.test(qname) && this.isHTML)
+            qname = utils.toASCIILowerCase(qname);
+          var a = this._attrsByQName[qname];
+          if (a === void 0) {
+            if (force === void 0 || force === true) {
+              this._setAttribute(qname, "");
+              return true;
+            }
+            return false;
+          } else {
+            if (force === void 0 || force === false) {
+              this.removeAttribute(qname);
+              return false;
+            }
+            return true;
+          }
+        }
+      },
+      _setAttribute: {
+        value: function _setAttribute(qname, value) {
+          var attr = this._attrsByQName[qname];
+          var isnew;
+          if (!attr) {
+            attr = this._newattr(qname);
+            isnew = true;
+          } else {
+            if (Array.isArray(attr))
+              attr = attr[0];
+          }
+          attr.value = value;
+          if (this._attributes)
+            this._attributes[qname] = attr;
+          if (isnew && this._newattrhook)
+            this._newattrhook(qname, value);
+        }
+      },
+      setAttribute: {
+        value: function setAttribute(qname, value) {
+          qname = String(qname);
+          if (!xml.isValidName(qname))
+            utils.InvalidCharacterError();
+          if (/[A-Z]/.test(qname) && this.isHTML)
+            qname = utils.toASCIILowerCase(qname);
+          this._setAttribute(qname, String(value));
+        }
+      },
+      _setAttributeNS: {
+        value: function _setAttributeNS(ns, qname, value) {
+          var pos = qname.indexOf(":"), prefix, lname;
+          if (pos < 0) {
+            prefix = null;
+            lname = qname;
+          } else {
+            prefix = qname.substring(0, pos);
+            lname = qname.substring(pos + 1);
+          }
+          if (ns === "" || ns === void 0)
+            ns = null;
+          var key = (ns === null ? "" : ns) + "|" + lname;
+          var attr = this._attrsByLName[key];
+          var isnew;
+          if (!attr) {
+            attr = new Attr(this, lname, prefix, ns);
+            isnew = true;
+            this._attrsByLName[key] = attr;
+            if (this._attributes) {
+              this._attributes[this._attrKeys.length] = attr;
+            }
+            this._attrKeys.push(key);
+            this._addQName(attr);
+          } else if (false) {
+            if (attr.prefix !== prefix) {
+              this._removeQName(attr);
+              attr.prefix = prefix;
+              this._addQName(attr);
+            }
+          }
+          attr.value = value;
+          if (isnew && this._newattrhook)
+            this._newattrhook(qname, value);
+        }
+      },
+      setAttributeNS: {
+        value: function setAttributeNS(ns, qname, value) {
+          ns = ns === null || ns === void 0 || ns === "" ? null : String(ns);
+          qname = String(qname);
+          if (!xml.isValidQName(qname))
+            utils.InvalidCharacterError();
+          var pos = qname.indexOf(":");
+          var prefix = pos < 0 ? null : qname.substring(0, pos);
+          if (prefix !== null && ns === null || prefix === "xml" && ns !== NAMESPACE.XML || (qname === "xmlns" || prefix === "xmlns") && ns !== NAMESPACE.XMLNS || ns === NAMESPACE.XMLNS && !(qname === "xmlns" || prefix === "xmlns"))
+            utils.NamespaceError();
+          this._setAttributeNS(ns, qname, String(value));
+        }
+      },
+      setAttributeNode: {
+        value: function setAttributeNode(attr) {
+          if (attr.ownerElement !== null && attr.ownerElement !== this) {
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
+          }
+          var result = null;
+          var oldAttrs = this._attrsByQName[attr.name];
+          if (oldAttrs) {
+            if (!Array.isArray(oldAttrs)) {
+              oldAttrs = [oldAttrs];
+            }
+            if (oldAttrs.some(function(a) {
+              return a === attr;
+            })) {
+              return attr;
+            } else if (attr.ownerElement !== null) {
+              throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
+            }
+            oldAttrs.forEach(function(a) {
+              this.removeAttributeNode(a);
+            }, this);
+            result = oldAttrs[0];
+          }
+          this.setAttributeNodeNS(attr);
+          return result;
+        }
+      },
+      setAttributeNodeNS: {
+        value: function setAttributeNodeNS(attr) {
+          if (attr.ownerElement !== null) {
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
+          }
+          var ns = attr.namespaceURI;
+          var key = (ns === null ? "" : ns) + "|" + attr.localName;
+          var oldAttr = this._attrsByLName[key];
+          if (oldAttr) {
+            this.removeAttributeNode(oldAttr);
+          }
+          attr._setOwnerElement(this);
           this._attrsByLName[key] = attr;
           if (this._attributes) {
             this._attributes[this._attrKeys.length] = attr;
           }
           this._attrKeys.push(key);
           this._addQName(attr);
-        } else if (false) {
-          if (attr.prefix !== prefix) {
-            this._removeQName(attr);
-            attr.prefix = prefix;
-            this._addQName(attr);
-          }
+          if (this._newattrhook)
+            this._newattrhook(attr.name, attr.value);
+          return oldAttr || null;
         }
-        attr.value = value;
-        if (isnew && this._newattrhook)
-          this._newattrhook(qname, value);
-      } },
-      setAttributeNS: { value: function setAttributeNS(ns, qname, value) {
-        ns = ns === null || ns === void 0 || ns === "" ? null : String(ns);
-        qname = String(qname);
-        if (!xml.isValidQName(qname))
-          utils.InvalidCharacterError();
-        var pos = qname.indexOf(":");
-        var prefix = pos < 0 ? null : qname.substring(0, pos);
-        if (prefix !== null && ns === null || prefix === "xml" && ns !== NAMESPACE.XML || (qname === "xmlns" || prefix === "xmlns") && ns !== NAMESPACE.XMLNS || ns === NAMESPACE.XMLNS && !(qname === "xmlns" || prefix === "xmlns"))
-          utils.NamespaceError();
-        this._setAttributeNS(ns, qname, String(value));
-      } },
-      setAttributeNode: { value: function setAttributeNode(attr) {
-        if (attr.ownerElement !== null && attr.ownerElement !== this) {
-          throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
-        }
-        var result = null;
-        var oldAttrs = this._attrsByQName[attr.name];
-        if (oldAttrs) {
-          if (!Array.isArray(oldAttrs)) {
-            oldAttrs = [oldAttrs];
-          }
-          if (oldAttrs.some(function(a) {
-            return a === attr;
-          })) {
-            return attr;
-          } else if (attr.ownerElement !== null) {
-            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
-          }
-          oldAttrs.forEach(function(a) {
-            this.removeAttributeNode(a);
-          }, this);
-          result = oldAttrs[0];
-        }
-        this.setAttributeNodeNS(attr);
-        return result;
-      } },
-      setAttributeNodeNS: { value: function setAttributeNodeNS(attr) {
-        if (attr.ownerElement !== null) {
-          throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR);
-        }
-        var ns = attr.namespaceURI;
-        var key = (ns === null ? "" : ns) + "|" + attr.localName;
-        var oldAttr = this._attrsByLName[key];
-        if (oldAttr) {
-          this.removeAttributeNode(oldAttr);
-        }
-        attr._setOwnerElement(this);
-        this._attrsByLName[key] = attr;
-        if (this._attributes) {
-          this._attributes[this._attrKeys.length] = attr;
-        }
-        this._attrKeys.push(key);
-        this._addQName(attr);
-        if (this._newattrhook)
-          this._newattrhook(attr.name, attr.value);
-        return oldAttr || null;
-      } },
-      removeAttribute: { value: function removeAttribute(qname) {
-        qname = String(qname);
-        if (/[A-Z]/.test(qname) && this.isHTML)
-          qname = utils.toASCIILowerCase(qname);
-        var attr = this._attrsByQName[qname];
-        if (!attr)
-          return;
-        if (Array.isArray(attr)) {
-          if (attr.length > 2) {
-            attr = attr.shift();
-          } else {
-            this._attrsByQName[qname] = attr[1];
-            attr = attr[0];
-          }
-        } else {
-          this._attrsByQName[qname] = void 0;
-        }
-        var ns = attr.namespaceURI;
-        var key = (ns === null ? "" : ns) + "|" + attr.localName;
-        this._attrsByLName[key] = void 0;
-        var i = this._attrKeys.indexOf(key);
-        if (this._attributes) {
-          Array.prototype.splice.call(this._attributes, i, 1);
-          this._attributes[qname] = void 0;
-        }
-        this._attrKeys.splice(i, 1);
-        var onchange = attr.onchange;
-        attr._setOwnerElement(null);
-        if (onchange) {
-          onchange.call(attr, this, attr.localName, attr.value, null);
-        }
-        if (this.rooted)
-          this.ownerDocument.mutateRemoveAttr(attr);
-      } },
-      removeAttributeNS: { value: function removeAttributeNS(ns, lname) {
-        ns = ns === void 0 || ns === null ? "" : String(ns);
-        lname = String(lname);
-        var key = ns + "|" + lname;
-        var attr = this._attrsByLName[key];
-        if (!attr)
-          return;
-        this._attrsByLName[key] = void 0;
-        var i = this._attrKeys.indexOf(key);
-        if (this._attributes) {
-          Array.prototype.splice.call(this._attributes, i, 1);
-        }
-        this._attrKeys.splice(i, 1);
-        this._removeQName(attr);
-        var onchange = attr.onchange;
-        attr._setOwnerElement(null);
-        if (onchange) {
-          onchange.call(attr, this, attr.localName, attr.value, null);
-        }
-        if (this.rooted)
-          this.ownerDocument.mutateRemoveAttr(attr);
-      } },
-      removeAttributeNode: { value: function removeAttributeNode(attr) {
-        var ns = attr.namespaceURI;
-        var key = (ns === null ? "" : ns) + "|" + attr.localName;
-        if (this._attrsByLName[key] !== attr) {
-          utils.NotFoundError();
-        }
-        this.removeAttributeNS(ns, attr.localName);
-        return attr;
-      } },
-      getAttributeNames: { value: function getAttributeNames() {
-        var elt = this;
-        return this._attrKeys.map(function(key) {
-          return elt._attrsByLName[key].name;
-        });
-      } },
-      _getattr: { value: function _getattr(qname) {
-        var attr = this._attrsByQName[qname];
-        return attr ? attr.value : null;
-      } },
-      _setattr: { value: function _setattr(qname, value) {
-        var attr = this._attrsByQName[qname];
-        var isnew;
-        if (!attr) {
-          attr = this._newattr(qname);
-          isnew = true;
-        }
-        attr.value = String(value);
-        if (this._attributes)
-          this._attributes[qname] = attr;
-        if (isnew && this._newattrhook)
-          this._newattrhook(qname, value);
-      } },
-      _newattr: { value: function _newattr(qname) {
-        var attr = new Attr(this, qname, null, null);
-        var key = "|" + qname;
-        this._attrsByQName[qname] = attr;
-        this._attrsByLName[key] = attr;
-        if (this._attributes) {
-          this._attributes[this._attrKeys.length] = attr;
-        }
-        this._attrKeys.push(key);
-        return attr;
-      } },
-      _addQName: { value: function(attr) {
-        var qname = attr.name;
-        var existing = this._attrsByQName[qname];
-        if (!existing) {
-          this._attrsByQName[qname] = attr;
-        } else if (Array.isArray(existing)) {
-          existing.push(attr);
-        } else {
-          this._attrsByQName[qname] = [existing, attr];
-        }
-        if (this._attributes)
-          this._attributes[qname] = attr;
-      } },
-      _removeQName: { value: function(attr) {
-        var qname = attr.name;
-        var target = this._attrsByQName[qname];
-        if (Array.isArray(target)) {
-          var idx = target.indexOf(attr);
-          utils.assert(idx !== -1);
-          if (target.length === 2) {
-            this._attrsByQName[qname] = target[1 - idx];
-            if (this._attributes) {
-              this._attributes[qname] = this._attrsByQName[qname];
+      },
+      removeAttribute: {
+        value: function removeAttribute(qname) {
+          qname = String(qname);
+          if (/[A-Z]/.test(qname) && this.isHTML)
+            qname = utils.toASCIILowerCase(qname);
+          var attr = this._attrsByQName[qname];
+          if (!attr)
+            return;
+          if (Array.isArray(attr)) {
+            if (attr.length > 2) {
+              attr = attr.shift();
+            } else {
+              this._attrsByQName[qname] = attr[1];
+              attr = attr[0];
             }
           } else {
-            target.splice(idx, 1);
-            if (this._attributes && this._attributes[qname] === attr) {
-              this._attributes[qname] = target[0];
-            }
+            this._attrsByQName[qname] = void 0;
           }
-        } else {
-          utils.assert(target === attr);
-          this._attrsByQName[qname] = void 0;
+          var ns = attr.namespaceURI;
+          var key = (ns === null ? "" : ns) + "|" + attr.localName;
+          this._attrsByLName[key] = void 0;
+          var i = this._attrKeys.indexOf(key);
           if (this._attributes) {
+            Array.prototype.splice.call(this._attributes, i, 1);
             this._attributes[qname] = void 0;
           }
-        }
-      } },
-      _numattrs: { get: function() {
-        return this._attrKeys.length;
-      } },
-      _attr: { value: function(n) {
-        return this._attrsByLName[this._attrKeys[n]];
-      } },
-      id: attributes.property({ name: "id" }),
-      className: attributes.property({ name: "class" }),
-      classList: { get: function() {
-        var self2 = this;
-        if (this._classList) {
-          return this._classList;
-        }
-        var dtlist = new DOMTokenList(
-          function() {
-            return self2.className || "";
-          },
-          function(v) {
-            self2.className = v;
+          this._attrKeys.splice(i, 1);
+          var onchange = attr.onchange;
+          attr._setOwnerElement(null);
+          if (onchange) {
+            onchange.call(attr, this, attr.localName, attr.value, null);
           }
-        );
-        this._classList = dtlist;
-        return dtlist;
-      }, set: function(v) {
-        this.className = v;
-      } },
-      matches: { value: function(selector) {
-        return select.matches(this, selector);
-      } },
-      closest: { value: function(selector) {
-        var el = this;
-        do {
-          if (el.matches && el.matches(selector)) {
-            return el;
+          if (this.rooted)
+            this.ownerDocument.mutateRemoveAttr(attr);
+        }
+      },
+      removeAttributeNS: {
+        value: function removeAttributeNS(ns, lname) {
+          ns = ns === void 0 || ns === null ? "" : String(ns);
+          lname = String(lname);
+          var key = ns + "|" + lname;
+          var attr = this._attrsByLName[key];
+          if (!attr)
+            return;
+          this._attrsByLName[key] = void 0;
+          var i = this._attrKeys.indexOf(key);
+          if (this._attributes) {
+            Array.prototype.splice.call(this._attributes, i, 1);
           }
-          el = el.parentElement || el.parentNode;
-        } while (el !== null && el.nodeType === Node.ELEMENT_NODE);
-        return null;
-      } },
-      querySelector: { value: function(selector) {
-        return select(selector, this)[0];
-      } },
-      querySelectorAll: { value: function(selector) {
-        var nodes = select(selector, this);
-        return nodes.item ? nodes : new NodeList(nodes);
-      } }
+          this._attrKeys.splice(i, 1);
+          this._removeQName(attr);
+          var onchange = attr.onchange;
+          attr._setOwnerElement(null);
+          if (onchange) {
+            onchange.call(attr, this, attr.localName, attr.value, null);
+          }
+          if (this.rooted)
+            this.ownerDocument.mutateRemoveAttr(attr);
+        }
+      },
+      removeAttributeNode: {
+        value: function removeAttributeNode(attr) {
+          var ns = attr.namespaceURI;
+          var key = (ns === null ? "" : ns) + "|" + attr.localName;
+          if (this._attrsByLName[key] !== attr) {
+            utils.NotFoundError();
+          }
+          this.removeAttributeNS(ns, attr.localName);
+          return attr;
+        }
+      },
+      getAttributeNames: {
+        value: function getAttributeNames() {
+          var elt = this;
+          return this._attrKeys.map(function(key) {
+            return elt._attrsByLName[key].name;
+          });
+        }
+      },
+      _getattr: {
+        value: function _getattr(qname) {
+          var attr = this._attrsByQName[qname];
+          return attr ? attr.value : null;
+        }
+      },
+      _setattr: {
+        value: function _setattr(qname, value) {
+          var attr = this._attrsByQName[qname];
+          var isnew;
+          if (!attr) {
+            attr = this._newattr(qname);
+            isnew = true;
+          }
+          attr.value = String(value);
+          if (this._attributes)
+            this._attributes[qname] = attr;
+          if (isnew && this._newattrhook)
+            this._newattrhook(qname, value);
+        }
+      },
+      _newattr: {
+        value: function _newattr(qname) {
+          var attr = new Attr(this, qname, null, null);
+          var key = "|" + qname;
+          this._attrsByQName[qname] = attr;
+          this._attrsByLName[key] = attr;
+          if (this._attributes) {
+            this._attributes[this._attrKeys.length] = attr;
+          }
+          this._attrKeys.push(key);
+          return attr;
+        }
+      },
+      _addQName: {
+        value: function(attr) {
+          var qname = attr.name;
+          var existing = this._attrsByQName[qname];
+          if (!existing) {
+            this._attrsByQName[qname] = attr;
+          } else if (Array.isArray(existing)) {
+            existing.push(attr);
+          } else {
+            this._attrsByQName[qname] = [existing, attr];
+          }
+          if (this._attributes)
+            this._attributes[qname] = attr;
+        }
+      },
+      _removeQName: {
+        value: function(attr) {
+          var qname = attr.name;
+          var target = this._attrsByQName[qname];
+          if (Array.isArray(target)) {
+            var idx = target.indexOf(attr);
+            utils.assert(idx !== -1);
+            if (target.length === 2) {
+              this._attrsByQName[qname] = target[1 - idx];
+              if (this._attributes) {
+                this._attributes[qname] = this._attrsByQName[qname];
+              }
+            } else {
+              target.splice(idx, 1);
+              if (this._attributes && this._attributes[qname] === attr) {
+                this._attributes[qname] = target[0];
+              }
+            }
+          } else {
+            utils.assert(target === attr);
+            this._attrsByQName[qname] = void 0;
+            if (this._attributes) {
+              this._attributes[qname] = void 0;
+            }
+          }
+        }
+      },
+      _numattrs: {
+        get: function() {
+          return this._attrKeys.length;
+        }
+      },
+      _attr: {
+        value: function(n) {
+          return this._attrsByLName[this._attrKeys[n]];
+        }
+      },
+      id: attributes.property({
+        name: "id"
+      }),
+      className: attributes.property({
+        name: "class"
+      }),
+      classList: {
+        get: function() {
+          var self = this;
+          if (this._classList) {
+            return this._classList;
+          }
+          var dtlist = new DOMTokenList(function() {
+            return self.className || "";
+          }, function(v) {
+            self.className = v;
+          });
+          this._classList = dtlist;
+          return dtlist;
+        },
+        set: function(v) {
+          this.className = v;
+        }
+      },
+      matches: {
+        value: function(selector) {
+          return select.matches(this, selector);
+        }
+      },
+      closest: {
+        value: function(selector) {
+          var el = this;
+          do {
+            if (el.matches && el.matches(selector)) {
+              return el;
+            }
+            el = el.parentElement || el.parentNode;
+          } while (el !== null && el.nodeType === Node.ELEMENT_NODE);
+          return null;
+        }
+      },
+      querySelector: {
+        value: function(selector) {
+          return select(selector, this)[0];
+        }
+      },
+      querySelectorAll: {
+        value: function(selector) {
+          var nodes = select(selector, this);
+          return nodes.item ? nodes : new NodeList(nodes);
+        }
+      }
     });
     Object.defineProperties(Element.prototype, ChildNode);
     Object.defineProperties(Element.prototype, NonDocumentTypeChildNode);
-    attributes.registerChangeHandler(
-      Element,
-      "id",
-      function(element, lname, oldval, newval) {
-        if (element.rooted) {
-          if (oldval) {
-            element.ownerDocument.delId(oldval, element);
-          }
-          if (newval) {
-            element.ownerDocument.addId(newval, element);
-          }
+    attributes.registerChangeHandler(Element, "id", function(element, lname, oldval, newval) {
+      if (element.rooted) {
+        if (oldval) {
+          element.ownerDocument.delId(oldval, element);
+        }
+        if (newval) {
+          element.ownerDocument.addId(newval, element);
         }
       }
-    );
-    attributes.registerChangeHandler(
-      Element,
-      "class",
-      function(element, lname, oldval, newval) {
-        if (element._classList) {
-          element._classList._update();
-        }
+    });
+    attributes.registerChangeHandler(Element, "class", function(element, lname, oldval, newval) {
+      if (element._classList) {
+        element._classList._update();
       }
-    );
+    });
     function Attr(elt, lname, prefix, namespace, value) {
       this.localName = lname;
       this.prefix = prefix === null || prefix === "" ? null : "" + prefix;
@@ -5718,20 +8370,26 @@ var require_Element = __commonJS({
           return this._ownerElement;
         }
       },
-      _setOwnerElement: { value: function _setOwnerElement(elt) {
-        this._ownerElement = elt;
-        if (this.prefix === null && this.namespaceURI === null && elt) {
-          this.onchange = elt._attributeChangeHandlers[this.localName];
-        } else {
-          this.onchange = null;
+      _setOwnerElement: {
+        value: function _setOwnerElement(elt) {
+          this._ownerElement = elt;
+          if (this.prefix === null && this.namespaceURI === null && elt) {
+            this.onchange = elt._attributeChangeHandlers[this.localName];
+          } else {
+            this.onchange = null;
+          }
         }
-      } },
-      name: { get: function() {
-        return this.prefix ? this.prefix + ":" + this.localName : this.localName;
-      } },
-      specified: { get: function() {
-        return true;
-      } },
+      },
+      name: {
+        get: function() {
+          return this.prefix ? this.prefix + ":" + this.localName : this.localName;
+        }
+      },
+      specified: {
+        get: function() {
+          return true;
+        }
+      },
       value: {
         get: function() {
           return this.data;
@@ -5750,21 +8408,21 @@ var require_Element = __commonJS({
           }
         }
       },
-      cloneNode: { value: function cloneNode(deep) {
-        return new Attr(
-          null,
-          this.localName,
-          this.prefix,
-          this.namespaceURI,
-          this.data
-        );
-      } },
-      nodeType: { get: function() {
-        return Node.ATTRIBUTE_NODE;
-      } },
-      nodeName: { get: function() {
-        return this.name;
-      } },
+      cloneNode: {
+        value: function cloneNode(deep) {
+          return new Attr(null, this.localName, this.prefix, this.namespaceURI, this.data);
+        }
+      },
+      nodeType: {
+        get: function() {
+          return Node.ATTRIBUTE_NODE;
+        }
+      },
+      nodeName: {
+        get: function() {
+          return this.name;
+        }
+      },
       nodeValue: {
         get: function() {
           return this.value;
@@ -5807,27 +8465,36 @@ var require_Element = __commonJS({
       }
     }
     AttributesArray.prototype = Object.create(NamedNodeMap.prototype, {
-      length: { get: function() {
-        return this.element._attrKeys.length;
-      }, set: function() {
-      } },
-      item: { value: function(n) {
-        n = n >>> 0;
-        if (n >= this.length) {
-          return null;
+      length: {
+        get: function() {
+          return this.element._attrKeys.length;
+        },
+        set: function() {
         }
-        return this.element._attrsByLName[this.element._attrKeys[n]];
-      } }
+      },
+      item: {
+        value: function(n) {
+          n = n >>> 0;
+          if (n >= this.length) {
+            return null;
+          }
+          return this.element._attrsByLName[this.element._attrKeys[n]];
+        }
+      }
     });
     var _a;
     if ((_a = globalThis.Symbol) == null ? void 0 : _a.iterator) {
       AttributesArray.prototype[globalThis.Symbol.iterator] = function() {
-        var i = 0, n = this.length, self2 = this;
+        var i = 0, n = this.length, self = this;
         return {
           next: function() {
             if (i < n)
-              return { value: self2.item(i++) };
-            return { done: true };
+              return {
+                value: self.item(i++)
+              };
+            return {
+              done: true
+            };
           }
         };
       };
@@ -5837,46 +8504,56 @@ var require_Element = __commonJS({
       this.updateCache();
     }
     ChildrenCollection.prototype = Object.create(Object.prototype, {
-      length: { get: function() {
-        this.updateCache();
-        return this.childrenByNumber.length;
-      } },
-      item: { value: function item(n) {
-        this.updateCache();
-        return this.childrenByNumber[n] || null;
-      } },
-      namedItem: { value: function namedItem(name) {
-        this.updateCache();
-        return this.childrenByName[name] || null;
-      } },
-      namedItems: { get: function() {
-        this.updateCache();
-        return this.childrenByName;
-      } },
-      updateCache: { value: function updateCache() {
-        var namedElts = /^(a|applet|area|embed|form|frame|frameset|iframe|img|object)$/;
-        if (this.lastModTime !== this.element.lastModTime) {
-          this.lastModTime = this.element.lastModTime;
-          var n = this.childrenByNumber && this.childrenByNumber.length || 0;
-          for (var i = 0; i < n; i++) {
-            this[i] = void 0;
-          }
-          this.childrenByNumber = [];
-          this.childrenByName = /* @__PURE__ */ Object.create(null);
-          for (var c = this.element.firstChild; c !== null; c = c.nextSibling) {
-            if (c.nodeType === Node.ELEMENT_NODE) {
-              this[this.childrenByNumber.length] = c;
-              this.childrenByNumber.push(c);
-              var id = c.getAttribute("id");
-              if (id && !this.childrenByName[id])
-                this.childrenByName[id] = c;
-              var name = c.getAttribute("name");
-              if (name && this.element.namespaceURI === NAMESPACE.HTML && namedElts.test(this.element.localName) && !this.childrenByName[name])
-                this.childrenByName[id] = c;
+      length: {
+        get: function() {
+          this.updateCache();
+          return this.childrenByNumber.length;
+        }
+      },
+      item: {
+        value: function item(n) {
+          this.updateCache();
+          return this.childrenByNumber[n] || null;
+        }
+      },
+      namedItem: {
+        value: function namedItem(name) {
+          this.updateCache();
+          return this.childrenByName[name] || null;
+        }
+      },
+      namedItems: {
+        get: function() {
+          this.updateCache();
+          return this.childrenByName;
+        }
+      },
+      updateCache: {
+        value: function updateCache() {
+          var namedElts = /^(a|applet|area|embed|form|frame|frameset|iframe|img|object)$/;
+          if (this.lastModTime !== this.element.lastModTime) {
+            this.lastModTime = this.element.lastModTime;
+            var n = this.childrenByNumber && this.childrenByNumber.length || 0;
+            for (var i = 0; i < n; i++) {
+              this[i] = void 0;
+            }
+            this.childrenByNumber = [];
+            this.childrenByName = /* @__PURE__ */ Object.create(null);
+            for (var c = this.element.firstChild; c !== null; c = c.nextSibling) {
+              if (c.nodeType === Node.ELEMENT_NODE) {
+                this[this.childrenByNumber.length] = c;
+                this.childrenByNumber.push(c);
+                var id = c.getAttribute("id");
+                if (id && !this.childrenByName[id])
+                  this.childrenByName[id] = c;
+                var name = c.getAttribute("name");
+                if (name && this.element.namespaceURI === NAMESPACE.HTML && namedElts.test(this.element.localName) && !this.childrenByName[name])
+                  this.childrenByName[id] = c;
+              }
             }
           }
         }
-      } }
+      }
     });
     function localNameElementFilter(lname) {
       return function(e) {
@@ -5931,33 +8608,49 @@ var require_Leaf = __commonJS({
       Node.call(this);
     }
     Leaf.prototype = Object.create(Node.prototype, {
-      hasChildNodes: { value: function() {
-        return false;
-      } },
-      firstChild: { value: null },
-      lastChild: { value: null },
-      insertBefore: { value: function(node, child) {
-        if (!node.nodeType)
-          throw new TypeError("not a node");
-        HierarchyRequestError();
-      } },
-      replaceChild: { value: function(node, child) {
-        if (!node.nodeType)
-          throw new TypeError("not a node");
-        HierarchyRequestError();
-      } },
-      removeChild: { value: function(node) {
-        if (!node.nodeType)
-          throw new TypeError("not a node");
-        NotFoundError();
-      } },
-      removeChildren: { value: function() {
-      } },
-      childNodes: { get: function() {
-        if (!this._childNodes)
-          this._childNodes = new NodeList();
-        return this._childNodes;
-      } }
+      hasChildNodes: {
+        value: function() {
+          return false;
+        }
+      },
+      firstChild: {
+        value: null
+      },
+      lastChild: {
+        value: null
+      },
+      insertBefore: {
+        value: function(node, child) {
+          if (!node.nodeType)
+            throw new TypeError("not a node");
+          HierarchyRequestError();
+        }
+      },
+      replaceChild: {
+        value: function(node, child) {
+          if (!node.nodeType)
+            throw new TypeError("not a node");
+          HierarchyRequestError();
+        }
+      },
+      removeChild: {
+        value: function(node) {
+          if (!node.nodeType)
+            throw new TypeError("not a node");
+          NotFoundError();
+        }
+      },
+      removeChildren: {
+        value: function() {
+        }
+      },
+      childNodes: {
+        get: function() {
+          if (!this._childNodes)
+            this._childNodes = new NodeList();
+          return this._childNodes;
+        }
+      }
     });
   }
 });
@@ -5973,47 +8666,61 @@ var require_CharacterData = __commonJS({
       Leaf.call(this);
     }
     CharacterData.prototype = Object.create(Leaf.prototype, {
-      substringData: { value: function substringData(offset, count) {
-        if (arguments.length < 2) {
-          throw new TypeError("Not enough arguments");
+      substringData: {
+        value: function substringData(offset, count) {
+          if (arguments.length < 2) {
+            throw new TypeError("Not enough arguments");
+          }
+          offset = offset >>> 0;
+          count = count >>> 0;
+          if (offset > this.data.length || offset < 0 || count < 0) {
+            utils.IndexSizeError();
+          }
+          return this.data.substring(offset, offset + count);
         }
-        offset = offset >>> 0;
-        count = count >>> 0;
-        if (offset > this.data.length || offset < 0 || count < 0) {
-          utils.IndexSizeError();
+      },
+      appendData: {
+        value: function appendData(data) {
+          if (arguments.length < 1) {
+            throw new TypeError("Not enough arguments");
+          }
+          this.data += String(data);
         }
-        return this.data.substring(offset, offset + count);
-      } },
-      appendData: { value: function appendData(data) {
-        if (arguments.length < 1) {
-          throw new TypeError("Not enough arguments");
+      },
+      insertData: {
+        value: function insertData(offset, data) {
+          return this.replaceData(offset, 0, data);
         }
-        this.data += String(data);
-      } },
-      insertData: { value: function insertData(offset, data) {
-        return this.replaceData(offset, 0, data);
-      } },
-      deleteData: { value: function deleteData(offset, count) {
-        return this.replaceData(offset, count, "");
-      } },
-      replaceData: { value: function replaceData(offset, count, data) {
-        var curtext = this.data, len = curtext.length;
-        offset = offset >>> 0;
-        count = count >>> 0;
-        data = String(data);
-        if (offset > len || offset < 0)
-          utils.IndexSizeError();
-        if (offset + count > len)
-          count = len - offset;
-        var prefix = curtext.substring(0, offset), suffix = curtext.substring(offset + count);
-        this.data = prefix + data + suffix;
-      } },
-      isEqual: { value: function isEqual(n) {
-        return this._data === n._data;
-      } },
-      length: { get: function() {
-        return this.data.length;
-      } }
+      },
+      deleteData: {
+        value: function deleteData(offset, count) {
+          return this.replaceData(offset, count, "");
+        }
+      },
+      replaceData: {
+        value: function replaceData(offset, count, data) {
+          var curtext = this.data, len = curtext.length;
+          offset = offset >>> 0;
+          count = count >>> 0;
+          data = String(data);
+          if (offset > len || offset < 0)
+            utils.IndexSizeError();
+          if (offset + count > len)
+            count = len - offset;
+          var prefix = curtext.substring(0, offset), suffix = curtext.substring(offset + count);
+          this.data = prefix + data + suffix;
+        }
+      },
+      isEqual: {
+        value: function isEqual(n) {
+          return this._data === n._data;
+        }
+      },
+      length: {
+        get: function() {
+          return this.data.length;
+        }
+      }
     });
     Object.defineProperties(CharacterData.prototype, ChildNode);
     Object.defineProperties(CharacterData.prototype, NonDocumentTypeChildNode);
@@ -6053,7 +8760,9 @@ var require_Text = __commonJS({
       }
     };
     Text.prototype = Object.create(CharacterData.prototype, {
-      nodeName: { value: "#text" },
+      nodeName: {
+        value: "#text"
+      },
       nodeValue,
       textContent: nodeValue,
       innerText: nodeValue,
@@ -6063,30 +8772,38 @@ var require_Text = __commonJS({
           nodeValue.set.call(this, v === null ? "" : String(v));
         }
       },
-      splitText: { value: function splitText(offset) {
-        if (offset > this._data.length || offset < 0)
-          utils.IndexSizeError();
-        var newdata = this._data.substring(offset), newnode = this.ownerDocument.createTextNode(newdata);
-        this.data = this.data.substring(0, offset);
-        var parent = this.parentNode;
-        if (parent !== null)
-          parent.insertBefore(newnode, this.nextSibling);
-        return newnode;
-      } },
-      wholeText: { get: function wholeText() {
-        var result = this.textContent;
-        for (var next = this.nextSibling; next; next = next.nextSibling) {
-          if (next.nodeType !== Node.TEXT_NODE) {
-            break;
-          }
-          result += next.textContent;
+      splitText: {
+        value: function splitText(offset) {
+          if (offset > this._data.length || offset < 0)
+            utils.IndexSizeError();
+          var newdata = this._data.substring(offset), newnode = this.ownerDocument.createTextNode(newdata);
+          this.data = this.data.substring(0, offset);
+          var parent = this.parentNode;
+          if (parent !== null)
+            parent.insertBefore(newnode, this.nextSibling);
+          return newnode;
         }
-        return result;
-      } },
-      replaceWholeText: { value: utils.nyi },
-      clone: { value: function clone() {
-        return new Text(this.ownerDocument, this._data);
-      } }
+      },
+      wholeText: {
+        get: function wholeText() {
+          var result = this.textContent;
+          for (var next = this.nextSibling; next; next = next.nextSibling) {
+            if (next.nodeType !== Node.TEXT_NODE) {
+              break;
+            }
+            result += next.textContent;
+          }
+          return result;
+        }
+      },
+      replaceWholeText: {
+        value: utils.nyi
+      },
+      clone: {
+        value: function clone() {
+          return new Text(this.ownerDocument, this._data);
+        }
+      }
     });
   }
 });
@@ -6118,7 +8835,9 @@ var require_Comment = __commonJS({
       }
     };
     Comment.prototype = Object.create(CharacterData.prototype, {
-      nodeName: { value: "#comment" },
+      nodeName: {
+        value: "#comment"
+      },
       nodeValue,
       textContent: nodeValue,
       innerText: nodeValue,
@@ -6128,9 +8847,11 @@ var require_Comment = __commonJS({
           nodeValue.set.call(this, v === null ? "" : String(v));
         }
       },
-      clone: { value: function clone() {
-        return new Comment(this.ownerDocument, this._data);
-      } }
+      clone: {
+        value: function clone() {
+          return new Comment(this.ownerDocument, this._data);
+        }
+      }
     });
   }
 });
@@ -6150,7 +8871,9 @@ var require_DocumentFragment = __commonJS({
       this.ownerDocument = doc;
     }
     DocumentFragment.prototype = Object.create(ContainerNode.prototype, {
-      nodeName: { value: "#document-fragment" },
+      nodeName: {
+        value: "#document-fragment"
+      },
       nodeValue: {
         get: function() {
           return null;
@@ -6160,24 +8883,32 @@ var require_DocumentFragment = __commonJS({
       },
       textContent: Object.getOwnPropertyDescriptor(Element.prototype, "textContent"),
       innerText: Object.getOwnPropertyDescriptor(Element.prototype, "innerText"),
-      querySelector: { value: function(selector) {
-        var nodes = this.querySelectorAll(selector);
-        return nodes.length ? nodes[0] : null;
-      } },
-      querySelectorAll: { value: function(selector) {
-        var context = Object.create(this);
-        context.isHTML = true;
-        context.getElementsByTagName = Element.prototype.getElementsByTagName;
-        context.nextElement = Object.getOwnPropertyDescriptor(Element.prototype, "firstElementChild").get;
-        var nodes = select(selector, context);
-        return nodes.item ? nodes : new NodeList(nodes);
-      } },
-      clone: { value: function clone() {
-        return new DocumentFragment(this.ownerDocument);
-      } },
-      isEqual: { value: function isEqual(n) {
-        return true;
-      } },
+      querySelector: {
+        value: function(selector) {
+          var nodes = this.querySelectorAll(selector);
+          return nodes.length ? nodes[0] : null;
+        }
+      },
+      querySelectorAll: {
+        value: function(selector) {
+          var context = Object.create(this);
+          context.isHTML = true;
+          context.getElementsByTagName = Element.prototype.getElementsByTagName;
+          context.nextElement = Object.getOwnPropertyDescriptor(Element.prototype, "firstElementChild").get;
+          var nodes = select(selector, context);
+          return nodes.item ? nodes : new NodeList(nodes);
+        }
+      },
+      clone: {
+        value: function clone() {
+          return new DocumentFragment(this.ownerDocument);
+        }
+      },
+      isEqual: {
+        value: function isEqual(n) {
+          return true;
+        }
+      },
       innerHTML: {
         get: function() {
           return this.serialize();
@@ -6222,9 +8953,11 @@ var require_ProcessingInstruction = __commonJS({
       }
     };
     ProcessingInstruction.prototype = Object.create(CharacterData.prototype, {
-      nodeName: { get: function() {
-        return this.target;
-      } },
+      nodeName: {
+        get: function() {
+          return this.target;
+        }
+      },
       nodeValue,
       textContent: nodeValue,
       innerText: nodeValue,
@@ -6234,12 +8967,16 @@ var require_ProcessingInstruction = __commonJS({
           nodeValue.set.call(this, v === null ? "" : String(v));
         }
       },
-      clone: { value: function clone() {
-        return new ProcessingInstruction(this.ownerDocument, this.target, this._data);
-      } },
-      isEqual: { value: function isEqual(n) {
-        return this.target === n.target && this._data === n._data;
-      } }
+      clone: {
+        value: function clone() {
+          return new ProcessingInstruction(this.ownerDocument, this.target, this._data);
+        }
+      },
+      isEqual: {
+        value: function isEqual(n) {
+          return this.target === n.target && this._data === n._data;
+        }
+      }
     });
   }
 });
@@ -6424,15 +9161,21 @@ var require_TreeWalker = __commonJS({
       this._currentNode = root;
     }
     Object.defineProperties(TreeWalker.prototype, {
-      root: { get: function() {
-        return this._root;
-      } },
-      whatToShow: { get: function() {
-        return this._whatToShow;
-      } },
-      filter: { get: function() {
-        return this._filter;
-      } },
+      root: {
+        get: function() {
+          return this._root;
+        }
+      },
+      whatToShow: {
+        get: function() {
+          return this._whatToShow;
+        }
+      },
+      filter: {
+        get: function() {
+          return this._filter;
+        }
+      },
       currentNode: {
         get: function currentNode() {
           return this._currentNode;
@@ -6444,122 +9187,140 @@ var require_TreeWalker = __commonJS({
           this._currentNode = v;
         }
       },
-      _internalFilter: { value: function _internalFilter(node) {
-        var result, filter;
-        if (this._active) {
-          utils.InvalidStateError();
-        }
-        if (!(1 << node.nodeType - 1 & this._whatToShow)) {
-          return NodeFilter.FILTER_SKIP;
-        }
-        filter = this._filter;
-        if (filter === null) {
-          result = NodeFilter.FILTER_ACCEPT;
-        } else {
-          this._active = true;
-          try {
-            if (typeof filter === "function") {
-              result = filter(node);
-            } else {
-              result = filter.acceptNode(node);
-            }
-          } finally {
-            this._active = false;
+      _internalFilter: {
+        value: function _internalFilter(node) {
+          var result, filter;
+          if (this._active) {
+            utils.InvalidStateError();
           }
-        }
-        return +result;
-      } },
-      parentNode: { value: function parentNode() {
-        var node = this._currentNode;
-        while (node !== this.root) {
-          node = node.parentNode;
-          if (node === null) {
-            return null;
+          if (!(1 << node.nodeType - 1 & this._whatToShow)) {
+            return NodeFilter.FILTER_SKIP;
           }
-          if (this._internalFilter(node) === NodeFilter.FILTER_ACCEPT) {
-            this._currentNode = node;
-            return node;
-          }
-        }
-        return null;
-      } },
-      firstChild: { value: function firstChild() {
-        return traverseChildren(this, "first");
-      } },
-      lastChild: { value: function lastChild() {
-        return traverseChildren(this, "last");
-      } },
-      previousSibling: { value: function previousSibling() {
-        return traverseSiblings(this, "previous");
-      } },
-      nextSibling: { value: function nextSibling() {
-        return traverseSiblings(this, "next");
-      } },
-      previousNode: { value: function previousNode() {
-        var node, result, previousSibling, lastChild;
-        node = this._currentNode;
-        while (node !== this._root) {
-          for (previousSibling = node.previousSibling; previousSibling; previousSibling = node.previousSibling) {
-            node = previousSibling;
-            result = this._internalFilter(node);
-            if (result === NodeFilter.FILTER_REJECT) {
-              continue;
-            }
-            for (lastChild = node.lastChild; lastChild; lastChild = node.lastChild) {
-              node = lastChild;
-              result = this._internalFilter(node);
-              if (result === NodeFilter.FILTER_REJECT) {
-                break;
+          filter = this._filter;
+          if (filter === null) {
+            result = NodeFilter.FILTER_ACCEPT;
+          } else {
+            this._active = true;
+            try {
+              if (typeof filter === "function") {
+                result = filter(node);
+              } else {
+                result = filter.acceptNode(node);
               }
+            } finally {
+              this._active = false;
             }
-            if (result === NodeFilter.FILTER_ACCEPT) {
+          }
+          return +result;
+        }
+      },
+      parentNode: {
+        value: function parentNode() {
+          var node = this._currentNode;
+          while (node !== this.root) {
+            node = node.parentNode;
+            if (node === null) {
+              return null;
+            }
+            if (this._internalFilter(node) === NodeFilter.FILTER_ACCEPT) {
               this._currentNode = node;
               return node;
             }
           }
-          if (node === this.root || node.parentNode === null) {
-            return null;
-          }
-          node = node.parentNode;
-          if (this._internalFilter(node) === NodeFilter.FILTER_ACCEPT) {
-            this._currentNode = node;
-            return node;
-          }
+          return null;
         }
-        return null;
-      } },
-      nextNode: { value: function nextNode() {
-        var node, result, firstChild, nextSibling;
-        node = this._currentNode;
-        result = NodeFilter.FILTER_ACCEPT;
-        CHILDREN:
-          while (true) {
-            for (firstChild = node.firstChild; firstChild; firstChild = node.firstChild) {
-              node = firstChild;
+      },
+      firstChild: {
+        value: function firstChild() {
+          return traverseChildren(this, "first");
+        }
+      },
+      lastChild: {
+        value: function lastChild() {
+          return traverseChildren(this, "last");
+        }
+      },
+      previousSibling: {
+        value: function previousSibling() {
+          return traverseSiblings(this, "previous");
+        }
+      },
+      nextSibling: {
+        value: function nextSibling() {
+          return traverseSiblings(this, "next");
+        }
+      },
+      previousNode: {
+        value: function previousNode() {
+          var node, result, previousSibling, lastChild;
+          node = this._currentNode;
+          while (node !== this._root) {
+            for (previousSibling = node.previousSibling; previousSibling; previousSibling = node.previousSibling) {
+              node = previousSibling;
               result = this._internalFilter(node);
+              if (result === NodeFilter.FILTER_REJECT) {
+                continue;
+              }
+              for (lastChild = node.lastChild; lastChild; lastChild = node.lastChild) {
+                node = lastChild;
+                result = this._internalFilter(node);
+                if (result === NodeFilter.FILTER_REJECT) {
+                  break;
+                }
+              }
               if (result === NodeFilter.FILTER_ACCEPT) {
                 this._currentNode = node;
                 return node;
-              } else if (result === NodeFilter.FILTER_REJECT) {
-                break;
               }
             }
-            for (nextSibling = NodeTraversal.nextSkippingChildren(node, this.root); nextSibling; nextSibling = NodeTraversal.nextSkippingChildren(node, this.root)) {
-              node = nextSibling;
-              result = this._internalFilter(node);
-              if (result === NodeFilter.FILTER_ACCEPT) {
-                this._currentNode = node;
-                return node;
-              } else if (result === NodeFilter.FILTER_SKIP) {
-                continue CHILDREN;
-              }
+            if (node === this.root || node.parentNode === null) {
+              return null;
             }
-            return null;
+            node = node.parentNode;
+            if (this._internalFilter(node) === NodeFilter.FILTER_ACCEPT) {
+              this._currentNode = node;
+              return node;
+            }
           }
-      } },
-      toString: { value: function toString() {
-        return "[object TreeWalker]";
-      } }
+          return null;
+        }
+      },
+      nextNode: {
+        value: function nextNode() {
+          var node, result, firstChild, nextSibling;
+          node = this._currentNode;
+          result = NodeFilter.FILTER_ACCEPT;
+          CHILDREN:
+            while (true) {
+              for (firstChild = node.firstChild; firstChild; firstChild = node.firstChild) {
+                node = firstChild;
+                result = this._internalFilter(node);
+                if (result === NodeFilter.FILTER_ACCEPT) {
+                  this._currentNode = node;
+                  return node;
+                } else if (result === NodeFilter.FILTER_REJECT) {
+                  break;
+                }
+              }
+              for (nextSibling = NodeTraversal.nextSkippingChildren(node, this.root); nextSibling; nextSibling = NodeTraversal.nextSkippingChildren(node, this.root)) {
+                node = nextSibling;
+                result = this._internalFilter(node);
+                if (result === NodeFilter.FILTER_ACCEPT) {
+                  this._currentNode = node;
+                  return node;
+                } else if (result === NodeFilter.FILTER_SKIP) {
+                  continue CHILDREN;
+                }
+              }
+              return null;
+            }
+        }
+      },
+      toString: {
+        value: function toString() {
+          return "[object TreeWalker]";
+        }
+      }
     });
   }
 });
@@ -6623,109 +9384,131 @@ var require_NodeIterator = __commonJS({
       root.doc._attachNodeIterator(this);
     }
     Object.defineProperties(NodeIterator.prototype, {
-      root: { get: function root() {
-        return this._root;
-      } },
-      referenceNode: { get: function referenceNode() {
-        return this._referenceNode;
-      } },
-      pointerBeforeReferenceNode: { get: function pointerBeforeReferenceNode() {
-        return this._pointerBeforeReferenceNode;
-      } },
-      whatToShow: { get: function whatToShow() {
-        return this._whatToShow;
-      } },
-      filter: { get: function filter() {
-        return this._filter;
-      } },
-      _internalFilter: { value: function _internalFilter(node) {
-        var result, filter;
-        if (this._active) {
-          utils.InvalidStateError();
+      root: {
+        get: function root() {
+          return this._root;
         }
-        if (!(1 << node.nodeType - 1 & this._whatToShow)) {
-          return NodeFilter.FILTER_SKIP;
+      },
+      referenceNode: {
+        get: function referenceNode() {
+          return this._referenceNode;
         }
-        filter = this._filter;
-        if (filter === null) {
-          result = NodeFilter.FILTER_ACCEPT;
-        } else {
-          this._active = true;
-          try {
-            if (typeof filter === "function") {
-              result = filter(node);
-            } else {
-              result = filter.acceptNode(node);
+      },
+      pointerBeforeReferenceNode: {
+        get: function pointerBeforeReferenceNode() {
+          return this._pointerBeforeReferenceNode;
+        }
+      },
+      whatToShow: {
+        get: function whatToShow() {
+          return this._whatToShow;
+        }
+      },
+      filter: {
+        get: function filter() {
+          return this._filter;
+        }
+      },
+      _internalFilter: {
+        value: function _internalFilter(node) {
+          var result, filter;
+          if (this._active) {
+            utils.InvalidStateError();
+          }
+          if (!(1 << node.nodeType - 1 & this._whatToShow)) {
+            return NodeFilter.FILTER_SKIP;
+          }
+          filter = this._filter;
+          if (filter === null) {
+            result = NodeFilter.FILTER_ACCEPT;
+          } else {
+            this._active = true;
+            try {
+              if (typeof filter === "function") {
+                result = filter(node);
+              } else {
+                result = filter.acceptNode(node);
+              }
+            } finally {
+              this._active = false;
             }
-          } finally {
-            this._active = false;
           }
+          return +result;
         }
-        return +result;
-      } },
-      _preremove: { value: function _preremove(toBeRemovedNode) {
-        if (isInclusiveAncestor(toBeRemovedNode, this._root)) {
-          return;
-        }
-        if (!isInclusiveAncestor(toBeRemovedNode, this._referenceNode)) {
-          return;
-        }
-        if (this._pointerBeforeReferenceNode) {
-          var next = toBeRemovedNode;
-          while (next.lastChild) {
-            next = next.lastChild;
-          }
-          next = NodeTraversal.next(next, this.root);
-          if (next) {
-            this._referenceNode = next;
+      },
+      _preremove: {
+        value: function _preremove(toBeRemovedNode) {
+          if (isInclusiveAncestor(toBeRemovedNode, this._root)) {
             return;
           }
-          this._pointerBeforeReferenceNode = false;
-        }
-        if (toBeRemovedNode.previousSibling === null) {
-          this._referenceNode = toBeRemovedNode.parentNode;
-        } else {
-          this._referenceNode = toBeRemovedNode.previousSibling;
-          var lastChild;
-          for (lastChild = this._referenceNode.lastChild; lastChild; lastChild = this._referenceNode.lastChild) {
-            this._referenceNode = lastChild;
+          if (!isInclusiveAncestor(toBeRemovedNode, this._referenceNode)) {
+            return;
+          }
+          if (this._pointerBeforeReferenceNode) {
+            var next = toBeRemovedNode;
+            while (next.lastChild) {
+              next = next.lastChild;
+            }
+            next = NodeTraversal.next(next, this.root);
+            if (next) {
+              this._referenceNode = next;
+              return;
+            }
+            this._pointerBeforeReferenceNode = false;
+          }
+          if (toBeRemovedNode.previousSibling === null) {
+            this._referenceNode = toBeRemovedNode.parentNode;
+          } else {
+            this._referenceNode = toBeRemovedNode.previousSibling;
+            var lastChild;
+            for (lastChild = this._referenceNode.lastChild; lastChild; lastChild = this._referenceNode.lastChild) {
+              this._referenceNode = lastChild;
+            }
           }
         }
-      } },
-      nextNode: { value: function nextNode() {
-        return traverse(this, true);
-      } },
-      previousNode: { value: function previousNode() {
-        return traverse(this, false);
-      } },
-      detach: { value: function detach() {
-      } },
-      toString: { value: function toString() {
-        return "[object NodeIterator]";
-      } }
+      },
+      nextNode: {
+        value: function nextNode() {
+          return traverse(this, true);
+        }
+      },
+      previousNode: {
+        value: function previousNode() {
+          return traverse(this, false);
+        }
+      },
+      detach: {
+        value: function detach() {
+        }
+      },
+      toString: {
+        value: function toString() {
+          return "[object NodeIterator]";
+        }
+      }
     });
   }
 });
 var require_URL = __commonJS({
   "external/npm/node_modules/domino/lib/URL.js"(exports, module) {
     "use strict";
-    module.exports = URL;
-    function URL(url) {
+    module.exports = URL2;
+    function URL2(url) {
       if (!url)
-        return Object.create(URL.prototype);
+        return Object.create(URL2.prototype);
       this.url = url.replace(/^[ \t\n\r\f]+|[ \t\n\r\f]+$/g, "");
-      var match = URL.pattern.exec(this.url);
+      var match = URL2.pattern.exec(this.url);
       if (match) {
         if (match[2])
           this.scheme = match[2];
         if (match[4]) {
-          var userinfo = match[4].match(URL.userinfoPattern);
+          var userinfo = match[4].match(URL2.userinfoPattern);
           if (userinfo) {
             this.username = userinfo[1];
             this.password = userinfo[3];
             match[4] = match[4].substring(userinfo[0].length);
           }
-          if (match[4].match(URL.portPattern)) {
+          if (match[4].match(URL2.portPattern)) {
             var pos = match[4].lastIndexOf(":");
             this.host = match[4].substring(0, pos);
             this.port = match[4].substring(pos + 1);
@@ -6741,28 +9524,28 @@ var require_URL = __commonJS({
           this.fragment = match[9];
       }
     }
-    URL.pattern = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/;
-    URL.userinfoPattern = /^([^@:]*)(:([^@]*))?@/;
-    URL.portPattern = /:\d+$/;
-    URL.authorityPattern = /^[^:\/?#]+:\/\//;
-    URL.hierarchyPattern = /^[^:\/?#]+:\//;
-    URL.percentEncode = function percentEncode(s) {
+    URL2.pattern = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/;
+    URL2.userinfoPattern = /^([^@:]*)(:([^@]*))?@/;
+    URL2.portPattern = /:\d+$/;
+    URL2.authorityPattern = /^[^:\/?#]+:\/\//;
+    URL2.hierarchyPattern = /^[^:\/?#]+:\//;
+    URL2.percentEncode = function percentEncode(s) {
       var c = s.charCodeAt(0);
       if (c < 256)
         return "%" + c.toString(16);
       else
         throw Error("can't percent-encode codepoints > 255 yet");
     };
-    URL.prototype = {
-      constructor: URL,
+    URL2.prototype = {
+      constructor: URL2,
       isAbsolute: function() {
         return !!this.scheme;
       },
       isAuthorityBased: function() {
-        return URL.authorityPattern.test(this.url);
+        return URL2.authorityPattern.test(this.url);
       },
       isHierarchical: function() {
-        return URL.hierarchyPattern.test(this.url);
+        return URL2.hierarchyPattern.test(this.url);
       },
       toString: function() {
         var s = "";
@@ -6793,8 +9576,8 @@ var require_URL = __commonJS({
       },
       resolve: function(relative) {
         var base = this;
-        var r = new URL(relative);
-        var t = new URL();
+        var r = new URL2(relative);
+        var t = new URL2();
         if (r.scheme !== void 0) {
           t.scheme = r.scheme;
           t.username = r.username;
@@ -6889,7 +9672,9 @@ var require_CustomEvent = __commonJS({
       Event.call(this, type, dictionary);
     }
     CustomEvent.prototype = Object.create(Event.prototype, {
-      constructor: { value: CustomEvent }
+      constructor: {
+        value: CustomEvent
+      }
     });
   }
 });
@@ -6907,7 +9692,9 @@ var require_events = __commonJS({
 var require_style_parser = __commonJS({
   "external/npm/node_modules/domino/lib/style_parser.js"(exports) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
     exports.hyphenate = exports.parse = void 0;
     function parse(value) {
       const styles = [];
@@ -6975,9 +9762,11 @@ var require_style_parser = __commonJS({
 var require_CSSStyleDeclaration = __commonJS({
   "external/npm/node_modules/domino/lib/CSSStyleDeclaration.js"(exports, module) {
     "use strict";
-    var { parse } = require_style_parser();
+    var {
+      parse
+    } = require_style_parser();
     module.exports = function(elt) {
-      const style = new CSSStyleDeclaration(elt);
+      const style2 = new CSSStyleDeclaration(elt);
       const handler = {
         get: function(target, property) {
           return property in target ? target[property] : target.getPropertyValue(dasherizeProperty(property));
@@ -6994,7 +9783,7 @@ var require_CSSStyleDeclaration = __commonJS({
           return true;
         }
       };
-      return new Proxy(style, handler);
+      return new Proxy(style2, handler);
     };
     function dasherizeProperty(property) {
       return property.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
@@ -7028,31 +9817,35 @@ var require_CSSStyleDeclaration = __commonJS({
     }
     var NO_CHANGE = {};
     CSSStyleDeclaration.prototype = Object.create(Object.prototype, {
-      _parsed: { get: function() {
-        if (!this._parsedStyles || this.cssText !== this._lastParsedText) {
-          var text = this.cssText;
-          this._parsedStyles = parseStyles(text);
-          this._lastParsedText = text;
+      _parsed: {
+        get: function() {
+          if (!this._parsedStyles || this.cssText !== this._lastParsedText) {
+            var text = this.cssText;
+            this._parsedStyles = parseStyles(text);
+            this._lastParsedText = text;
+            delete this._names;
+          }
+          return this._parsedStyles;
+        }
+      },
+      _serialize: {
+        value: function() {
+          var styles = this._parsed;
+          var s = "";
+          for (var name in styles.property) {
+            if (s)
+              s += " ";
+            s += name + ": " + styles.property[name];
+            if (styles.priority[name]) {
+              s += " !" + styles.priority[name];
+            }
+            s += ";";
+          }
+          this.cssText = s;
+          this._lastParsedText = s;
           delete this._names;
         }
-        return this._parsedStyles;
-      } },
-      _serialize: { value: function() {
-        var styles = this._parsed;
-        var s = "";
-        for (var name in styles.property) {
-          if (s)
-            s += " ";
-          s += name + ": " + styles.property[name];
-          if (styles.priority[name]) {
-            s += " !" + styles.priority[name];
-          }
-          s += ";";
-        }
-        this.cssText = s;
-        this._lastParsedText = s;
-        delete this._names;
-      } },
+      },
       cssText: {
         get: function() {
           return this._element.getAttribute("style");
@@ -7061,105 +9854,123 @@ var require_CSSStyleDeclaration = __commonJS({
           this._element.setAttribute("style", value);
         }
       },
-      length: { get: function() {
-        if (!this._names)
-          this._names = Object.getOwnPropertyNames(this._parsed.property);
-        return this._names.length;
-      } },
-      item: { value: function(n) {
-        if (!this._names)
-          this._names = Object.getOwnPropertyNames(this._parsed.property);
-        return this._names[n];
-      } },
-      getPropertyValue: { value: function(property) {
-        property = property.toLowerCase();
-        return this._parsed.property[property] || "";
-      } },
-      getPropertyPriority: { value: function(property) {
-        property = property.toLowerCase();
-        return this._parsed.priority[property] || "";
-      } },
-      setProperty: { value: function(property, value, priority) {
-        property = property.toLowerCase();
-        if (value === null || value === void 0) {
-          value = "";
+      length: {
+        get: function() {
+          if (!this._names)
+            this._names = Object.getOwnPropertyNames(this._parsed.property);
+          return this._names.length;
         }
-        if (priority === null || priority === void 0) {
-          priority = "";
+      },
+      item: {
+        value: function(n) {
+          if (!this._names)
+            this._names = Object.getOwnPropertyNames(this._parsed.property);
+          return this._names[n];
         }
-        if (value !== NO_CHANGE) {
-          value = "" + value;
+      },
+      getPropertyValue: {
+        value: function(property) {
+          property = property.toLowerCase();
+          return this._parsed.property[property] || "";
         }
-        value = value.trim();
-        if (value === "") {
-          this.removeProperty(property);
-          return;
+      },
+      getPropertyPriority: {
+        value: function(property) {
+          property = property.toLowerCase();
+          return this._parsed.priority[property] || "";
         }
-        if (priority !== "" && priority !== NO_CHANGE && !/^important$/i.test(priority)) {
-          return;
-        }
-        var styles = this._parsed;
-        if (value === NO_CHANGE) {
-          if (!styles.property[property]) {
+      },
+      setProperty: {
+        value: function(property, value, priority) {
+          property = property.toLowerCase();
+          if (value === null || value === void 0) {
+            value = "";
+          }
+          if (priority === null || priority === void 0) {
+            priority = "";
+          }
+          if (value !== NO_CHANGE) {
+            value = "" + value;
+          }
+          value = value.trim();
+          if (value === "") {
+            this.removeProperty(property);
             return;
           }
-          if (priority !== "") {
-            styles.priority[property] = "important";
+          if (priority !== "" && priority !== NO_CHANGE && !/^important$/i.test(priority)) {
+            return;
+          }
+          var styles = this._parsed;
+          if (value === NO_CHANGE) {
+            if (!styles.property[property]) {
+              return;
+            }
+            if (priority !== "") {
+              styles.priority[property] = "important";
+            } else {
+              delete styles.priority[property];
+            }
           } else {
-            delete styles.priority[property];
-          }
-        } else {
-          if (value.includes(";") && !value.includes("data:"))
-            return;
-          var newprops = parseStyles(property + ":" + value);
-          if (Object.getOwnPropertyNames(newprops.property).length === 0) {
-            return;
-          }
-          if (Object.getOwnPropertyNames(newprops.priority).length !== 0) {
-            return;
-          }
-          for (var p in newprops.property) {
-            styles.property[p] = newprops.property[p];
-            if (priority === NO_CHANGE) {
-              continue;
-            } else if (priority !== "") {
-              styles.priority[p] = "important";
-            } else if (styles.priority[p]) {
-              delete styles.priority[p];
+            if (value.includes(";") && !value.includes("data:"))
+              return;
+            var newprops = parseStyles(property + ":" + value);
+            if (Object.getOwnPropertyNames(newprops.property).length === 0) {
+              return;
+            }
+            if (Object.getOwnPropertyNames(newprops.priority).length !== 0) {
+              return;
+            }
+            for (var p in newprops.property) {
+              styles.property[p] = newprops.property[p];
+              if (priority === NO_CHANGE) {
+                continue;
+              } else if (priority !== "") {
+                styles.priority[p] = "important";
+              } else if (styles.priority[p]) {
+                delete styles.priority[p];
+              }
             }
           }
-        }
-        this._serialize();
-      } },
-      setPropertyValue: { value: function(property, value) {
-        return this.setProperty(property, value, NO_CHANGE);
-      } },
-      setPropertyPriority: { value: function(property, priority) {
-        return this.setProperty(property, NO_CHANGE, priority);
-      } },
-      removeProperty: { value: function(property) {
-        property = property.toLowerCase();
-        var styles = this._parsed;
-        if (property in styles.property) {
-          delete styles.property[property];
-          delete styles.priority[property];
           this._serialize();
         }
-      } }
+      },
+      setPropertyValue: {
+        value: function(property, value) {
+          return this.setProperty(property, value, NO_CHANGE);
+        }
+      },
+      setPropertyPriority: {
+        value: function(property, priority) {
+          return this.setProperty(property, NO_CHANGE, priority);
+        }
+      },
+      removeProperty: {
+        value: function(property) {
+          property = property.toLowerCase();
+          var styles = this._parsed;
+          if (property in styles.property) {
+            delete styles.property[property];
+            delete styles.priority[property];
+            this._serialize();
+          }
+        }
+      }
     });
   }
 });
 var require_URLUtils = __commonJS({
   "external/npm/node_modules/domino/lib/URLUtils.js"(exports, module) {
     "use strict";
-    var URL = require_URL();
+    var URL2 = require_URL();
     module.exports = URLUtils;
     function URLUtils() {
     }
     URLUtils.prototype = Object.create(Object.prototype, {
-      _url: { get: function() {
-        return new URL(this.href);
-      } },
+      _url: {
+        get: function() {
+          return new URL2(this.href);
+        }
+      },
       protocol: {
         get: function() {
           var url = this._url;
@@ -7170,10 +9981,10 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute()) {
             v = v.replace(/:+$/, "");
-            v = v.replace(/[^-+\.a-zA-Z0-9]/g, URL.percentEncode);
+            v = v.replace(/[^-+\.a-zA-Z0-9]/g, URL2.percentEncode);
             if (v.length > 0) {
               url.scheme = v;
               output = url.toString();
@@ -7192,9 +10003,9 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute() && url.isAuthorityBased()) {
-            v = v.replace(/[^-+\._~!$&'()*,;:=a-zA-Z0-9]/g, URL.percentEncode);
+            v = v.replace(/[^-+\._~!$&'()*,;:=a-zA-Z0-9]/g, URL2.percentEncode);
             if (v.length > 0) {
               url.host = v;
               delete url.port;
@@ -7214,10 +10025,10 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute() && url.isAuthorityBased()) {
             v = v.replace(/^\/+/, "");
-            v = v.replace(/[^-+\._~!$&'()*,;:=a-zA-Z0-9]/g, URL.percentEncode);
+            v = v.replace(/[^-+\._~!$&'()*,;:=a-zA-Z0-9]/g, URL2.percentEncode);
             if (v.length > 0) {
               url.host = v;
               output = url.toString();
@@ -7236,7 +10047,7 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute() && url.isAuthorityBased()) {
             v = "" + v;
             v = v.replace(/[^0-9].*$/, "");
@@ -7261,11 +10072,11 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute() && url.isHierarchical()) {
             if (v.charAt(0) !== "/")
               v = "/" + v;
-            v = v.replace(/[^-+\._~!$&'()*,;:=@\/a-zA-Z0-9]/g, URL.percentEncode);
+            v = v.replace(/[^-+\._~!$&'()*,;:=@\/a-zA-Z0-9]/g, URL2.percentEncode);
             url.path = v;
             output = url.toString();
           }
@@ -7282,11 +10093,11 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute() && url.isHierarchical()) {
             if (v.charAt(0) === "?")
               v = v.substring(1);
-            v = v.replace(/[^-+\._~!$&'()*,;:=@\/?a-zA-Z0-9]/g, URL.percentEncode);
+            v = v.replace(/[^-+\._~!$&'()*,;:=@\/?a-zA-Z0-9]/g, URL2.percentEncode);
             url.query = v;
             output = url.toString();
           }
@@ -7304,10 +10115,10 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (v.charAt(0) === "#")
             v = v.substring(1);
-          v = v.replace(/[^-+\._~!$&'()*,;:=@\/?a-zA-Z0-9]/g, URL.percentEncode);
+          v = v.replace(/[^-+\._~!$&'()*,;:=@\/?a-zA-Z0-9]/g, URL2.percentEncode);
           url.fragment = v;
           output = url.toString();
           this.href = output;
@@ -7320,9 +10131,9 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute()) {
-            v = v.replace(/[\x00-\x1F\x7F-\uFFFF "#<>?`\/@\\:]/g, URL.percentEncode);
+            v = v.replace(/[\x00-\x1F\x7F-\uFFFF "#<>?`\/@\\:]/g, URL2.percentEncode);
             url.username = v;
             output = url.toString();
           }
@@ -7336,12 +10147,12 @@ var require_URLUtils = __commonJS({
         },
         set: function(v) {
           var output = this.href;
-          var url = new URL(output);
+          var url = new URL2(output);
           if (url.isAbsolute()) {
             if (v === "") {
               url.password = null;
             } else {
-              v = v.replace(/[\x00-\x1F\x7F-\uFFFF "#<>?`\/@\\]/g, URL.percentEncode);
+              v = v.replace(/[\x00-\x1F\x7F-\uFFFF "#<>?`\/@\\]/g, URL2.percentEncode);
               url.password = v;
             }
             output = url.toString();
@@ -7349,30 +10160,32 @@ var require_URLUtils = __commonJS({
           this.href = output;
         }
       },
-      origin: { get: function() {
-        var url = this._url;
-        if (url == null) {
-          return "";
+      origin: {
+        get: function() {
+          var url = this._url;
+          if (url == null) {
+            return "";
+          }
+          var originForPort = function(defaultPort) {
+            var origin = [url.scheme, url.host, +url.port || defaultPort];
+            return origin[0] + "://" + origin[1] + (origin[2] === defaultPort ? "" : ":" + origin[2]);
+          };
+          switch (url.scheme) {
+            case "ftp":
+              return originForPort(21);
+            case "gopher":
+              return originForPort(70);
+            case "http":
+            case "ws":
+              return originForPort(80);
+            case "https":
+            case "wss":
+              return originForPort(443);
+            default:
+              return url.scheme + "://";
+          }
         }
-        var originForPort = function(defaultPort) {
-          var origin = [url.scheme, url.host, +url.port || defaultPort];
-          return origin[0] + "://" + origin[1] + (origin[2] === defaultPort ? "" : ":" + origin[2]);
-        };
-        switch (url.scheme) {
-          case "ftp":
-            return originForPort(21);
-          case "gopher":
-            return originForPort(70);
-          case "http":
-          case "ws":
-            return originForPort(80);
-          case "https":
-          case "wss":
-            return originForPort(443);
-          default:
-            return url.scheme + "://";
-        }
-      } }
+      }
     });
     URLUtils._inherit = function(proto) {
       Object.getOwnPropertyNames(URLUtils.prototype).forEach(function(p) {
@@ -7398,13 +10211,18 @@ var require_defineElement = __commonJS({
           for (var n in spec.attributes) {
             var attr = spec.attributes[n];
             if (typeof attr !== "object" || Array.isArray(attr))
-              attr = { type: attr };
+              attr = {
+                type: attr
+              };
             if (!attr.name)
               attr.name = n.toLowerCase();
             props[n] = attributes.property(attr);
           }
         }
-        props.constructor = { value: c, writable: isApiWritable };
+        props.constructor = {
+          value: c,
+          writable: isApiWritable
+        };
         c.prototype = Object.create((spec.superclass || defaultConstructor).prototype, props);
         if (spec.events) {
           addEventHandlers(c, spec.events);
@@ -7418,9 +10236,9 @@ var require_defineElement = __commonJS({
       });
       return c;
     };
-    function EventHandlerBuilder(body, document, form, element) {
+    function EventHandlerBuilder(body, document2, form, element) {
       this.body = body;
-      this.document = document;
+      this.document = document2;
       this.form = form;
       this.element = element;
     }
@@ -7467,7 +10285,7 @@ var require_htmlelts = __commonJS({
     function define(spec) {
       return defineElement(spec, HTMLElement, htmlElements, htmlNameToImpl);
     }
-    function URL(attr) {
+    function URL2(attr) {
       return {
         get: function() {
           var v = this._getattr(attr);
@@ -7537,10 +10355,7 @@ var require_htmlelts = __commonJS({
             return this.serialize();
           },
           set: function(v) {
-            var parser = this.ownerDocument.implementation.mozHTMLParser(
-              this.ownerDocument._address,
-              this
-            );
+            var parser = this.ownerDocument.implementation.mozHTMLParser(this.ownerDocument._address, this);
             parser.parse(v === null ? "" : String(v), true);
             var target = this instanceof htmlNameToImpl.template ? this.content : this;
             while (target.hasChildNodes())
@@ -7548,137 +10363,100 @@ var require_htmlelts = __commonJS({
             target.appendChild(parser._asDocumentFragment());
           }
         },
-        style: { get: function() {
-          if (!this._style)
-            this._style = new CSSStyleDeclaration(this);
-          return this._style;
-        }, set: function(v) {
-          if (v === null || v === void 0) {
-            v = "";
-          }
-          this._setattr("style", String(v));
-        } },
-        blur: { value: function() {
-        } },
-        focus: { value: function() {
-        } },
-        forceSpellCheck: { value: function() {
-        } },
-        click: { value: function() {
-          if (this._click_in_progress)
-            return;
-          this._click_in_progress = true;
-          try {
-            if (this._pre_click_activation_steps)
-              this._pre_click_activation_steps();
-            var event = this.ownerDocument.createEvent("MouseEvent");
-            event.initMouseEvent(
-              "click",
-              true,
-              true,
-              this.ownerDocument.defaultView,
-              1,
-              0,
-              0,
-              0,
-              0,
-              false,
-              false,
-              false,
-              false,
-              0,
-              null
-            );
-            var success = this.dispatchEvent(event);
-            if (success) {
-              if (this._post_click_activation_steps)
-                this._post_click_activation_steps(event);
-            } else {
-              if (this._cancelled_activation_steps)
-                this._cancelled_activation_steps();
+        style: {
+          get: function() {
+            if (!this._style)
+              this._style = new CSSStyleDeclaration(this);
+            return this._style;
+          },
+          set: function(v) {
+            if (v === null || v === void 0) {
+              v = "";
             }
-          } finally {
-            this._click_in_progress = false;
+            this._setattr("style", String(v));
           }
-        } },
-        submit: { value: utils.nyi }
+        },
+        blur: {
+          value: function() {
+          }
+        },
+        focus: {
+          value: function() {
+          }
+        },
+        forceSpellCheck: {
+          value: function() {
+          }
+        },
+        click: {
+          value: function() {
+            if (this._click_in_progress)
+              return;
+            this._click_in_progress = true;
+            try {
+              if (this._pre_click_activation_steps)
+                this._pre_click_activation_steps();
+              var event = this.ownerDocument.createEvent("MouseEvent");
+              event.initMouseEvent("click", true, true, this.ownerDocument.defaultView, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+              var success = this.dispatchEvent(event);
+              if (success) {
+                if (this._post_click_activation_steps)
+                  this._post_click_activation_steps(event);
+              } else {
+                if (this._cancelled_activation_steps)
+                  this._cancelled_activation_steps();
+              }
+            } finally {
+              this._click_in_progress = false;
+            }
+          }
+        },
+        submit: {
+          value: utils.nyi
+        }
       },
       attributes: {
         title: String,
         lang: String,
-        dir: { type: ["ltr", "rtl", "auto"], missing: "" },
-        draggable: { type: ["true", "false"], treatNullAsEmptyString: true },
-        spellcheck: { type: ["true", "false"], missing: "" },
-        enterKeyHint: { type: ["enter", "done", "go", "next", "previous", "search", "send"], missing: "" },
-        autoCapitalize: { type: ["off", "on", "none", "sentences", "words", "characters"], missing: "" },
+        dir: {
+          type: ["ltr", "rtl", "auto"],
+          missing: ""
+        },
+        draggable: {
+          type: ["true", "false"],
+          treatNullAsEmptyString: true
+        },
+        spellcheck: {
+          type: ["true", "false"],
+          missing: ""
+        },
+        enterKeyHint: {
+          type: ["enter", "done", "go", "next", "previous", "search", "send"],
+          missing: ""
+        },
+        autoCapitalize: {
+          type: ["off", "on", "none", "sentences", "words", "characters"],
+          missing: ""
+        },
         autoFocus: Boolean,
         accessKey: String,
         nonce: String,
         hidden: Boolean,
-        translate: { type: ["no", "yes"], missing: "" },
-        tabIndex: { type: "long", default: function() {
-          if (this.tagName in focusableElements || this.contentEditable)
-            return 0;
-          else
-            return -1;
-        } }
+        translate: {
+          type: ["no", "yes"],
+          missing: ""
+        },
+        tabIndex: {
+          type: "long",
+          default: function() {
+            if (this.tagName in focusableElements || this.contentEditable)
+              return 0;
+            else
+              return -1;
+          }
+        }
       },
-      events: [
-        "abort",
-        "canplay",
-        "canplaythrough",
-        "change",
-        "click",
-        "contextmenu",
-        "cuechange",
-        "dblclick",
-        "drag",
-        "dragend",
-        "dragenter",
-        "dragleave",
-        "dragover",
-        "dragstart",
-        "drop",
-        "durationchange",
-        "emptied",
-        "ended",
-        "input",
-        "invalid",
-        "keydown",
-        "keypress",
-        "keyup",
-        "loadeddata",
-        "loadedmetadata",
-        "loadstart",
-        "mousedown",
-        "mousemove",
-        "mouseout",
-        "mouseover",
-        "mouseup",
-        "mousewheel",
-        "pause",
-        "play",
-        "playing",
-        "progress",
-        "ratechange",
-        "readystatechange",
-        "reset",
-        "seeked",
-        "seeking",
-        "select",
-        "show",
-        "stalled",
-        "submit",
-        "suspend",
-        "timeupdate",
-        "volumechange",
-        "waiting",
-        "blur",
-        "error",
-        "focus",
-        "load",
-        "scroll"
-      ]
+      events: ["abort", "canplay", "canplaythrough", "change", "click", "contextmenu", "cuechange", "dblclick", "drag", "dragend", "dragenter", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied", "ended", "input", "invalid", "keydown", "keypress", "keyup", "loadeddata", "loadedmetadata", "loadstart", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup", "mousewheel", "pause", "play", "playing", "progress", "ratechange", "readystatechange", "reset", "seeked", "seeking", "select", "show", "stalled", "submit", "suspend", "timeupdate", "volumechange", "waiting", "blur", "error", "focus", "load", "scroll"]
     });
     var HTMLUnknownElement = define({
       name: "HTMLUnknownElement",
@@ -7687,9 +10465,11 @@ var require_htmlelts = __commonJS({
       }
     });
     var formAssociatedProps = {
-      form: { get: function() {
-        return this._form;
-      } }
+      form: {
+        get: function() {
+          return this._form;
+        }
+      }
     };
     define({
       tag: "a",
@@ -7698,14 +10478,16 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        _post_click_activation_steps: { value: function(e) {
-          if (this.href) {
-            this.ownerDocument.defaultView.location = this.href;
+        _post_click_activation_steps: {
+          value: function(e) {
+            if (this.href) {
+              this.ownerDocument.defaultView.location = this.href;
+            }
           }
-        } }
+        }
       },
       attributes: {
-        href: URL,
+        href: URL2,
         ping: String,
         download: String,
         target: String,
@@ -7734,7 +10516,7 @@ var require_htmlelts = __commonJS({
         download: String,
         rel: String,
         media: String,
-        href: URL,
+        href: URL2,
         hreflang: String,
         type: String,
         shape: String,
@@ -7771,32 +10553,28 @@ var require_htmlelts = __commonJS({
       ctor: function HTMLBodyElement(doc, localName, prefix) {
         HTMLElement.call(this, doc, localName, prefix);
       },
-      events: [
-        "afterprint",
-        "beforeprint",
-        "beforeunload",
-        "blur",
-        "error",
-        "focus",
-        "hashchange",
-        "load",
-        "message",
-        "offline",
-        "online",
-        "pagehide",
-        "pageshow",
-        "popstate",
-        "resize",
-        "scroll",
-        "storage",
-        "unload"
-      ],
+      events: ["afterprint", "beforeprint", "beforeunload", "blur", "error", "focus", "hashchange", "load", "message", "offline", "online", "pagehide", "pageshow", "popstate", "resize", "scroll", "storage", "unload"],
       attributes: {
-        text: { type: String, treatNullAsEmptyString: true },
-        link: { type: String, treatNullAsEmptyString: true },
-        vLink: { type: String, treatNullAsEmptyString: true },
-        aLink: { type: String, treatNullAsEmptyString: true },
-        bgColor: { type: String, treatNullAsEmptyString: true },
+        text: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        link: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        vLink: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        aLink: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        bgColor: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
         background: String
       }
     });
@@ -7812,12 +10590,23 @@ var require_htmlelts = __commonJS({
         value: String,
         disabled: Boolean,
         autofocus: Boolean,
-        type: { type: ["submit", "reset", "button", "menu"], missing: "submit" },
+        type: {
+          type: ["submit", "reset", "button", "menu"],
+          missing: "submit"
+        },
         formTarget: String,
-        formAction: URL,
+        formAction: URL2,
         formNoValidate: Boolean,
-        formMethod: { type: ["get", "post", "dialog"], invalid: "get", missing: "" },
-        formEnctype: { type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"], invalid: "application/x-www-form-urlencoded", missing: "" }
+        formMethod: {
+          type: ["get", "post", "dialog"],
+          invalid: "get",
+          missing: ""
+        },
+        formEnctype: {
+          type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
+          invalid: "application/x-www-form-urlencoded",
+          missing: ""
+        }
       }
     });
     define({
@@ -7874,7 +10663,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        src: URL,
+        src: URL2,
         type: String,
         width: String,
         height: String,
@@ -7902,14 +10691,32 @@ var require_htmlelts = __commonJS({
       },
       attributes: {
         action: String,
-        autocomplete: { type: ["on", "off"], missing: "on" },
+        autocomplete: {
+          type: ["on", "off"],
+          missing: "on"
+        },
         name: String,
-        acceptCharset: { name: "accept-charset" },
+        acceptCharset: {
+          name: "accept-charset"
+        },
         target: String,
         noValidate: Boolean,
-        method: { type: ["get", "post", "dialog"], invalid: "get", missing: "get" },
-        enctype: { type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"], invalid: "application/x-www-form-urlencoded", missing: "application/x-www-form-urlencoded" },
-        encoding: { name: "enctype", type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"], invalid: "application/x-www-form-urlencoded", missing: "application/x-www-form-urlencoded" }
+        method: {
+          type: ["get", "post", "dialog"],
+          invalid: "get",
+          missing: "get"
+        },
+        enctype: {
+          type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
+          invalid: "application/x-www-form-urlencoded",
+          missing: "application/x-www-form-urlencoded"
+        },
+        encoding: {
+          name: "enctype",
+          type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
+          invalid: "application/x-www-form-urlencoded",
+          missing: "application/x-www-form-urlencoded"
+        }
       }
     });
     define({
@@ -7950,7 +10757,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        xmlns: URL,
+        xmlns: URL2,
         version: String
       }
     });
@@ -7961,7 +10768,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        src: URL,
+        src: URL2,
         srcdoc: String,
         name: String,
         width: String,
@@ -7972,13 +10779,22 @@ var require_htmlelts = __commonJS({
         allowUserMedia: Boolean,
         allowPaymentRequest: Boolean,
         referrerPolicy: REFERRER,
-        loading: { type: ["eager", "lazy"], treatNullAsEmptyString: true },
+        loading: {
+          type: ["eager", "lazy"],
+          treatNullAsEmptyString: true
+        },
         align: String,
         scrolling: String,
         frameBorder: String,
-        longDesc: URL,
-        marginHeight: { type: String, treatNullAsEmptyString: true },
-        marginWidth: { type: String, treatNullAsEmptyString: true }
+        longDesc: URL2,
+        marginHeight: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        marginWidth: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -7989,23 +10805,41 @@ var require_htmlelts = __commonJS({
       },
       attributes: {
         alt: String,
-        src: URL,
+        src: URL2,
         srcset: String,
         crossOrigin: CORS,
         useMap: String,
         isMap: Boolean,
         sizes: String,
-        height: { type: "unsigned long", default: 0 },
-        width: { type: "unsigned long", default: 0 },
+        height: {
+          type: "unsigned long",
+          default: 0
+        },
+        width: {
+          type: "unsigned long",
+          default: 0
+        },
         referrerPolicy: REFERRER,
-        loading: { type: ["eager", "lazy"], missing: "" },
+        loading: {
+          type: ["eager", "lazy"],
+          missing: ""
+        },
         name: String,
-        lowsrc: URL,
+        lowsrc: URL2,
         align: String,
-        hspace: { type: "unsigned long", default: 0 },
-        vspace: { type: "unsigned long", default: 0 },
-        longDesc: URL,
-        border: { type: String, treatNullAsEmptyString: true }
+        hspace: {
+          type: "unsigned long",
+          default: 0
+        },
+        vspace: {
+          type: "unsigned long",
+          default: 0
+        },
+        longDesc: URL2,
+        border: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -8016,17 +10850,19 @@ var require_htmlelts = __commonJS({
       },
       props: {
         form: formAssociatedProps.form,
-        _post_click_activation_steps: { value: function(e) {
-          if (this.type === "checkbox") {
-            this.checked = !this.checked;
-          } else if (this.type === "radio") {
-            var group = this.form.getElementsByName(this.name);
-            for (var i = group.length - 1; i >= 0; i--) {
-              var el = group[i];
-              el.checked = el === this;
+        _post_click_activation_steps: {
+          value: function(e) {
+            if (this.type === "checkbox") {
+              this.checked = !this.checked;
+            } else if (this.type === "radio") {
+              var group = this.form.getElementsByName(this.name);
+              for (var i = group.length - 1; i >= 0; i--) {
+                var el = group[i];
+                el.checked = el === this;
+              }
             }
           }
-        } }
+        }
       },
       attributes: {
         name: String,
@@ -8040,53 +10876,70 @@ var require_htmlelts = __commonJS({
         placeholder: String,
         step: String,
         dirName: String,
-        defaultValue: { name: "value" },
+        defaultValue: {
+          name: "value"
+        },
         multiple: Boolean,
         required: Boolean,
         readOnly: Boolean,
         checked: Boolean,
         value: String,
-        src: URL,
-        defaultChecked: { name: "checked", type: Boolean },
-        size: { type: "unsigned long", default: 20, min: 1, setmin: 1 },
-        width: { type: "unsigned long", min: 0, setmin: 0, default: 0 },
-        height: { type: "unsigned long", min: 0, setmin: 0, default: 0 },
-        minLength: { type: "unsigned long", min: 0, setmin: 0, default: -1 },
-        maxLength: { type: "unsigned long", min: 0, setmin: 0, default: -1 },
+        src: URL2,
+        defaultChecked: {
+          name: "checked",
+          type: Boolean
+        },
+        size: {
+          type: "unsigned long",
+          default: 20,
+          min: 1,
+          setmin: 1
+        },
+        width: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: 0
+        },
+        height: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: 0
+        },
+        minLength: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: -1
+        },
+        maxLength: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: -1
+        },
         autocomplete: String,
         type: {
-          type: [
-            "text",
-            "hidden",
-            "search",
-            "tel",
-            "url",
-            "email",
-            "password",
-            "datetime",
-            "date",
-            "month",
-            "week",
-            "time",
-            "datetime-local",
-            "number",
-            "range",
-            "color",
-            "checkbox",
-            "radio",
-            "file",
-            "submit",
-            "image",
-            "reset",
-            "button"
-          ],
+          type: ["text", "hidden", "search", "tel", "url", "email", "password", "datetime", "date", "month", "week", "time", "datetime-local", "number", "range", "color", "checkbox", "radio", "file", "submit", "image", "reset", "button"],
           missing: "text"
         },
         formTarget: String,
         formNoValidate: Boolean,
-        formMethod: { type: ["get", "post"], invalid: "get", missing: "" },
-        formEnctype: { type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"], invalid: "application/x-www-form-urlencoded", missing: "" },
-        inputMode: { type: ["verbatim", "latin", "latin-name", "latin-prose", "full-width-latin", "kana", "kana-name", "katakana", "numeric", "tel", "email", "url"], missing: "" },
+        formMethod: {
+          type: ["get", "post"],
+          invalid: "get",
+          missing: ""
+        },
+        formEnctype: {
+          type: ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"],
+          invalid: "application/x-www-form-urlencoded",
+          missing: ""
+        },
+        inputMode: {
+          type: ["verbatim", "latin", "latin-name", "latin-prose", "full-width-latin", "kana", "kana-name", "katakana", "numeric", "tel", "email", "url"],
+          missing: ""
+        },
         align: String,
         useMap: String
       }
@@ -8103,7 +10956,10 @@ var require_htmlelts = __commonJS({
         disabled: Boolean,
         autofocus: Boolean,
         challenge: String,
-        keytype: { type: ["rsa"], missing: "" }
+        keytype: {
+          type: ["rsa"],
+          missing: ""
+        }
       }
     });
     define({
@@ -8113,7 +10969,10 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        value: { type: "long", default: 0 },
+        value: {
+          type: "long",
+          default: 0
+        },
         type: String
       }
     });
@@ -8125,7 +10984,10 @@ var require_htmlelts = __commonJS({
       },
       props: formAssociatedProps,
       attributes: {
-        htmlFor: { name: "for", type: String }
+        htmlFor: {
+          name: "for",
+          type: String
+        }
       }
     });
     define({
@@ -8145,7 +11007,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        href: URL,
+        href: URL2,
         rel: String,
         media: String,
         hreflang: String,
@@ -8178,7 +11040,10 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        type: { type: ["context", "popup", "toolbar"], missing: "toolbar" },
+        type: {
+          type: ["context", "popup", "toolbar"],
+          missing: "toolbar"
+        },
         label: String,
         compact: Boolean
       }
@@ -8192,7 +11057,10 @@ var require_htmlelts = __commonJS({
       attributes: {
         name: String,
         content: String,
-        httpEquiv: { name: "http-equiv", type: String },
+        httpEquiv: {
+          name: "http-equiv",
+          type: String
+        },
         scheme: String
       }
     });
@@ -8211,7 +11079,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        cite: URL,
+        cite: URL2,
         dateTime: String
       }
     });
@@ -8222,14 +11090,16 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        _numitems: { get: function() {
-          var items = 0;
-          this.childNodes.forEach(function(n) {
-            if (n.nodeType === Node.ELEMENT_NODE && n.tagName === "LI")
-              items++;
-          });
-          return items;
-        } }
+        _numitems: {
+          get: function() {
+            var items = 0;
+            this.childNodes.forEach(function(n) {
+              if (n.nodeType === Node.ELEMENT_NODE && n.tagName === "LI")
+                items++;
+            });
+            return items;
+          }
+        }
       },
       attributes: {
         type: String,
@@ -8254,7 +11124,7 @@ var require_htmlelts = __commonJS({
       },
       props: formAssociatedProps,
       attributes: {
-        data: URL,
+        data: URL2,
         type: String,
         name: String,
         useMap: String,
@@ -8265,12 +11135,21 @@ var require_htmlelts = __commonJS({
         archive: String,
         code: String,
         declare: Boolean,
-        hspace: { type: "unsigned long", default: 0 },
+        hspace: {
+          type: "unsigned long",
+          default: 0
+        },
         standby: String,
-        vspace: { type: "unsigned long", default: 0 },
-        codeBase: URL,
+        vspace: {
+          type: "unsigned long",
+          default: 0
+        },
+        codeBase: URL2,
         codeType: String,
-        border: { type: String, treatNullAsEmptyString: true }
+        border: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -8291,14 +11170,16 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        form: { get: function() {
-          var p = this.parentNode;
-          while (p && p.nodeType === Node.ELEMENT_NODE) {
-            if (p.localName === "select")
-              return p.form;
-            p = p.parentNode;
+        form: {
+          get: function() {
+            var p = this.parentNode;
+            while (p && p.nodeType === Node.ELEMENT_NODE) {
+              if (p.localName === "select")
+                return p.form;
+              p = p.parentNode;
+            }
           }
-        } },
+        },
         value: {
           get: function() {
             return this._getattr("value") || this.text;
@@ -8318,7 +11199,10 @@ var require_htmlelts = __commonJS({
       },
       attributes: {
         disabled: Boolean,
-        defaultSelected: { name: "selected", type: Boolean },
+        defaultSelected: {
+          name: "selected",
+          type: Boolean
+        },
         label: String
       }
     });
@@ -8363,7 +11247,10 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        width: { type: "long", default: 0 }
+        width: {
+          type: "long",
+          default: 0
+        }
       }
     });
     define({
@@ -8374,7 +11261,12 @@ var require_htmlelts = __commonJS({
       },
       props: formAssociatedProps,
       attributes: {
-        max: { type: Number, float: true, default: 1, min: 0 }
+        max: {
+          type: Number,
+          float: true,
+          default: 1,
+          min: 0
+        }
       }
     });
     define({
@@ -8384,7 +11276,7 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        cite: URL
+        cite: URL2
       }
     });
     define({
@@ -8413,7 +11305,7 @@ var require_htmlelts = __commonJS({
         }
       },
       attributes: {
-        src: URL,
+        src: URL2,
         type: String,
         charset: String,
         referrerPolicy: REFERRER,
@@ -8433,9 +11325,11 @@ var require_htmlelts = __commonJS({
       },
       props: {
         form: formAssociatedProps.form,
-        options: { get: function() {
-          return this.getElementsByTagName("option");
-        } }
+        options: {
+          get: function() {
+            return this.getElementsByTagName("option");
+          }
+        }
       },
       attributes: {
         autocomplete: String,
@@ -8444,7 +11338,10 @@ var require_htmlelts = __commonJS({
         autofocus: Boolean,
         multiple: Boolean,
         required: Boolean,
-        size: { type: "unsigned long", default: 0 }
+        size: {
+          type: "unsigned long",
+          default: 0
+        }
       }
     });
     define({
@@ -8482,19 +11379,37 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        colSpan: { type: "unsigned long", default: 1 },
-        rowSpan: { type: "unsigned long", default: 1 },
-        scope: { type: ["row", "col", "rowgroup", "colgroup"], missing: "" },
+        colSpan: {
+          type: "unsigned long",
+          default: 1
+        },
+        rowSpan: {
+          type: "unsigned long",
+          default: 1
+        },
+        scope: {
+          type: ["row", "col", "rowgroup", "colgroup"],
+          missing: ""
+        },
         abbr: String,
         align: String,
         axis: String,
         height: String,
         width: String,
-        ch: { name: "char", type: String },
-        chOff: { name: "charoff", type: String },
+        ch: {
+          name: "char",
+          type: String
+        },
+        chOff: {
+          name: "charoff",
+          type: String
+        },
         noWrap: Boolean,
         vAlign: String,
-        bgColor: { type: String, treatNullAsEmptyString: true }
+        bgColor: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -8504,10 +11419,20 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        span: { type: "limited unsigned long with fallback", default: 1, min: 1 },
+        span: {
+          type: "limited unsigned long with fallback",
+          default: 1,
+          min: 1
+        },
         align: String,
-        ch: { name: "char", type: String },
-        chOff: { name: "charoff", type: String },
+        ch: {
+          name: "char",
+          type: String
+        },
+        chOff: {
+          name: "charoff",
+          type: String
+        },
         vAlign: String,
         width: String
       }
@@ -8519,9 +11444,11 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        rows: { get: function() {
-          return this.getElementsByTagName("tr");
-        } }
+        rows: {
+          get: function() {
+            return this.getElementsByTagName("tr");
+          }
+        }
       },
       attributes: {
         align: String,
@@ -8530,9 +11457,18 @@ var require_htmlelts = __commonJS({
         rules: String,
         summary: String,
         width: String,
-        bgColor: { type: String, treatNullAsEmptyString: true },
-        cellPadding: { type: String, treatNullAsEmptyString: true },
-        cellSpacing: { type: String, treatNullAsEmptyString: true }
+        bgColor: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        cellPadding: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        cellSpacing: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -8543,12 +11479,16 @@ var require_htmlelts = __commonJS({
         this._contentFragment = doc._templateDoc.createDocumentFragment();
       },
       props: {
-        content: { get: function() {
-          return this._contentFragment;
-        } },
-        serialize: { value: function() {
-          return this.content.serialize();
-        } }
+        content: {
+          get: function() {
+            return this._contentFragment;
+          }
+        },
+        serialize: {
+          value: function() {
+            return this.content.serialize();
+          }
+        }
       }
     });
     define({
@@ -8558,16 +11498,27 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        cells: { get: function() {
-          return this.querySelectorAll("td,th");
-        } }
+        cells: {
+          get: function() {
+            return this.querySelectorAll("td,th");
+          }
+        }
       },
       attributes: {
         align: String,
-        ch: { name: "char", type: String },
-        chOff: { name: "charoff", type: String },
+        ch: {
+          name: "char",
+          type: String
+        },
+        chOff: {
+          name: "charoff",
+          type: String
+        },
         vAlign: String,
-        bgColor: { type: String, treatNullAsEmptyString: true }
+        bgColor: {
+          type: String,
+          treatNullAsEmptyString: true
+        }
       }
     });
     define({
@@ -8577,14 +11528,22 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        rows: { get: function() {
-          return this.getElementsByTagName("tr");
-        } }
+        rows: {
+          get: function() {
+            return this.getElementsByTagName("tr");
+          }
+        }
       },
       attributes: {
         align: String,
-        ch: { name: "char", type: String },
-        chOff: { name: "charoff", type: String },
+        ch: {
+          name: "char",
+          type: String
+        },
+        chOff: {
+          name: "charoff",
+          type: String
+        },
         vAlign: String
       }
     });
@@ -8596,9 +11555,11 @@ var require_htmlelts = __commonJS({
       },
       props: {
         form: formAssociatedProps.form,
-        type: { get: function() {
-          return "textarea";
-        } },
+        type: {
+          get: function() {
+            return "textarea";
+          }
+        },
         defaultValue: {
           get: function() {
             return this.textContent;
@@ -8615,9 +11576,11 @@ var require_htmlelts = __commonJS({
             this.defaultValue = v;
           }
         },
-        textLength: { get: function() {
-          return this.value.length;
-        } }
+        textLength: {
+          get: function() {
+            return this.value.length;
+          }
+        }
       },
       attributes: {
         autocomplete: String,
@@ -8629,11 +11592,30 @@ var require_htmlelts = __commonJS({
         dirName: String,
         required: Boolean,
         readOnly: Boolean,
-        rows: { type: "limited unsigned long with fallback", default: 2 },
-        cols: { type: "limited unsigned long with fallback", default: 20 },
-        maxLength: { type: "unsigned long", min: 0, setmin: 0, default: -1 },
-        minLength: { type: "unsigned long", min: 0, setmin: 0, default: -1 },
-        inputMode: { type: ["verbatim", "latin", "latin-name", "latin-prose", "full-width-latin", "kana", "kana-name", "katakana", "numeric", "tel", "email", "url"], missing: "" }
+        rows: {
+          type: "limited unsigned long with fallback",
+          default: 2
+        },
+        cols: {
+          type: "limited unsigned long with fallback",
+          default: 20
+        },
+        maxLength: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: -1
+        },
+        minLength: {
+          type: "unsigned long",
+          min: 0,
+          setmin: 0,
+          default: -1
+        },
+        inputMode: {
+          type: ["verbatim", "latin", "latin-name", "latin-prose", "full-width-latin", "kana", "kana-name", "katakana", "numeric", "tel", "email", "url"],
+          missing: ""
+        }
       }
     });
     define({
@@ -8654,9 +11636,11 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        text: { get: function() {
-          return this.textContent;
-        } }
+        text: {
+          get: function() {
+            return this.textContent;
+          }
+        }
       }
     });
     define({
@@ -8676,14 +11660,23 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        src: URL,
+        src: URL2,
         crossOrigin: CORS,
-        preload: { type: ["metadata", "none", "auto", { value: "", alias: "auto" }], missing: "auto" },
+        preload: {
+          type: ["metadata", "none", "auto", {
+            value: "",
+            alias: "auto"
+          }],
+          missing: "auto"
+        },
         loop: Boolean,
         autoplay: Boolean,
         mediaGroup: String,
         controls: Boolean,
-        defaultMuted: { name: "muted", type: Boolean }
+        defaultMuted: {
+          name: "muted",
+          type: Boolean
+        }
       }
     });
     define({
@@ -8702,9 +11695,17 @@ var require_htmlelts = __commonJS({
         htmlElements.HTMLMediaElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        poster: URL,
-        width: { type: "unsigned long", min: 0, default: 0 },
-        height: { type: "unsigned long", min: 0, default: 0 }
+        poster: URL2,
+        width: {
+          type: "unsigned long",
+          min: 0,
+          default: 0
+        },
+        height: {
+          type: "unsigned long",
+          min: 0,
+          default: 0
+        }
       }
     });
     define({
@@ -8744,16 +11745,34 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        getContext: { value: utils.nyi },
-        probablySupportsContext: { value: utils.nyi },
-        setContext: { value: utils.nyi },
-        transferControlToProxy: { value: utils.nyi },
-        toDataURL: { value: utils.nyi },
-        toBlob: { value: utils.nyi }
+        getContext: {
+          value: utils.nyi
+        },
+        probablySupportsContext: {
+          value: utils.nyi
+        },
+        setContext: {
+          value: utils.nyi
+        },
+        transferControlToProxy: {
+          value: utils.nyi
+        },
+        toDataURL: {
+          value: utils.nyi
+        },
+        toBlob: {
+          value: utils.nyi
+        }
       },
       attributes: {
-        width: { type: "unsigned long", default: 300 },
-        height: { type: "unsigned long", default: 150 }
+        width: {
+          type: "unsigned long",
+          default: 300
+        },
+        height: {
+          type: "unsigned long",
+          default: 150
+        }
       }
     });
     define({
@@ -8763,9 +11782,15 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       props: {
-        show: { value: utils.nyi },
-        showModal: { value: utils.nyi },
-        close: { value: utils.nyi }
+        show: {
+          value: utils.nyi
+        },
+        showModal: {
+          value: utils.nyi
+        },
+        close: {
+          value: utils.nyi
+        }
       },
       attributes: {
         open: Boolean,
@@ -8803,8 +11828,11 @@ var require_htmlelts = __commonJS({
         }
       },
       attributes: {
-        type: { type: ["command", "checkbox", "radio"], missing: "command" },
-        icon: URL,
+        type: {
+          type: ["command", "checkbox", "radio"],
+          missing: "command"
+        },
+        icon: URL2,
         disabled: Boolean,
         checked: Boolean,
         radiogroup: String,
@@ -8821,7 +11849,7 @@ var require_htmlelts = __commonJS({
         srcset: String,
         sizes: String,
         media: String,
-        src: URL,
+        src: URL2,
         type: String,
         width: String,
         height: String
@@ -8834,27 +11862,43 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        src: URL,
+        src: URL2,
         srclang: String,
         label: String,
         default: Boolean,
-        kind: { type: ["subtitles", "captions", "descriptions", "chapters", "metadata"], missing: "subtitles", invalid: "metadata" }
+        kind: {
+          type: ["subtitles", "captions", "descriptions", "chapters", "metadata"],
+          missing: "subtitles",
+          invalid: "metadata"
+        }
       },
       props: {
-        NONE: { get: function() {
-          return 0;
-        } },
-        LOADING: { get: function() {
-          return 1;
-        } },
-        LOADED: { get: function() {
-          return 2;
-        } },
-        ERROR: { get: function() {
-          return 3;
-        } },
-        readyState: { get: utils.nyi },
-        track: { get: utils.nyi }
+        NONE: {
+          get: function() {
+            return 0;
+          }
+        },
+        LOADING: {
+          get: function() {
+            return 1;
+          }
+        },
+        LOADED: {
+          get: function() {
+            return 2;
+          }
+        },
+        ERROR: {
+          get: function() {
+            return 3;
+          }
+        },
+        readyState: {
+          get: utils.nyi
+        },
+        track: {
+          get: utils.nyi
+        }
       }
     });
     define({
@@ -8864,9 +11908,16 @@ var require_htmlelts = __commonJS({
         HTMLElement.call(this, doc, localName, prefix);
       },
       attributes: {
-        color: { type: String, treatNullAsEmptyString: true },
-        face: { type: String },
-        size: { type: String }
+        color: {
+          type: String,
+          treatNullAsEmptyString: true
+        },
+        face: {
+          type: String
+        },
+        size: {
+          type: String
+        }
       }
     });
     define({
@@ -8880,59 +11931,7 @@ var require_htmlelts = __commonJS({
       }
     });
     define({
-      tags: [
-        "abbr",
-        "address",
-        "article",
-        "aside",
-        "b",
-        "bdi",
-        "bdo",
-        "cite",
-        "content",
-        "code",
-        "dd",
-        "dfn",
-        "dt",
-        "em",
-        "figcaption",
-        "figure",
-        "footer",
-        "header",
-        "hgroup",
-        "i",
-        "kbd",
-        "main",
-        "mark",
-        "nav",
-        "noscript",
-        "rb",
-        "rp",
-        "rt",
-        "rtc",
-        "ruby",
-        "s",
-        "samp",
-        "section",
-        "small",
-        "strong",
-        "sub",
-        "summary",
-        "sup",
-        "u",
-        "var",
-        "wbr",
-        "acronym",
-        "basefont",
-        "big",
-        "center",
-        "nobr",
-        "noembed",
-        "noframes",
-        "plaintext",
-        "strike",
-        "tt"
-      ]
+      tags: ["abbr", "address", "article", "aside", "b", "bdi", "bdo", "cite", "content", "code", "dd", "dfn", "dt", "em", "figcaption", "figure", "footer", "header", "hgroup", "i", "kbd", "main", "mark", "nav", "noscript", "rb", "rp", "rt", "rtc", "ruby", "s", "samp", "section", "small", "strong", "sub", "summary", "sup", "u", "var", "wbr", "acronym", "basefont", "big", "center", "nobr", "noembed", "noframes", "plaintext", "strike", "tt"]
     });
   }
 });
@@ -8959,11 +11958,13 @@ var require_svg = __commonJS({
         Element.call(this, doc, localName, utils.NAMESPACE.SVG, prefix);
       },
       props: {
-        style: { get: function() {
-          if (!this._style)
-            this._style = new CSSStyleDeclaration(this);
-          return this._style;
-        } }
+        style: {
+          get: function() {
+            if (!this._style)
+              this._style = new CSSStyleDeclaration(this);
+            return this._style;
+          }
+        }
       }
     });
     define({
@@ -8973,93 +11974,15 @@ var require_svg = __commonJS({
       },
       tag: "svg",
       props: {
-        createSVGRect: { value: function() {
-          return exports.createElement(this.ownerDocument, "rect", null);
-        } }
+        createSVGRect: {
+          value: function() {
+            return exports.createElement(this.ownerDocument, "rect", null);
+          }
+        }
       }
     });
     define({
-      tags: [
-        "a",
-        "altGlyph",
-        "altGlyphDef",
-        "altGlyphItem",
-        "animate",
-        "animateColor",
-        "animateMotion",
-        "animateTransform",
-        "circle",
-        "clipPath",
-        "color-profile",
-        "cursor",
-        "defs",
-        "desc",
-        "ellipse",
-        "feBlend",
-        "feColorMatrix",
-        "feComponentTransfer",
-        "feComposite",
-        "feConvolveMatrix",
-        "feDiffuseLighting",
-        "feDisplacementMap",
-        "feDistantLight",
-        "feFlood",
-        "feFuncA",
-        "feFuncB",
-        "feFuncG",
-        "feFuncR",
-        "feGaussianBlur",
-        "feImage",
-        "feMerge",
-        "feMergeNode",
-        "feMorphology",
-        "feOffset",
-        "fePointLight",
-        "feSpecularLighting",
-        "feSpotLight",
-        "feTile",
-        "feTurbulence",
-        "filter",
-        "font",
-        "font-face",
-        "font-face-format",
-        "font-face-name",
-        "font-face-src",
-        "font-face-uri",
-        "foreignObject",
-        "g",
-        "glyph",
-        "glyphRef",
-        "hkern",
-        "image",
-        "line",
-        "linearGradient",
-        "marker",
-        "mask",
-        "metadata",
-        "missing-glyph",
-        "mpath",
-        "path",
-        "pattern",
-        "polygon",
-        "polyline",
-        "radialGradient",
-        "rect",
-        "script",
-        "set",
-        "stop",
-        "style",
-        "switch",
-        "symbol",
-        "text",
-        "textPath",
-        "title",
-        "tref",
-        "tspan",
-        "use",
-        "view",
-        "vkern"
-      ]
+      tags: ["a", "altGlyph", "altGlyphDef", "altGlyphItem", "animate", "animateColor", "animateMotion", "animateTransform", "circle", "clipPath", "color-profile", "cursor", "defs", "desc", "ellipse", "feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence", "filter", "font", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "foreignObject", "g", "glyph", "glyphRef", "hkern", "image", "line", "linearGradient", "marker", "mask", "metadata", "missing-glyph", "mpath", "path", "pattern", "polygon", "polyline", "radialGradient", "rect", "script", "set", "stop", "style", "switch", "symbol", "text", "textPath", "title", "tref", "tspan", "use", "view", "vkern"]
     });
   }
 });
@@ -9079,7 +12002,7 @@ var require_MutationConstants = __commonJS({
 var require_Document = __commonJS({
   "external/npm/node_modules/domino/lib/Document.js"(exports, module) {
     "use strict";
-    module.exports = Document;
+    module.exports = Document2;
     var Node = require_Node();
     var NodeList = require_NodeList();
     var ContainerNode = require_ContainerNode();
@@ -9093,7 +12016,7 @@ var require_Document = __commonJS({
     var TreeWalker = require_TreeWalker();
     var NodeIterator = require_NodeIterator();
     var NodeFilter = require_NodeFilter();
-    var URL = require_URL();
+    var URL2 = require_URL();
     var select = require_select();
     var events = require_events();
     var xml = require_xmlnames();
@@ -9103,7 +12026,7 @@ var require_Document = __commonJS({
     var MUTATE = require_MutationConstants();
     var NAMESPACE = utils.NAMESPACE;
     var isApiWritable = require_config().isApiWritable;
-    function Document(isHTML, address) {
+    function Document2(isHTML, address) {
       ContainerNode.call(this);
       this.nodeType = Node.DOCUMENT_NODE;
       this.isHTML = isHTML;
@@ -9179,19 +12102,29 @@ var require_Document = __commonJS({
       if (namespace === NAMESPACE.XMLNS && !(prefix === "xmlns" || qualifiedName === "xmlns")) {
         utils.NamespaceError();
       }
-      return { namespace, prefix, localName };
+      return {
+        namespace,
+        prefix,
+        localName
+      };
     }
-    Document.prototype = Object.create(ContainerNode.prototype, {
-      _setMutationHandler: { value: function(handler) {
-        this.mutationHandler = handler;
-      } },
-      _dispatchRendererEvent: { value: function(targetNid, type, details) {
-        var target = this._nodes[targetNid];
-        if (!target)
-          return;
-        target._dispatchEvent(new Event(type, details), true);
-      } },
-      nodeName: { value: "#document" },
+    Document2.prototype = Object.create(ContainerNode.prototype, {
+      _setMutationHandler: {
+        value: function(handler) {
+          this.mutationHandler = handler;
+        }
+      },
+      _dispatchRendererEvent: {
+        value: function(targetNid, type, details) {
+          var target = this._nodes[targetNid];
+          if (!target)
+            return;
+          target._dispatchEvent(new Event(type, details), true);
+        }
+      },
+      nodeName: {
+        value: "#document"
+      },
       nodeValue: {
         get: function() {
           return null;
@@ -9199,191 +12132,271 @@ var require_Document = __commonJS({
         set: function() {
         }
       },
-      documentURI: { get: function() {
-        return this._address;
-      }, set: utils.nyi },
-      compatMode: { get: function() {
-        return this._quirks ? "BackCompat" : "CSS1Compat";
-      } },
-      createTextNode: { value: function(data) {
-        return new Text(this, String(data));
-      } },
-      createComment: { value: function(data) {
-        return new Comment(this, data);
-      } },
-      createDocumentFragment: { value: function() {
-        return new DocumentFragment(this);
-      } },
-      createProcessingInstruction: { value: function(target, data) {
-        if (!xml.isValidName(target) || data.indexOf("?>") !== -1)
-          utils.InvalidCharacterError();
-        return new ProcessingInstruction(this, target, data);
-      } },
-      createAttribute: { value: function(localName) {
-        localName = String(localName);
-        if (!xml.isValidName(localName))
-          utils.InvalidCharacterError();
-        if (this.isHTML) {
-          localName = utils.toASCIILowerCase(localName);
+      documentURI: {
+        get: function() {
+          return this._address;
+        },
+        set: utils.nyi
+      },
+      compatMode: {
+        get: function() {
+          return this._quirks ? "BackCompat" : "CSS1Compat";
         }
-        return new Element._Attr(null, localName, null, null, "");
-      } },
-      createAttributeNS: { value: function(namespace, qualifiedName) {
-        namespace = namespace === null || namespace === void 0 || namespace === "" ? null : String(namespace);
-        qualifiedName = String(qualifiedName);
-        var ve = validateAndExtract(namespace, qualifiedName);
-        return new Element._Attr(null, ve.localName, ve.prefix, ve.namespace, "");
-      } },
-      createElement: { value: function(localName) {
-        localName = String(localName);
-        if (!xml.isValidName(localName))
-          utils.InvalidCharacterError();
-        if (this.isHTML) {
-          if (/[A-Z]/.test(localName))
+      },
+      createTextNode: {
+        value: function(data) {
+          return new Text(this, String(data));
+        }
+      },
+      createComment: {
+        value: function(data) {
+          return new Comment(this, data);
+        }
+      },
+      createDocumentFragment: {
+        value: function() {
+          return new DocumentFragment(this);
+        }
+      },
+      createProcessingInstruction: {
+        value: function(target, data) {
+          if (!xml.isValidName(target) || data.indexOf("?>") !== -1)
+            utils.InvalidCharacterError();
+          return new ProcessingInstruction(this, target, data);
+        }
+      },
+      createAttribute: {
+        value: function(localName) {
+          localName = String(localName);
+          if (!xml.isValidName(localName))
+            utils.InvalidCharacterError();
+          if (this.isHTML) {
             localName = utils.toASCIILowerCase(localName);
-          return html.createElement(this, localName, null);
-        } else if (this.contentType === "application/xhtml+xml") {
-          return html.createElement(this, localName, null);
-        } else {
-          return new Element(this, localName, null, null);
+          }
+          return new Element._Attr(null, localName, null, null, "");
         }
-      }, writable: isApiWritable },
-      createElementNS: { value: function(namespace, qualifiedName) {
-        namespace = namespace === null || namespace === void 0 || namespace === "" ? null : String(namespace);
-        qualifiedName = String(qualifiedName);
-        var ve = validateAndExtract(namespace, qualifiedName);
-        return this._createElementNS(ve.localName, ve.namespace, ve.prefix);
-      }, writable: isApiWritable },
-      _createElementNS: { value: function(localName, namespace, prefix) {
-        if (namespace === NAMESPACE.HTML) {
-          return html.createElement(this, localName, prefix);
-        } else if (namespace === NAMESPACE.SVG) {
-          return svg.createElement(this, localName, prefix);
+      },
+      createAttributeNS: {
+        value: function(namespace, qualifiedName) {
+          namespace = namespace === null || namespace === void 0 || namespace === "" ? null : String(namespace);
+          qualifiedName = String(qualifiedName);
+          var ve = validateAndExtract(namespace, qualifiedName);
+          return new Element._Attr(null, ve.localName, ve.prefix, ve.namespace, "");
         }
-        return new Element(this, localName, namespace, prefix);
-      } },
-      createEvent: { value: function createEvent(interfaceName) {
-        interfaceName = interfaceName.toLowerCase();
-        var name = replacementEvent[interfaceName] || interfaceName;
-        var constructor = events[supportedEvents[name]];
-        if (constructor) {
-          var e = new constructor();
-          e._initialized = false;
-          return e;
-        } else {
-          utils.NotSupportedError();
+      },
+      createElement: {
+        value: function(localName) {
+          localName = String(localName);
+          if (!xml.isValidName(localName))
+            utils.InvalidCharacterError();
+          if (this.isHTML) {
+            if (/[A-Z]/.test(localName))
+              localName = utils.toASCIILowerCase(localName);
+            return html.createElement(this, localName, null);
+          } else if (this.contentType === "application/xhtml+xml") {
+            return html.createElement(this, localName, null);
+          } else {
+            return new Element(this, localName, null, null);
+          }
+        },
+        writable: isApiWritable
+      },
+      createElementNS: {
+        value: function(namespace, qualifiedName) {
+          namespace = namespace === null || namespace === void 0 || namespace === "" ? null : String(namespace);
+          qualifiedName = String(qualifiedName);
+          var ve = validateAndExtract(namespace, qualifiedName);
+          return this._createElementNS(ve.localName, ve.namespace, ve.prefix);
+        },
+        writable: isApiWritable
+      },
+      _createElementNS: {
+        value: function(localName, namespace, prefix) {
+          if (namespace === NAMESPACE.HTML) {
+            return html.createElement(this, localName, prefix);
+          } else if (namespace === NAMESPACE.SVG) {
+            return svg.createElement(this, localName, prefix);
+          }
+          return new Element(this, localName, namespace, prefix);
         }
-      } },
-      createTreeWalker: { value: function(root2, whatToShow, filter) {
-        if (!root2) {
-          throw new TypeError("root argument is required");
+      },
+      createEvent: {
+        value: function createEvent(interfaceName) {
+          interfaceName = interfaceName.toLowerCase();
+          var name = replacementEvent[interfaceName] || interfaceName;
+          var constructor = events[supportedEvents[name]];
+          if (constructor) {
+            var e = new constructor();
+            e._initialized = false;
+            return e;
+          } else {
+            utils.NotSupportedError();
+          }
         }
-        if (!(root2 instanceof Node)) {
-          throw new TypeError("root not a node");
+      },
+      createTreeWalker: {
+        value: function(root2, whatToShow, filter) {
+          if (!root2) {
+            throw new TypeError("root argument is required");
+          }
+          if (!(root2 instanceof Node)) {
+            throw new TypeError("root not a node");
+          }
+          whatToShow = whatToShow === void 0 ? NodeFilter.SHOW_ALL : +whatToShow;
+          filter = filter === void 0 ? null : filter;
+          return new TreeWalker(root2, whatToShow, filter);
         }
-        whatToShow = whatToShow === void 0 ? NodeFilter.SHOW_ALL : +whatToShow;
-        filter = filter === void 0 ? null : filter;
-        return new TreeWalker(root2, whatToShow, filter);
-      } },
-      createNodeIterator: { value: function(root2, whatToShow, filter) {
-        if (!root2) {
-          throw new TypeError("root argument is required");
+      },
+      createNodeIterator: {
+        value: function(root2, whatToShow, filter) {
+          if (!root2) {
+            throw new TypeError("root argument is required");
+          }
+          if (!(root2 instanceof Node)) {
+            throw new TypeError("root not a node");
+          }
+          whatToShow = whatToShow === void 0 ? NodeFilter.SHOW_ALL : +whatToShow;
+          filter = filter === void 0 ? null : filter;
+          return new NodeIterator(root2, whatToShow, filter);
         }
-        if (!(root2 instanceof Node)) {
-          throw new TypeError("root not a node");
+      },
+      _attachNodeIterator: {
+        value: function(ni) {
+          if (!this._nodeIterators) {
+            this._nodeIterators = [];
+          }
+          this._nodeIterators.push(ni);
         }
-        whatToShow = whatToShow === void 0 ? NodeFilter.SHOW_ALL : +whatToShow;
-        filter = filter === void 0 ? null : filter;
-        return new NodeIterator(root2, whatToShow, filter);
-      } },
-      _attachNodeIterator: { value: function(ni) {
-        if (!this._nodeIterators) {
-          this._nodeIterators = [];
+      },
+      _detachNodeIterator: {
+        value: function(ni) {
+          var idx = this._nodeIterators.indexOf(ni);
+          this._nodeIterators.splice(idx, 1);
         }
-        this._nodeIterators.push(ni);
-      } },
-      _detachNodeIterator: { value: function(ni) {
-        var idx = this._nodeIterators.indexOf(ni);
-        this._nodeIterators.splice(idx, 1);
-      } },
-      _preremoveNodeIterators: { value: function(toBeRemoved) {
-        if (this._nodeIterators) {
-          this._nodeIterators.forEach(function(ni) {
-            ni._preremove(toBeRemoved);
-          });
+      },
+      _preremoveNodeIterators: {
+        value: function(toBeRemoved) {
+          if (this._nodeIterators) {
+            this._nodeIterators.forEach(function(ni) {
+              ni._preremove(toBeRemoved);
+            });
+          }
         }
-      } },
-      _updateDocTypeElement: { value: function _updateDocTypeElement() {
-        this.doctype = this.documentElement = null;
-        for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-          if (kid.nodeType === Node.DOCUMENT_TYPE_NODE)
-            this.doctype = kid;
-          else if (kid.nodeType === Node.ELEMENT_NODE)
-            this.documentElement = kid;
+      },
+      _updateDocTypeElement: {
+        value: function _updateDocTypeElement() {
+          this.doctype = this.documentElement = null;
+          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+            if (kid.nodeType === Node.DOCUMENT_TYPE_NODE)
+              this.doctype = kid;
+            else if (kid.nodeType === Node.ELEMENT_NODE)
+              this.documentElement = kid;
+          }
         }
-      } },
-      insertBefore: { value: function insertBefore(child, refChild) {
-        Node.prototype.insertBefore.call(this, child, refChild);
-        this._updateDocTypeElement();
-        return child;
-      } },
-      replaceChild: { value: function replaceChild(node, child) {
-        Node.prototype.replaceChild.call(this, node, child);
-        this._updateDocTypeElement();
-        return child;
-      } },
-      removeChild: { value: function removeChild(child) {
-        Node.prototype.removeChild.call(this, child);
-        this._updateDocTypeElement();
-        return child;
-      } },
-      getElementById: { value: function(id) {
-        var n = this.byId[id];
-        if (!n)
-          return null;
-        if (n instanceof MultiId) {
-          return n.getFirst();
+      },
+      insertBefore: {
+        value: function insertBefore(child, refChild) {
+          Node.prototype.insertBefore.call(this, child, refChild);
+          this._updateDocTypeElement();
+          return child;
         }
-        return n;
-      } },
-      _hasMultipleElementsWithId: { value: function(id) {
-        return this.byId[id] instanceof MultiId;
-      } },
-      getElementsByName: { value: Element.prototype.getElementsByName },
-      getElementsByTagName: { value: Element.prototype.getElementsByTagName },
-      getElementsByTagNameNS: { value: Element.prototype.getElementsByTagNameNS },
-      getElementsByClassName: { value: Element.prototype.getElementsByClassName },
-      adoptNode: { value: function adoptNode(node) {
-        if (node.nodeType === Node.DOCUMENT_NODE)
-          utils.NotSupportedError();
-        if (node.nodeType === Node.ATTRIBUTE_NODE) {
+      },
+      replaceChild: {
+        value: function replaceChild(node, child) {
+          Node.prototype.replaceChild.call(this, node, child);
+          this._updateDocTypeElement();
+          return child;
+        }
+      },
+      removeChild: {
+        value: function removeChild(child) {
+          Node.prototype.removeChild.call(this, child);
+          this._updateDocTypeElement();
+          return child;
+        }
+      },
+      getElementById: {
+        value: function(id) {
+          var n = this.byId[id];
+          if (!n)
+            return null;
+          if (n instanceof MultiId) {
+            return n.getFirst();
+          }
+          return n;
+        }
+      },
+      _hasMultipleElementsWithId: {
+        value: function(id) {
+          return this.byId[id] instanceof MultiId;
+        }
+      },
+      getElementsByName: {
+        value: Element.prototype.getElementsByName
+      },
+      getElementsByTagName: {
+        value: Element.prototype.getElementsByTagName
+      },
+      getElementsByTagNameNS: {
+        value: Element.prototype.getElementsByTagNameNS
+      },
+      getElementsByClassName: {
+        value: Element.prototype.getElementsByClassName
+      },
+      adoptNode: {
+        value: function adoptNode(node) {
+          if (node.nodeType === Node.DOCUMENT_NODE)
+            utils.NotSupportedError();
+          if (node.nodeType === Node.ATTRIBUTE_NODE) {
+            return node;
+          }
+          if (node.parentNode)
+            node.parentNode.removeChild(node);
+          if (node.ownerDocument !== this)
+            recursivelySetOwner(node, this);
           return node;
         }
-        if (node.parentNode)
-          node.parentNode.removeChild(node);
-        if (node.ownerDocument !== this)
-          recursivelySetOwner(node, this);
-        return node;
-      } },
-      importNode: { value: function importNode(node, deep) {
-        return this.adoptNode(node.cloneNode(deep));
-      }, writable: isApiWritable },
-      origin: { get: function origin() {
-        return null;
-      } },
-      characterSet: { get: function characterSet() {
-        return "UTF-8";
-      } },
-      contentType: { get: function contentType() {
-        return this._contentType;
-      } },
-      URL: { get: function URL2() {
-        return this._address;
-      } },
-      domain: { get: utils.nyi, set: utils.nyi },
-      referrer: { get: utils.nyi },
-      cookie: { get: utils.nyi, set: utils.nyi },
-      lastModified: { get: utils.nyi },
+      },
+      importNode: {
+        value: function importNode(node, deep) {
+          return this.adoptNode(node.cloneNode(deep));
+        },
+        writable: isApiWritable
+      },
+      origin: {
+        get: function origin() {
+          return null;
+        }
+      },
+      characterSet: {
+        get: function characterSet() {
+          return "UTF-8";
+        }
+      },
+      contentType: {
+        get: function contentType() {
+          return this._contentType;
+        }
+      },
+      URL: {
+        get: function URL22() {
+          return this._address;
+        }
+      },
+      domain: {
+        get: utils.nyi,
+        set: utils.nyi
+      },
+      referrer: {
+        get: utils.nyi
+      },
+      cookie: {
+        get: utils.nyi,
+        set: utils.nyi
+      },
+      lastModified: {
+        get: utils.nyi
+      },
       location: {
         get: function() {
           return this.defaultView ? this.defaultView.location : null;
@@ -9435,12 +12448,16 @@ var require_Document = __commonJS({
       bgColor: mirrorAttr(function() {
         return this.body;
       }, "bgColor", ""),
-      charset: { get: function() {
-        return this.characterSet;
-      } },
-      inputEncoding: { get: function() {
-        return this.characterSet;
-      } },
+      charset: {
+        get: function() {
+          return this.characterSet;
+        }
+      },
+      inputEncoding: {
+        get: function() {
+          return this.characterSet;
+        }
+      },
       scrollingElement: {
         get: function() {
           return this._quirks ? this.body : this.documentElement;
@@ -9452,21 +12469,39 @@ var require_Document = __commonJS({
         },
         set: utils.nyi
       },
-      head: { get: function() {
-        return namedHTMLChild(this.documentElement, "head");
-      } },
-      images: { get: utils.nyi },
-      embeds: { get: utils.nyi },
-      plugins: { get: utils.nyi },
-      links: { get: utils.nyi },
-      forms: { get: utils.nyi },
-      scripts: { get: utils.nyi },
-      applets: { get: function() {
-        return [];
-      } },
-      activeElement: { get: function() {
-        return null;
-      } },
+      head: {
+        get: function() {
+          return namedHTMLChild(this.documentElement, "head");
+        }
+      },
+      images: {
+        get: utils.nyi
+      },
+      embeds: {
+        get: utils.nyi
+      },
+      plugins: {
+        get: utils.nyi
+      },
+      links: {
+        get: utils.nyi
+      },
+      forms: {
+        get: utils.nyi
+      },
+      scripts: {
+        get: utils.nyi
+      },
+      applets: {
+        get: function() {
+          return [];
+        }
+      },
+      activeElement: {
+        get: function() {
+          return null;
+        }
+      },
       innerHTML: {
         get: function() {
           return this.serialize();
@@ -9479,216 +12514,201 @@ var require_Document = __commonJS({
         },
         set: utils.nyi
       },
-      write: { value: function(args) {
-        if (!this.isHTML)
-          utils.InvalidStateError();
-        if (!this._parser)
-          return;
-        if (!this._parser) {
+      write: {
+        value: function(args) {
+          if (!this.isHTML)
+            utils.InvalidStateError();
+          if (!this._parser)
+            return;
+          if (!this._parser) {
+          }
+          var s = arguments.join("");
+          this._parser.parse(s);
         }
-        var s = arguments.join("");
-        this._parser.parse(s);
-      } },
-      writeln: { value: function writeln(args) {
-        this.write(Array.prototype.join.call(arguments, "") + "\n");
-      } },
-      open: { value: function() {
-        this.documentElement = null;
-      } },
-      close: { value: function() {
-        this.readyState = "interactive";
-        this._dispatchEvent(new Event("readystatechange"), true);
-        this._dispatchEvent(new Event("DOMContentLoaded"), true);
-        this.readyState = "complete";
-        this._dispatchEvent(new Event("readystatechange"), true);
-        if (this.defaultView) {
-          this.defaultView._dispatchEvent(new Event("load"), true);
+      },
+      writeln: {
+        value: function writeln(args) {
+          this.write(Array.prototype.join.call(arguments, "") + "\n");
         }
-      } },
-      clone: { value: function clone() {
-        var d = new Document(this.isHTML, this._address);
-        d._quirks = this._quirks;
-        d._contentType = this._contentType;
-        return d;
-      } },
-      cloneNode: { value: function cloneNode(deep) {
-        var clone = Node.prototype.cloneNode.call(this, false);
-        if (deep) {
-          for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
-            clone._appendChild(clone.importNode(kid, true));
+      },
+      open: {
+        value: function() {
+          this.documentElement = null;
+        }
+      },
+      close: {
+        value: function() {
+          this.readyState = "interactive";
+          this._dispatchEvent(new Event("readystatechange"), true);
+          this._dispatchEvent(new Event("DOMContentLoaded"), true);
+          this.readyState = "complete";
+          this._dispatchEvent(new Event("readystatechange"), true);
+          if (this.defaultView) {
+            this.defaultView._dispatchEvent(new Event("load"), true);
           }
         }
-        clone._updateDocTypeElement();
-        return clone;
-      } },
-      isEqual: { value: function isEqual(n) {
-        return true;
-      } },
-      mutateValue: { value: function(node) {
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.VALUE,
-            target: node,
-            data: node.data
-          });
+      },
+      clone: {
+        value: function clone() {
+          var d = new Document2(this.isHTML, this._address);
+          d._quirks = this._quirks;
+          d._contentType = this._contentType;
+          return d;
         }
-      } },
-      mutateAttr: { value: function(attr, oldval) {
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.ATTR,
-            target: attr.ownerElement,
-            attr
-          });
-        }
-      } },
-      mutateRemoveAttr: { value: function(attr) {
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.REMOVE_ATTR,
-            target: attr.ownerElement,
-            attr
-          });
-        }
-      } },
-      mutateRemove: { value: function(node) {
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.REMOVE,
-            target: node.parentNode,
-            node
-          });
-        }
-        recursivelyUproot(node);
-      } },
-      mutateInsert: { value: function(node) {
-        recursivelyRoot(node);
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.INSERT,
-            target: node.parentNode,
-            node
-          });
-        }
-      } },
-      mutateMove: { value: function(node) {
-        if (this.mutationHandler) {
-          this.mutationHandler({
-            type: MUTATE.MOVE,
-            target: node
-          });
-        }
-      } },
-      addId: { value: function addId(id, n) {
-        var val = this.byId[id];
-        if (!val) {
-          this.byId[id] = n;
-        } else {
-          if (!(val instanceof MultiId)) {
-            val = new MultiId(val);
-            this.byId[id] = val;
+      },
+      cloneNode: {
+        value: function cloneNode(deep) {
+          var clone = Node.prototype.cloneNode.call(this, false);
+          if (deep) {
+            for (var kid = this.firstChild; kid !== null; kid = kid.nextSibling) {
+              clone._appendChild(clone.importNode(kid, true));
+            }
           }
-          val.add(n);
+          clone._updateDocTypeElement();
+          return clone;
         }
-      } },
-      delId: { value: function delId(id, n) {
-        var val = this.byId[id];
-        utils.assert(val);
-        if (val instanceof MultiId) {
-          val.del(n);
-          if (val.length === 1) {
-            this.byId[id] = val.downgrade();
+      },
+      isEqual: {
+        value: function isEqual(n) {
+          return true;
+        }
+      },
+      mutateValue: {
+        value: function(node) {
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.VALUE,
+              target: node,
+              data: node.data
+            });
           }
-        } else {
-          this.byId[id] = void 0;
         }
-      } },
-      _resolve: { value: function(href) {
-        return new URL(this._documentBaseURL).resolve(href);
-      } },
-      _documentBaseURL: { get: function() {
-        var url = this._address;
-        if (url === "about:blank")
-          url = "/";
-        var base = this.querySelector("base[href]");
-        if (base) {
-          return new URL(url).resolve(base.getAttribute("href"));
+      },
+      mutateAttr: {
+        value: function(attr, oldval) {
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.ATTR,
+              target: attr.ownerElement,
+              attr
+            });
+          }
         }
-        return url;
-      } },
-      _templateDoc: { get: function() {
-        if (!this._templateDocCache) {
-          var newDoc = new Document(this.isHTML, this._address);
-          this._templateDocCache = newDoc._templateDocCache = newDoc;
+      },
+      mutateRemoveAttr: {
+        value: function(attr) {
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.REMOVE_ATTR,
+              target: attr.ownerElement,
+              attr
+            });
+          }
         }
-        return this._templateDocCache;
-      } },
-      querySelector: { value: function(selector) {
-        return select(selector, this)[0];
-      } },
-      querySelectorAll: { value: function(selector) {
-        var nodes = select(selector, this);
-        return nodes.item ? nodes : new NodeList(nodes);
-      } }
+      },
+      mutateRemove: {
+        value: function(node) {
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.REMOVE,
+              target: node.parentNode,
+              node
+            });
+          }
+          recursivelyUproot(node);
+        }
+      },
+      mutateInsert: {
+        value: function(node) {
+          recursivelyRoot(node);
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.INSERT,
+              target: node.parentNode,
+              node
+            });
+          }
+        }
+      },
+      mutateMove: {
+        value: function(node) {
+          if (this.mutationHandler) {
+            this.mutationHandler({
+              type: MUTATE.MOVE,
+              target: node
+            });
+          }
+        }
+      },
+      addId: {
+        value: function addId(id, n) {
+          var val = this.byId[id];
+          if (!val) {
+            this.byId[id] = n;
+          } else {
+            if (!(val instanceof MultiId)) {
+              val = new MultiId(val);
+              this.byId[id] = val;
+            }
+            val.add(n);
+          }
+        }
+      },
+      delId: {
+        value: function delId(id, n) {
+          var val = this.byId[id];
+          utils.assert(val);
+          if (val instanceof MultiId) {
+            val.del(n);
+            if (val.length === 1) {
+              this.byId[id] = val.downgrade();
+            }
+          } else {
+            this.byId[id] = void 0;
+          }
+        }
+      },
+      _resolve: {
+        value: function(href) {
+          return new URL2(this._documentBaseURL).resolve(href);
+        }
+      },
+      _documentBaseURL: {
+        get: function() {
+          var url = this._address;
+          if (url === "about:blank")
+            url = "/";
+          var base = this.querySelector("base[href]");
+          if (base) {
+            return new URL2(url).resolve(base.getAttribute("href"));
+          }
+          return url;
+        }
+      },
+      _templateDoc: {
+        get: function() {
+          if (!this._templateDocCache) {
+            var newDoc = new Document2(this.isHTML, this._address);
+            this._templateDocCache = newDoc._templateDocCache = newDoc;
+          }
+          return this._templateDocCache;
+        }
+      },
+      querySelector: {
+        value: function(selector) {
+          return select(selector, this)[0];
+        }
+      },
+      querySelectorAll: {
+        value: function(selector) {
+          var nodes = select(selector, this);
+          return nodes.item ? nodes : new NodeList(nodes);
+        }
+      }
     });
-    var eventHandlerTypes = [
-      "abort",
-      "canplay",
-      "canplaythrough",
-      "change",
-      "click",
-      "contextmenu",
-      "cuechange",
-      "dblclick",
-      "drag",
-      "dragend",
-      "dragenter",
-      "dragleave",
-      "dragover",
-      "dragstart",
-      "drop",
-      "durationchange",
-      "emptied",
-      "ended",
-      "input",
-      "invalid",
-      "keydown",
-      "keypress",
-      "keyup",
-      "loadeddata",
-      "loadedmetadata",
-      "loadstart",
-      "mousedown",
-      "mousemove",
-      "mouseout",
-      "mouseover",
-      "mouseup",
-      "mousewheel",
-      "pause",
-      "play",
-      "playing",
-      "progress",
-      "ratechange",
-      "readystatechange",
-      "reset",
-      "seeked",
-      "seeking",
-      "select",
-      "show",
-      "stalled",
-      "submit",
-      "suspend",
-      "timeupdate",
-      "volumechange",
-      "waiting",
-      "blur",
-      "error",
-      "focus",
-      "load",
-      "scroll"
-    ];
+    var eventHandlerTypes = ["abort", "canplay", "canplaythrough", "change", "click", "contextmenu", "cuechange", "dblclick", "drag", "dragend", "dragenter", "dragleave", "dragover", "dragstart", "drop", "durationchange", "emptied", "ended", "input", "invalid", "keydown", "keypress", "keyup", "loadeddata", "loadedmetadata", "loadstart", "mousedown", "mousemove", "mouseout", "mouseover", "mouseup", "mousewheel", "pause", "play", "playing", "progress", "ratechange", "readystatechange", "reset", "seeked", "seeking", "select", "show", "stalled", "submit", "suspend", "timeupdate", "volumechange", "waiting", "blur", "error", "focus", "load", "scroll"];
     eventHandlerTypes.forEach(function(type) {
-      Object.defineProperty(Document.prototype, "on" + type, {
+      Object.defineProperty(Document2.prototype, "on" + type, {
         get: function() {
           return this._getEventHandler(type);
         },
@@ -9806,9 +12826,11 @@ var require_DocumentType = __commonJS({
       this.systemId = systemId || "";
     }
     DocumentType.prototype = Object.create(Leaf.prototype, {
-      nodeName: { get: function() {
-        return this.name;
-      } },
+      nodeName: {
+        get: function() {
+          return this.name;
+        }
+      },
       nodeValue: {
         get: function() {
           return null;
@@ -9816,12 +12838,16 @@ var require_DocumentType = __commonJS({
         set: function() {
         }
       },
-      clone: { value: function clone() {
-        return new DocumentType(this.ownerDocument, this.name, this.publicId, this.systemId);
-      } },
-      isEqual: { value: function isEqual(n) {
-        return this.name === n.name && this.publicId === n.publicId && this.systemId === n.systemId;
-      } }
+      clone: {
+        value: function clone() {
+          return new DocumentType(this.ownerDocument, this.name, this.publicId, this.systemId);
+        }
+      },
+      isEqual: {
+        value: function isEqual(n) {
+          return this.name === n.name && this.publicId === n.publicId && this.systemId === n.systemId;
+        }
+      }
     });
     Object.defineProperties(DocumentType.prototype, ChildNode);
   }
@@ -9830,7 +12856,7 @@ var require_HTMLParser = __commonJS({
   "external/npm/node_modules/domino/lib/HTMLParser.js"(exports, module) {
     "use strict";
     module.exports = HTMLParser;
-    var Document = require_Document();
+    var Document2 = require_Document();
     var DocumentType = require_DocumentType();
     var Node = require_Node();
     var NAMESPACE = require_utils().NAMESPACE;
@@ -12523,11 +15549,11 @@ var require_HTMLParser = __commonJS({
       }
       return result;
     }
-    function isA(elt, set2) {
-      if (typeof set2 === "string") {
-        return elt.namespaceURI === NAMESPACE.HTML && elt.localName === set2;
+    function isA(elt, set) {
+      if (typeof set === "string") {
+        return elt.namespaceURI === NAMESPACE.HTML && elt.localName === set;
       }
-      var tagnames = set2[elt.namespaceURI];
+      var tagnames = set[elt.namespaceURI];
       return tagnames && tagnames[elt.localName];
     }
     function isMathmlTextIntegrationPoint(n) {
@@ -12627,9 +15653,9 @@ var require_HTMLParser = __commonJS({
           this.elements.splice(idx, 1);
       }
     };
-    HTMLParser.ElementStack.prototype.clearToContext = function(set2) {
+    HTMLParser.ElementStack.prototype.clearToContext = function(set) {
       for (var i = this.elements.length - 1; i > 0; i--) {
-        if (isA(this.elements[i], set2))
+        if (isA(this.elements[i], set))
           break;
       }
       this.elements.length = i + 1;
@@ -12638,32 +15664,32 @@ var require_HTMLParser = __commonJS({
     HTMLParser.ElementStack.prototype.contains = function(tag) {
       return this.inSpecificScope(tag, /* @__PURE__ */ Object.create(null));
     };
-    HTMLParser.ElementStack.prototype.inSpecificScope = function(tag, set2) {
+    HTMLParser.ElementStack.prototype.inSpecificScope = function(tag, set) {
       for (var i = this.elements.length - 1; i >= 0; i--) {
         var elt = this.elements[i];
         if (isA(elt, tag))
           return true;
-        if (isA(elt, set2))
+        if (isA(elt, set))
           return false;
       }
       return false;
     };
-    HTMLParser.ElementStack.prototype.elementInSpecificScope = function(target, set2) {
+    HTMLParser.ElementStack.prototype.elementInSpecificScope = function(target, set) {
       for (var i = this.elements.length - 1; i >= 0; i--) {
         var elt = this.elements[i];
         if (elt === target)
           return true;
-        if (isA(elt, set2))
+        if (isA(elt, set))
           return false;
       }
       return false;
     };
-    HTMLParser.ElementStack.prototype.elementTypeInSpecificScope = function(target, set2) {
+    HTMLParser.ElementStack.prototype.elementTypeInSpecificScope = function(target, set) {
       for (var i = this.elements.length - 1; i >= 0; i--) {
         var elt = this.elements[i];
         if (elt instanceof target)
           return true;
-        if (isA(elt, set2))
+        if (isA(elt, set))
           return false;
       }
       return false;
@@ -12715,7 +15741,9 @@ var require_HTMLParser = __commonJS({
       this.list = [];
       this.attrs = [];
     };
-    HTMLParser.ActiveFormattingElements.prototype.MARKER = { localName: "|" };
+    HTMLParser.ActiveFormattingElements.prototype.MARKER = {
+      localName: "|"
+    };
     HTMLParser.ActiveFormattingElements.prototype.insertMarker = function() {
       this.list.push(this.MARKER);
       this.attrs.push(this.MARKER);
@@ -12915,7 +15943,7 @@ var require_HTMLParser = __commonJS({
           return moreToDo;
         }
       };
-      var doc = new Document(true, address);
+      var doc = new Document2(true, address);
       doc._parser = htmlparser;
       doc._scripting_enabled = scripting_enabled;
       if (fragmentContext) {
@@ -13209,12 +16237,7 @@ var require_HTMLParser = __commonJS({
         }
       }
       function emitDoctype() {
-        insertToken(
-          DOCTYPE,
-          buf2str(doctypenamebuf),
-          doctypepublicbuf ? buf2str(doctypepublicbuf) : void 0,
-          doctypesystembuf ? buf2str(doctypesystembuf) : void 0
-        );
+        insertToken(DOCTYPE, buf2str(doctypenamebuf), doctypepublicbuf ? buf2str(doctypepublicbuf) : void 0, doctypesystembuf ? buf2str(doctypesystembuf) : void 0);
       }
       function emitEOF() {
         flushText();
@@ -13482,7 +16505,9 @@ var require_HTMLParser = __commonJS({
           afe.list[i] = newelt;
         }
       }
-      var BOOKMARK = { localName: "BM" };
+      var BOOKMARK = {
+        localName: "BM"
+      };
       function adoptionAgency(tag) {
         if (isA(stack.top, tag) && afe.indexOf(stack.top) === -1) {
           stack.pop();
@@ -17836,13 +20861,7 @@ var require_HTMLParser = __commonJS({
               tokens.push(["Comment", value]);
               break;
             case 5:
-              tokens.push([
-                "DOCTYPE",
-                value,
-                arg3 === void 0 ? null : arg3,
-                arg4 === void 0 ? null : arg4,
-                !force_quirks
-              ]);
+              tokens.push(["DOCTYPE", value, arg3 === void 0 ? null : arg3, arg4 === void 0 ? null : arg4, !force_quirks]);
               break;
             case 2:
               var attrs = /* @__PURE__ */ Object.create(null);
@@ -17884,7 +20903,7 @@ var require_DOMImplementation = __commonJS({
   "external/npm/node_modules/domino/lib/DOMImplementation.js"(exports, module) {
     "use strict";
     module.exports = DOMImplementation;
-    var Document = require_Document();
+    var Document2 = require_Document();
     var DocumentType = require_DocumentType();
     var HTMLParser = require_HTMLParser();
     var utils = require_utils();
@@ -17893,10 +20912,25 @@ var require_DOMImplementation = __commonJS({
       this.contextObject = contextObject;
     }
     var supportedFeatures = {
-      "xml": { "": true, "1.0": true, "2.0": true },
-      "core": { "": true, "2.0": true },
-      "html": { "": true, "1.0": true, "2.0": true },
-      "xhtml": { "": true, "1.0": true, "2.0": true }
+      "xml": {
+        "": true,
+        "1.0": true,
+        "2.0": true
+      },
+      "core": {
+        "": true,
+        "2.0": true
+      },
+      "html": {
+        "": true,
+        "1.0": true,
+        "2.0": true
+      },
+      "xhtml": {
+        "": true,
+        "1.0": true,
+        "2.0": true
+      }
     };
     DOMImplementation.prototype = {
       hasFeature: function hasFeature(feature, version) {
@@ -17909,7 +20943,7 @@ var require_DOMImplementation = __commonJS({
         return new DocumentType(this.contextObject, qualifiedName, publicId, systemId);
       },
       createDocument: function createDocument(namespace, qualifiedName, doctype) {
-        var d = new Document(false, null);
+        var d = new Document2(false, null);
         var e;
         if (qualifiedName)
           e = d.createElementNS(namespace, qualifiedName);
@@ -17930,7 +20964,7 @@ var require_DOMImplementation = __commonJS({
         return d;
       },
       createHTMLDocument: function createHTMLDocument(titleText) {
-        var d = new Document(true, null);
+        var d = new Document2(true, null);
         d.appendChild(new DocumentType(d, "html"));
         var html = d.createElement("html");
         d.appendChild(html);
@@ -17958,7 +20992,7 @@ var require_DOMImplementation = __commonJS({
 var require_Location = __commonJS({
   "external/npm/node_modules/domino/lib/Location.js"(exports, module) {
     "use strict";
-    var URL = require_URL();
+    var URL2 = require_URL();
     var URLUtils = require_URLUtils();
     module.exports = Location;
     function Location(window2, href) {
@@ -17966,7 +21000,9 @@ var require_Location = __commonJS({
       this._href = href;
     }
     Location.prototype = Object.create(URLUtils.prototype, {
-      constructor: { value: Location },
+      constructor: {
+        value: Location
+      },
       href: {
         get: function() {
           return this._href;
@@ -17975,20 +21011,28 @@ var require_Location = __commonJS({
           this.assign(v);
         }
       },
-      assign: { value: function(url) {
-        var current = new URL(this._href);
-        var newurl = current.resolve(url);
-        this._href = newurl;
-      } },
-      replace: { value: function(url) {
-        this.assign(url);
-      } },
-      reload: { value: function() {
-        this.assign(this.href);
-      } },
-      toString: { value: function() {
-        return this.href;
-      } }
+      assign: {
+        value: function(url) {
+          var current = new URL2(this._href);
+          var newurl = current.resolve(url);
+          this._href = newurl;
+        }
+      },
+      replace: {
+        value: function(url) {
+          this.assign(url);
+        }
+      },
+      reload: {
+        value: function() {
+          this.assign(this.href);
+        }
+      },
+      toString: {
+        value: function() {
+          return this.href;
+        }
+      }
     });
   }
 });
@@ -17996,18 +21040,38 @@ var require_NavigatorID = __commonJS({
   "external/npm/node_modules/domino/lib/NavigatorID.js"(exports, module) {
     "use strict";
     var NavigatorID = Object.create(null, {
-      appCodeName: { value: "Mozilla" },
-      appName: { value: "Netscape" },
-      appVersion: { value: "4.0" },
-      platform: { value: "" },
-      product: { value: "Gecko" },
-      productSub: { value: "20100101" },
-      userAgent: { value: "" },
-      vendor: { value: "" },
-      vendorSub: { value: "" },
-      taintEnabled: { value: function() {
-        return false;
-      } }
+      appCodeName: {
+        value: "Mozilla"
+      },
+      appName: {
+        value: "Netscape"
+      },
+      appVersion: {
+        value: "4.0"
+      },
+      platform: {
+        value: ""
+      },
+      product: {
+        value: "Gecko"
+      },
+      productSub: {
+        value: "20100101"
+      },
+      userAgent: {
+        value: ""
+      },
+      vendor: {
+        value: ""
+      },
+      vendorSub: {
+        value: ""
+      },
+      taintEnabled: {
+        value: function() {
+          return false;
+        }
+      }
     });
     module.exports = NavigatorID;
   }
@@ -18061,38 +21125,60 @@ var require_Window = __commonJS({
     var Location = require_Location();
     var utils = require_utils();
     module.exports = Window;
-    function Window(document) {
-      this.document = document || new DOMImplementation(null).createHTMLDocument("");
+    function Window(document2) {
+      this.document = document2 || new DOMImplementation(null).createHTMLDocument("");
       this.document._scripting_enabled = true;
       this.document.defaultView = this;
       this.location = new Location(this, this.document._address || "about:blank");
     }
     Window.prototype = Object.create(EventTarget.prototype, {
-      console: { value: console },
-      history: { value: {
-        back: utils.nyi,
-        forward: utils.nyi,
-        go: utils.nyi
-      } },
-      navigator: { value: require_NavigatorID() },
-      window: { get: function() {
-        return this;
-      } },
-      self: { get: function() {
-        return this;
-      } },
-      frames: { get: function() {
-        return this;
-      } },
-      parent: { get: function() {
-        return this;
-      } },
-      top: { get: function() {
-        return this;
-      } },
-      length: { value: 0 },
-      frameElement: { value: null },
-      opener: { value: null },
+      console: {
+        value: console
+      },
+      history: {
+        value: {
+          back: utils.nyi,
+          forward: utils.nyi,
+          go: utils.nyi
+        }
+      },
+      navigator: {
+        value: require_NavigatorID()
+      },
+      window: {
+        get: function() {
+          return this;
+        }
+      },
+      self: {
+        get: function() {
+          return this;
+        }
+      },
+      frames: {
+        get: function() {
+          return this;
+        }
+      },
+      parent: {
+        get: function() {
+          return this;
+        }
+      },
+      top: {
+        get: function() {
+          return this;
+        }
+      },
+      length: {
+        value: 0
+      },
+      frameElement: {
+        value: null
+      },
+      opener: {
+        value: null
+      },
       onload: {
         get: function() {
           return this._getEventHandler("load");
@@ -18101,9 +21187,11 @@ var require_Window = __commonJS({
           this._setEventHandler("load", v);
         }
       },
-      getComputedStyle: { value: function getComputedStyle(elt) {
-        return elt.style;
-      } }
+      getComputedStyle: {
+        value: function getComputedStyle(elt) {
+          return elt.style;
+        }
+      }
     });
     utils.expose(require_WindowTimers(), Window);
     utils.expose(require_impl(), Window);
@@ -18150,35 +21238,642 @@ var require_lib = __commonJS({
       };
     };
     exports.createWindow = function(html, address) {
-      var document = exports.createDocument(html);
+      var document2 = exports.createDocument(html);
       if (address !== void 0) {
-        document._address = address;
+        document2._address = address;
       }
-      return new impl.Window(document);
+      return new impl.Window(document2);
     };
     exports.impl = impl;
   }
 });
 var domino = require_lib();
-function applyShims() {
+function setDomTypes() {
   Object.assign(globalThis, domino.impl);
   globalThis["KeyboardEvent"] = domino.impl.Event;
 }
-applyShims();
+function parseDocument(html, url = "/") {
+  let window2 = domino.createWindow(html, url);
+  let doc = window2.document;
+  return doc;
+}
+function serializeDocument(doc) {
+  return doc.serialize();
+}
+var DominoAdapter = class _DominoAdapter extends BrowserDomAdapter {
+  constructor() {
+    super(...arguments);
+    this.supportsDOMEvents = false;
+  }
+  static makeCurrent() {
+    setDomTypes();
+    setRootDomAdapter(new _DominoAdapter());
+  }
+  createHtmlDocument() {
+    return parseDocument("<html><head><title>fakeTitle</title></head><body></body></html>");
+  }
+  getDefaultDocument() {
+    if (!_DominoAdapter.defaultDoc) {
+      _DominoAdapter.defaultDoc = domino.createDocument();
+    }
+    return _DominoAdapter.defaultDoc;
+  }
+  isElementNode(node) {
+    return node ? node.nodeType === _DominoAdapter.defaultDoc.ELEMENT_NODE : false;
+  }
+  isShadowRoot(node) {
+    return node.shadowRoot == node;
+  }
+  /** @deprecated No longer being used in Ivy code. To be removed in version 14. */
+  getGlobalEventTarget(doc, target) {
+    if (target === "window") {
+      return doc.defaultView;
+    }
+    if (target === "document") {
+      return doc;
+    }
+    if (target === "body") {
+      return doc.body;
+    }
+    return null;
+  }
+  getBaseHref(doc) {
+    return doc.documentElement.querySelector("base")?.getAttribute("href") || "";
+  }
+  dispatchEvent(el, evt) {
+    el.dispatchEvent(evt);
+    const doc = el.ownerDocument || el;
+    const win = doc.defaultView;
+    if (win) {
+      win.dispatchEvent(evt);
+    }
+  }
+  getUserAgent() {
+    return "Fake user agent";
+  }
+  getCookie(name) {
+    throw new Error("getCookie has not been implemented");
+  }
+};
+var PlatformState = class _PlatformState {
+  constructor(_doc) {
+    this._doc = _doc;
+  }
+  /**
+   * Renders the current state of the platform to string.
+   */
+  renderToString() {
+    return serializeDocument(this._doc);
+  }
+  /**
+   * Returns the current DOM state.
+   */
+  getDocument() {
+    return this._doc;
+  }
+  static {
+    this.\u0275fac = function PlatformState_Factory(t) {
+      return new (t || _PlatformState)(\u0275\u0275inject(DOCUMENT));
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _PlatformState,
+      factory: _PlatformState.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(PlatformState, [{
+    type: Injectable
+  }], () => [{
+    type: void 0,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT]
+    }]
+  }], null);
+})();
+var ServerXhr = class _ServerXhr {
+  // The `xhr2` dependency has a side-effect of accessing and modifying a
+  // global scope. Loading `xhr2` dynamically allows us to delay the loading
+  // and start the process once the global scope is established by the underlying
+  // server platform (via shims, etc).
+  \u0275loadImpl() {
+    return __async(this, null, function* () {
+      if (!this.xhrImpl) {
+        const {
+          default: xhr
+        } = yield import("./chunk-LGGHX3RK.mjs");
+        this.xhrImpl = xhr;
+      }
+    });
+  }
+  build() {
+    const impl = this.xhrImpl;
+    if (!impl) {
+      throw new Error("Unexpected state in ServerXhr: XHR implementation is not loaded.");
+    }
+    return new impl.XMLHttpRequest();
+  }
+  static {
+    this.\u0275fac = function ServerXhr_Factory(t) {
+      return new (t || _ServerXhr)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _ServerXhr,
+      factory: _ServerXhr.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ServerXhr, [{
+    type: Injectable
+  }], null, null);
+})();
+function relativeUrlsTransformerInterceptorFn(request, next) {
+  const platformLocation = inject(PlatformLocation);
+  const {
+    href,
+    protocol,
+    hostname,
+    port
+  } = platformLocation;
+  if (!protocol.startsWith("http")) {
+    return next(request);
+  }
+  let urlPrefix = `${protocol}//${hostname}`;
+  if (port) {
+    urlPrefix += `:${port}`;
+  }
+  const baseHref = platformLocation.getBaseHrefFromDOM() || href;
+  const baseUrl = new URL(baseHref, urlPrefix);
+  const newUrl = new URL(request.url, baseUrl).toString();
+  return next(request.clone({
+    url: newUrl
+  }));
+}
+var SERVER_HTTP_PROVIDERS = [{
+  provide: XhrFactory,
+  useClass: ServerXhr
+}, {
+  provide: HTTP_ROOT_INTERCEPTOR_FNS,
+  useValue: relativeUrlsTransformerInterceptorFn,
+  multi: true
+}];
+var INITIAL_CONFIG = new InjectionToken("Server.INITIAL_CONFIG");
+var BEFORE_APP_SERIALIZED = new InjectionToken("Server.RENDER_MODULE_HOOK");
+var RESOLVE_PROTOCOL = "resolve:";
+function parseUrl(urlStr) {
+  let {
+    hostname,
+    protocol,
+    port,
+    pathname,
+    search,
+    hash
+  } = new URL(urlStr, RESOLVE_PROTOCOL + "//");
+  if (protocol !== RESOLVE_PROTOCOL && port === "" && /\:(80|443)/.test(urlStr)) {
+    port = protocol === "http:" ? "80" : "443";
+  }
+  if (protocol === RESOLVE_PROTOCOL && urlStr.charAt(0) !== "/") {
+    pathname = pathname.slice(1);
+  }
+  return {
+    hostname,
+    protocol: protocol === RESOLVE_PROTOCOL ? "" : protocol,
+    port,
+    pathname,
+    search,
+    hash
+  };
+}
+var ServerPlatformLocation = class _ServerPlatformLocation {
+  constructor(_doc, _config) {
+    this._doc = _doc;
+    this.href = "/";
+    this.hostname = "/";
+    this.protocol = "/";
+    this.port = "/";
+    this.pathname = "/";
+    this.search = "";
+    this.hash = "";
+    this._hashUpdate = new Subject();
+    const config = _config;
+    if (!config) {
+      return;
+    }
+    if (config.url) {
+      const url = parseUrl(config.url);
+      this.protocol = url.protocol;
+      this.hostname = url.hostname;
+      this.port = url.port;
+      this.pathname = url.pathname;
+      this.search = url.search;
+      this.hash = url.hash;
+      this.href = _doc.location.href;
+    }
+    if (config.useAbsoluteUrl) {
+      if (!config.baseUrl) {
+        throw new Error(`"PlatformConfig.baseUrl" must be set if "useAbsoluteUrl" is true`);
+      }
+      const url = parseUrl(config.baseUrl);
+      this.protocol = url.protocol;
+      this.hostname = url.hostname;
+      this.port = url.port;
+    }
+  }
+  getBaseHrefFromDOM() {
+    return getDOM().getBaseHref(this._doc);
+  }
+  onPopState(fn) {
+    return () => {
+    };
+  }
+  onHashChange(fn) {
+    const subscription = this._hashUpdate.subscribe(fn);
+    return () => subscription.unsubscribe();
+  }
+  get url() {
+    return `${this.pathname}${this.search}${this.hash}`;
+  }
+  setHash(value, oldUrl) {
+    if (this.hash === value) {
+      return;
+    }
+    this.hash = value;
+    const newUrl = this.url;
+    queueMicrotask(() => this._hashUpdate.next({
+      type: "hashchange",
+      state: null,
+      oldUrl,
+      newUrl
+    }));
+  }
+  replaceState(state, title, newUrl) {
+    const oldUrl = this.url;
+    const parsedUrl = parseUrl(newUrl);
+    this.pathname = parsedUrl.pathname;
+    this.search = parsedUrl.search;
+    this.setHash(parsedUrl.hash, oldUrl);
+  }
+  pushState(state, title, newUrl) {
+    this.replaceState(state, title, newUrl);
+  }
+  forward() {
+    throw new Error("Not implemented");
+  }
+  back() {
+    throw new Error("Not implemented");
+  }
+  // History API isn't available on server, therefore return undefined
+  getState() {
+    return void 0;
+  }
+  static {
+    this.\u0275fac = function ServerPlatformLocation_Factory(t) {
+      return new (t || _ServerPlatformLocation)(\u0275\u0275inject(DOCUMENT), \u0275\u0275inject(INITIAL_CONFIG, 8));
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _ServerPlatformLocation,
+      factory: _ServerPlatformLocation.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ServerPlatformLocation, [{
+    type: Injectable
+  }], () => [{
+    type: void 0,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT]
+    }]
+  }, {
+    type: void 0,
+    decorators: [{
+      type: Optional
+    }, {
+      type: Inject,
+      args: [INITIAL_CONFIG]
+    }]
+  }], null);
+})();
+var ServerEventManagerPlugin = class _ServerEventManagerPlugin extends EventManagerPlugin {
+  constructor(doc) {
+    super(doc);
+    this.doc = doc;
+  }
+  // Handle all events on the server.
+  supports(eventName) {
+    return true;
+  }
+  addEventListener(element, eventName, handler) {
+    return getDOM().onAndCancel(element, eventName, handler);
+  }
+  static {
+    this.\u0275fac = function ServerEventManagerPlugin_Factory(t) {
+      return new (t || _ServerEventManagerPlugin)(\u0275\u0275inject(DOCUMENT));
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+      token: _ServerEventManagerPlugin,
+      factory: _ServerEventManagerPlugin.\u0275fac
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ServerEventManagerPlugin, [{
+    type: Injectable
+  }], () => [{
+    type: void 0,
+    decorators: [{
+      type: Inject,
+      args: [DOCUMENT]
+    }]
+  }], null);
+})();
+var TRANSFER_STATE_SERIALIZATION_PROVIDERS = [{
+  provide: BEFORE_APP_SERIALIZED,
+  useFactory: serializeTransferStateFactory,
+  deps: [DOCUMENT, APP_ID, TransferState],
+  multi: true
+}];
+function serializeTransferStateFactory(doc, appId, transferStore) {
+  return () => {
+    const content = transferStore.toJson();
+    if (transferStore.isEmpty) {
+      return;
+    }
+    const script = doc.createElement("script");
+    script.id = appId + "-state";
+    script.setAttribute("type", "application/json");
+    script.textContent = content;
+    doc.body.appendChild(script);
+  };
+}
+var ServerTransferStateModule = class _ServerTransferStateModule {
+  static {
+    this.\u0275fac = function ServerTransferStateModule_Factory(t) {
+      return new (t || _ServerTransferStateModule)();
+    };
+  }
+  static {
+    this.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+      type: _ServerTransferStateModule
+    });
+  }
+  static {
+    this.\u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({});
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ServerTransferStateModule, [{
+    type: NgModule,
+    args: [{}]
+  }], null, null);
+})();
+var INTERNAL_SERVER_PLATFORM_PROVIDERS = [
+  {
+    provide: DOCUMENT,
+    useFactory: _document,
+    deps: [Injector]
+  },
+  {
+    provide: PLATFORM_ID,
+    useValue: PLATFORM_SERVER_ID
+  },
+  {
+    provide: PLATFORM_INITIALIZER,
+    useFactory: initDominoAdapter,
+    multi: true
+  },
+  {
+    provide: PlatformLocation,
+    useClass: ServerPlatformLocation,
+    deps: [DOCUMENT, [Optional, INITIAL_CONFIG]]
+  },
+  {
+    provide: PlatformState,
+    deps: [DOCUMENT]
+  },
+  // Add special provider that allows multiple instances of platformServer* to be created.
+  {
+    provide: ALLOW_MULTIPLE_PLATFORMS,
+    useValue: true
+  }
+];
+function initDominoAdapter() {
+  return () => {
+    DominoAdapter.makeCurrent();
+  };
+}
+var SERVER_RENDER_PROVIDERS = [{
+  provide: EVENT_MANAGER_PLUGINS,
+  multi: true,
+  useClass: ServerEventManagerPlugin
+}];
+var PLATFORM_SERVER_PROVIDERS = [
+  TRANSFER_STATE_SERIALIZATION_PROVIDERS,
+  SERVER_RENDER_PROVIDERS,
+  SERVER_HTTP_PROVIDERS,
+  {
+    provide: Testability,
+    useValue: null
+  },
+  // Keep for backwards-compatibility.
+  {
+    provide: TESTABILITY,
+    useValue: null
+  },
+  {
+    provide: ViewportScroller,
+    useClass: NullViewportScroller
+  }
+];
+var ServerModule = class _ServerModule {
+  static {
+    this.\u0275fac = function ServerModule_Factory(t) {
+      return new (t || _ServerModule)();
+    };
+  }
+  static {
+    this.\u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+      type: _ServerModule
+    });
+  }
+  static {
+    this.\u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({
+      providers: PLATFORM_SERVER_PROVIDERS,
+      imports: [HttpClientModule, NoopAnimationsModule, BrowserModule]
+    });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ServerModule, [{
+    type: NgModule,
+    args: [{
+      exports: [BrowserModule],
+      imports: [HttpClientModule, NoopAnimationsModule],
+      providers: PLATFORM_SERVER_PROVIDERS
+    }]
+  }], null, null);
+})();
+function _document(injector) {
+  const config = injector.get(INITIAL_CONFIG, null);
+  let document2;
+  if (config && config.document) {
+    document2 = typeof config.document === "string" ? parseDocument(config.document, config.url) : config.document;
+  } else {
+    document2 = getDOM().createHtmlDocument();
+  }
+  setDocument(document2);
+  return document2;
+}
+var platformServer = createPlatformFactory(platformCore, "server", INTERNAL_SERVER_PLATFORM_PROVIDERS);
+function provideServerRendering() {
+  return makeEnvironmentProviders([provideNoopAnimations(), ...PLATFORM_SERVER_PROVIDERS]);
+}
+function createServerPlatform(options) {
+  const extraProviders = options.platformProviders ?? [];
+  return platformServer([{
+    provide: INITIAL_CONFIG,
+    useValue: {
+      document: options.document,
+      url: options.url
+    }
+  }, extraProviders]);
+}
+function appendSsrContentIntegrityMarker(doc) {
+  const comment = doc.createComment(SSR_CONTENT_INTEGRITY_MARKER);
+  doc.body.firstChild ? doc.body.insertBefore(comment, doc.body.firstChild) : doc.body.append(comment);
+}
+function appendServerContextInfo(applicationRef) {
+  const injector = applicationRef.injector;
+  let serverContext = sanitizeServerContext(injector.get(SERVER_CONTEXT, DEFAULT_SERVER_CONTEXT));
+  applicationRef.components.forEach((componentRef) => {
+    const renderer = componentRef.injector.get(Renderer2);
+    const element = componentRef.location.nativeElement;
+    if (element) {
+      renderer.setAttribute(element, "ng-server-context", serverContext);
+    }
+  });
+}
+function _render(platformRef, applicationRef) {
+  return __async(this, null, function* () {
+    const environmentInjector = applicationRef.injector;
+    yield whenStable(applicationRef);
+    const platformState = platformRef.injector.get(PlatformState);
+    if (applicationRef.injector.get(IS_HYDRATION_DOM_REUSE_ENABLED, false)) {
+      const doc = platformState.getDocument();
+      appendSsrContentIntegrityMarker(doc);
+      annotateForHydration(applicationRef, doc);
+    }
+    const callbacks = environmentInjector.get(BEFORE_APP_SERIALIZED, null);
+    if (callbacks) {
+      const asyncCallbacks = [];
+      for (const callback of callbacks) {
+        try {
+          const callbackResult = callback();
+          if (callbackResult) {
+            asyncCallbacks.push(callbackResult);
+          }
+        } catch (e) {
+          console.warn("Ignoring BEFORE_APP_SERIALIZED Exception: ", e);
+        }
+      }
+      if (asyncCallbacks.length) {
+        for (const result of yield Promise.allSettled(asyncCallbacks)) {
+          if (result.status === "rejected") {
+            console.warn("Ignoring BEFORE_APP_SERIALIZED Exception: ", result.reason);
+          }
+        }
+      }
+    }
+    appendServerContextInfo(applicationRef);
+    const output = platformState.renderToString();
+    yield new Promise((resolve) => {
+      setTimeout(() => {
+        platformRef.destroy();
+        resolve();
+      }, 0);
+    });
+    return output;
+  });
+}
+var DEFAULT_SERVER_CONTEXT = "other";
+var SERVER_CONTEXT = new InjectionToken("SERVER_CONTEXT");
+function sanitizeServerContext(serverContext) {
+  const context = serverContext.replace(/[^a-zA-Z0-9\-]/g, "");
+  return context.length > 0 ? context : DEFAULT_SERVER_CONTEXT;
+}
+function renderModule(moduleType, options) {
+  return __async(this, null, function* () {
+    const {
+      document: document2,
+      url,
+      extraProviders: platformProviders
+    } = options;
+    const platformRef = createServerPlatform({
+      document: document2,
+      url,
+      platformProviders
+    });
+    const moduleRef = yield platformRef.bootstrapModule(moduleType);
+    const applicationRef = moduleRef.injector.get(ApplicationRef);
+    return _render(platformRef, applicationRef);
+  });
+}
+function renderApplication(bootstrap, options) {
+  return __async(this, null, function* () {
+    const platformRef = createServerPlatform(options);
+    const applicationRef = yield bootstrap();
+    return _render(platformRef, applicationRef);
+  });
+}
+var VERSION = new Version("17.3.12");
+
+export {
+  INITIAL_CONFIG,
+  INTERNAL_SERVER_PLATFORM_PROVIDERS,
+  provideServerRendering,
+  SERVER_CONTEXT,
+  renderModule,
+  renderApplication
+};
 /*! Bundled license information:
 
-zone.js/fesm2015/zone-node.js:
+@angular/animations/fesm2022/animations.mjs:
   (**
-   * @license Angular v<unknown>
+   * @license Angular v17.3.12
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 
-@angular/platform-server/fesm2022/init.mjs:
+@angular/animations/fesm2022/browser.mjs:
+  (**
+   * @license Angular v17.3.12
+   * (c) 2010-2024 Google LLC. https://angular.io/
+   * License: MIT
+   *)
+
+@angular/platform-browser/fesm2022/animations.mjs:
+  (**
+   * @license Angular v17.3.12
+   * (c) 2010-2024 Google LLC. https://angular.io/
+   * License: MIT
+   *)
+
+@angular/platform-server/fesm2022/platform-server.mjs:
   (**
    * @license Angular v17.3.12
    * (c) 2010-2024 Google LLC. https://angular.io/
    * License: MIT
    *)
 */
-//# sourceMappingURL=polyfills.server.mjs.map
+//# sourceMappingURL=chunk-CGB2JGD2.mjs.map
