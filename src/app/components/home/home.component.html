@@ -1,5 +1,5 @@
 <body class="bg-gray-200 min-h-screen text-black flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col relative">
+  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[vh] flex flex-col relative">
 
     <!-- Título da Pokédex -->
     <h1 class="text-4xl md:text-5xl fredoka-one text-center text-shadow text-purple-600 mb-6 drop-shadow-md">
@@ -21,40 +21,39 @@
       </button>
     </div>
 
-    <!-- Card com os detalhes sobre o pokémon selecionado -->
-    <div class="flex-1 overflow-hidden relative transition-all duration-300 flex"
-      [ngClass]="selectedPokemonId ? 'flex-row gap-6' : 'flex-col gap-0'" #scrollContainer
-      (scroll)="onScroll(scrollContainer)" style="height: calc(90vh - 140px);">
+    <!-- Container principal: grid + card detalhes -->
+    <div class="flex-1 overflow-hidden relative flex transition-all duration-300"
+      [ngClass]="selectedPokemonId ? 'flex-row gap-6' : 'flex-col gap-0'" [class.opacity-100]="!closingCard"
+      style="height: calc(95vh - 150px);">
 
-      <!-- Grid de Pokémons -->
+      <!-- Grid de Pokémons (rolável) -->
       <div class="flex-1 overflow-y-auto pr-1">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           @for (pokemon of displayedPokemons; track pokemon.id) {
-
           <div
-            class="pokemon-card bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200 cursor-pointer"
+            class="pokemon-card bg-gradient-to-b from-white to-purple-50 rounded-3xl shadow-lg p-5 text-center relative hover:shadow-2xl hover:scale-105 transform transition-all duration-300 cursor-pointer border border-purple-100"
             (click)="selectPokemon(pokemon.id)">
 
             <!-- ID do Pokémon -->
-            <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
+            <span class="absolute top-3 left-3 text-sm text-gray-400 font-semibold tracking-wide">
               #{{ pokemon.id }}
             </span>
 
             <!-- Sprite + Altura/Peso -->
-            <div class="flex justify-center items-center gap-4 mb-2">
+            <div class="flex justify-center items-center gap-4 mb-3">
               <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" alt="{{ pokemon.name }}"
-                class="h-24 w-24 object-contain" />
+                class="h-28 w-28 object-contain drop-shadow-md" />
               <div class="text-left montserrat text-sm text-gray-700">
-                <p><strong>Height:</strong> {{ pokemon.height }} m</p>
+                <p class="mb-1"><strong>Height:</strong> {{ pokemon.height }} m</p>
                 <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
               </div>
             </div>
 
             <!-- Tipos -->
-            <div class="flex flex-wrap montserrat justify-center gap-2 mb-2">
+            <div class="flex flex-wrap montserrat justify-center gap-2 mb-3">
               @for (type of pokemon.type; track type) {
               <span [ngClass]="getTypeColor(type)"
-                class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
+                class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow-sm border border-gray-200">
                 {{ type }}
               </span>
               } @empty {
@@ -63,7 +62,7 @@
             </div>
 
             <!-- Nome -->
-            <h2 class="text-lg fredoka-one font-semibold capitalize">
+            <h2 class="text-lg fredoka-one font-semibold capitalize text-black">
               {{ pokemon.name }}
             </h2>
           </div>
@@ -95,8 +94,8 @@
 
       <!-- Card detalhes -->
       <div *ngIf="selectedPokemonId" #detailsCard
-        class="w-full md:w-[380px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start transition-opacity duration-300"
-        [class.opacity-0]="closingCard" [class.opacity-100]="!closingCard" style="max-height: calc(90vh - 250px);">
+        class="w-full md:w-[430px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start transition-opacity duration-300"
+        [class.opacity-0]="closingCard" [class.opacity-100]="!closingCard" style="max-height: calc(95vh - 100px);">
 
         <button (click)="selectedPokemonId = null"
           class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl"
@@ -105,6 +104,8 @@
         <app-pokemon-details [pokemonId]="selectedPokemonId" (evolutionClicked)="selectEvolutionPokemon($event)">
         </app-pokemon-details>
       </div>
+
+
     </div>
 
     <!-- Modal de Pesquisa Avançada -->
@@ -123,11 +124,11 @@
           <div class="flex flex-wrap gap-2">
             @for (type of availableTypes; track type) {
             <button class="shadow montserrat" (click)="toggleTypeSelection(type)" [ngClass]="[
-                    selectedTypes.includes(type)
-                      ? 'bg-purple-700 text-white'
-                      : 'bg-white ' + getTypeColor(type),
-                    'px-3 py-1 rounded-full text-sm capitalize hover:opacity-80 transition'
-                  ]">
+                      selectedTypes.includes(type)
+                        ? 'bg-purple-700 text-white'
+                        : 'bg-white ' + getTypeColor(type),
+                      'px-3 py-1 rounded-full text-sm capitalize hover:opacity-80 transition'
+                    ]">
               {{ type }}
             </button>
             } @empty {
@@ -177,7 +178,13 @@
       </div>
     </div>
     }
+    <!-- Footer elegante -->
+    <footer class="w-full text-center text-gray-600 text-sm mt-6 p-4 border-t border-gray-300">
+      <p class="mt-1">© 2025 Pokedex API. Todos os direitos reservados.</p>
+      <small>Desenvolvido por <strong>DYOXY - INOVA SIMPLES (I.S)</strong></small>
+    </footer>
 
   </div>
+
 
 </body>
