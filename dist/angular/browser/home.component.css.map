@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/components/home/home.component.css"],
-  "sourcesContent": [".pokemon-card {\r\n  cursor: pointer;\r\n}\r\n"],
-  "mappings": ";AAAA,CAAC;AACC,UAAQ;AACV;",
-  "names": []
-}
