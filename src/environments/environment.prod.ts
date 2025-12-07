@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://pokedex-with-springboot-production.up.railway.app/api/pokemons'
+  apiUrl: 'http://192.168.1.4:8080/api/pokemons'
 };
