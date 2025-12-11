@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://pokedex-api.duckdns.org/api/pokemons'
+  apiUrl: 'http://137.184.186.231/api/pokemons'
 };
