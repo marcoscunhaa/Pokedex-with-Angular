@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api/pokemons'
+  apiUrl: 'http://137.184.186.231/api/pokemons'
 };
 
