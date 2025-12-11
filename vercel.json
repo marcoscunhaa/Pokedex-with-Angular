@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "ng build --configuration production",
   "outputDirectory": "dist/angular/browser",
   "env": {
     "VERCEL_NODE_VERSION": "24"
