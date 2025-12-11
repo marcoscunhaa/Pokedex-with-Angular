@@ -44,7 +44,7 @@ export class PokemonService {
    * Retorna todos os Pokémon sem paginação.
    */
   getAllPokemons(): Observable<Pokemon[]> {
-    return this.http.get<Pokemon[]>(`${this.apiUrl}/all`);
+    return this.http.get<Pokemon[]>(this.apiUrl); // sem /all
   }
 
   /**
@@ -56,7 +56,7 @@ export class PokemonService {
       .set('limit', limit.toString());
 
     return this.http.get<any>(this.apiUrl, { params }).pipe(
-      map(response => ({
+      map((response) => ({
         pokemons: response.content ?? [],
         totalPages: response.totalPages ?? 0,
       }))
@@ -113,7 +113,7 @@ export class PokemonService {
     }
 
     if (filters.types?.length) {
-      filters.types.forEach(type => {
+      filters.types.forEach((type) => {
         params = params.append('types', type);
       });
     }
@@ -130,6 +130,8 @@ export class PokemonService {
       params = params.set('generation', filters.generation);
     }
 
-    return this.http.get<Pokemon[]>(`${this.apiUrl}/search/advanced`, { params });
+    return this.http.get<Pokemon[]>(`${this.apiUrl}/search/advanced`, {
+      params,
+    });
   }
 }
