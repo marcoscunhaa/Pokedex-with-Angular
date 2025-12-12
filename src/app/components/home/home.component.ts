@@ -1,9 +1,9 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
 import { FormsModule } from '@angular/forms';
-import { LoadingComponent } from '../loading/loading.component';
 import { RouterModule } from '@angular/router';
+import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
+import { LoadingComponent } from '../loading/loading.component';
 import { PokemonDetailsComponent } from '../pokemon-details/pokemon-details.component';
 
 @Component({
@@ -26,134 +26,14 @@ export class HomeComponent implements OnInit {
   currentPage: number = 0;
   limit: number = 9;
   totalPages: number = 0;
+  pages: (number | string)[] = [];
   loading: boolean = false;
-  endReached: boolean = false;
   showAdvancedSearch: boolean = false;
   selectedTypes: string[] = [];
   selectedPokemonId: number | null = null;
-  showScrollTopButton = false;
   closingCard = false;
 
   @ViewChild('detailsCard') detailsCard!: ElementRef<HTMLDivElement>;
-
-  constructor(private pokemonService: PokemonService) {}
-
-  ngOnInit(): void {
-    this.loadAllPokemons();
-  }
-
-  /** Seleciona um Pokémon para abrir o card */
-  selectPokemon(id: number): void {
-    this.selectedPokemonId = id;
-    this.closingCard = false;
-  }
-
-  /** Função chamada pelo PokemonDetailsComponent quando clica em uma evolução */
-  selectEvolutionPokemon(evoId: number) {
-    if (!evoId) return;
-
-    // Fade-out do card atual
-    this.closingCard = true;
-
-    setTimeout(() => {
-      // Troca para o Pokémon da evolução
-      this.selectedPokemonId = evoId;
-      this.closingCard = false;
-
-      // Aguarda renderização e rola para o topo
-      setTimeout(() => {
-        if (this.detailsCard) {
-          this.detailsCard.nativeElement.scrollTop = 0;
-        }
-      }, 50);
-    }, 300); // tempo da animação de fade-out
-  }
-
-  /** Fecha o card */
-  closePokemonDetails() {
-    this.selectedPokemonId = null;
-  }
-
-  /** Carrega todos os Pokémons */
-  loadAllPokemons(): void {
-    this.loading = true;
-    this.pokemonService.getAllPokemons().subscribe(
-      (pokemons: Pokemon[]) => {
-        this.allPokemons = pokemons;
-        this.totalPages = Math.ceil(this.allPokemons.length / this.limit);
-        this.updateDisplayedPokemons();
-        this.loading = false;
-      },
-      (error) => {
-        console.error('Erro ao carregar todos os pokémons:', error);
-        this.loading = false;
-      }
-    );
-  }
-
-  /** Atualiza a lista exibida de acordo com a paginação */
-  updateDisplayedPokemons(): void {
-    const startIndex = this.currentPage * this.limit;
-    const endIndex = startIndex + this.limit;
-    this.displayedPokemons = this.filteredPokemons.slice(0, endIndex);
-    this.endReached = endIndex >= this.filteredPokemons.length;
-  }
-
-  /** Retorna a lista filtrada por busca */
-  get filteredPokemons(): Pokemon[] {
-    const term = this.searchTerm.toLowerCase().trim();
-    return this.allPokemons.filter(
-      (pokemon) =>
-        pokemon.name.toLowerCase().includes(term) ||
-        pokemon.id.toString().includes(term)
-    );
-  }
-
-  /** Carrega mais Pokémons ao scroll */
-  loadPokemons(): void {
-    if (this.loading || this.endReached) return;
-    this.loading = true;
-    setTimeout(() => {
-      this.currentPage++;
-      this.updateDisplayedPokemons();
-      this.loading = false;
-    }, 500);
-  }
-
-  onSearchTermChange(): void {
-    this.currentPage = 0;
-    this.endReached = false;
-    this.totalPages = Math.ceil(this.filteredPokemons.length / this.limit);
-    this.updateDisplayedPokemons();
-  }
-
-  /** Retorna cor do tipo do Pokémon */
-  getTypeColor(type: string): string {
-    switch (type.toLowerCase()) {
-      case 'fire': return 'text-orange-500';
-      case 'fighting': return 'text-orange-700';
-      case 'flying': return 'text-blue-300';
-      case 'water': return 'text-blue-500';
-      case 'ice': return 'text-blue-700';
-      case 'grass': return 'text-green-500';
-      case 'bug': return 'text-green-700';
-      case 'ground': return 'text-yellow-500';
-      case 'electric': return 'text-yellow-300';
-      case 'dragon': return 'text-red-500';
-      case 'rock': return 'text-yellow-700';
-      case 'psychic': return 'text-pink-700';
-      case 'fairy': return 'text-pink-500';
-      case 'ghost': return 'text-purple-500';
-      case 'poison': return 'text-purple-700';
-      case 'dark': return 'text-black';
-      default: return 'text-gray-500';
-    }
-  }
-
-  /** TrackBy para lista de Pokémon */
-  trackPokemon(index: number, pokemon: Pokemon): number {
-    return pokemon.id;
-  }
 
   availableTypes: string[] = [
     'normal','fire','water','grass','electric','ice','fighting','poison',
@@ -182,54 +62,196 @@ export class HomeComponent implements OnInit {
     region: '',
   };
 
-  toggleTypeSelection(type: string): void {
-    if (this.selectedTypes.includes(type)) {
-      this.selectedTypes = this.selectedTypes.filter((t) => t !== type);
+  constructor(private pokemonService: PokemonService) {}
+
+  ngOnInit(): void {
+    this.loadAllPokemons();
+  }
+
+  displayPage(page: number | string): string | number {
+    return typeof page === 'number' ? page + 1 : page;
+  }
+
+  loadAllPokemons(): void {
+    this.loading = true;
+    this.pokemonService.getAllPokemons().subscribe(
+      (pokemons: Pokemon[]) => {
+        this.allPokemons = pokemons;
+        this.currentPage = 0;
+        this.updateDisplayedPokemons();
+        this.loading = false;
+      },
+      () => (this.loading = false)
+    );
+  }
+
+  get filteredPokemons(): Pokemon[] {
+    const term = this.searchTerm.toLowerCase().trim();
+    return this.allPokemons.filter(pokemon => {
+      const matchesName = pokemon.name.toLowerCase().includes(term);
+      const matchesId = pokemon.id.toString().includes(term);
+      const matchesType = this.selectedTypes.length === 0 || this.selectedTypes.some(t => pokemon.type.includes(t));
+      return (matchesName || matchesId) && matchesType;
+    });
+  }
+
+  updateDisplayedPokemons(): void {
+    const startIndex = this.currentPage * this.limit;
+    const endIndex = startIndex + this.limit;
+    this.displayedPokemons = this.filteredPokemons.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(this.filteredPokemons.length / this.limit);
+    this.pages = this.calculatePages();
+  }
+
+  calculatePages(): (number | string)[] {
+    const pages: (number | string)[] = [];
+    const maxButtons = 5;
+
+    if (this.totalPages <= maxButtons) {
+      for (let i = 0; i < this.totalPages; i++) pages.push(i);
     } else {
-      this.selectedTypes.push(type);
+      const first = 0;
+      const last = this.totalPages - 1;
+      let start = Math.max(this.currentPage - 1, 1);
+      let end = Math.min(this.currentPage + 1, last - 1);
+
+      if (start > 1) pages.push(first, '...');
+      else pages.push(first);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (end < last - 1) pages.push('...', last);
+      else if (end === last - 1) pages.push(last);
     }
+
+    return pages;
+  }
+
+  goToPage(page: number | string): void {
+    if (typeof page !== 'number') return;
+
+    this.loading = true;
+
+    setTimeout(() => {
+      this.currentPage = page;
+      this.updateDisplayedPokemons();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.loading = false;
+    }, 300);
+  }
+
+  onSearchTermChange(): void {
+    this.loading = true;
+    setTimeout(() => {
+      this.currentPage = 0;
+      this.updateDisplayedPokemons();
+      this.loading = false;
+    }, 300);
+  }
+
+  selectPokemon(id: number): void {
+    this.loading = true;
+
+    setTimeout(() => {
+      this.selectedPokemonId = id;
+      this.closingCard = false;
+      this.loading = false;
+    }, 150);
+  }
+
+  selectEvolutionPokemon(evoId: number) {
+    if (!evoId) return;
+
+    this.loading = true;
+    this.closingCard = true;
+
+    setTimeout(() => {
+      this.selectedPokemonId = evoId;
+      this.closingCard = false;
+
+      setTimeout(() => {
+        if (this.detailsCard) {
+          this.detailsCard.nativeElement.scrollTop = 0;
+        }
+        this.loading = false;
+      }, 50);
+    }, 300);
+  }
+
+  toggleTypeSelection(type: string): void {
+    this.loading = true;
+
+    setTimeout(() => {
+      if (this.selectedTypes.includes(type))
+        this.selectedTypes = this.selectedTypes.filter(t => t !== type);
+      else this.selectedTypes.push(type);
+
+      this.currentPage = 0;
+      this.updateDisplayedPokemons();
+      this.loading = false;
+    }, 150);
   }
 
   resetAdvancedSearch(): void {
-    this.selectedTypes = [];
-    this.advancedSearch = { ability: '', move: '', region: '' };
-    this.searchTerm = '';
-    this.showAdvancedSearch = false;
-    this.loadAllPokemons();
+    this.loading = true;
+
+    setTimeout(() => {
+      this.selectedTypes = [];
+      this.advancedSearch = { ability: '', move: '', region: '' };
+      this.searchTerm = '';
+      this.showAdvancedSearch = false;
+      this.loadAllPokemons();
+      this.loading = false;
+    }, 300);
   }
 
   applyAdvancedSearch(): void {
     this.loading = true;
     this.currentPage = 0;
-    this.endReached = false;
 
     const filters = {
       name: this.searchTerm.trim() || undefined,
       types: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
       ability: this.advancedSearch.ability.trim() || undefined,
       move: this.advancedSearch.move.trim() || undefined,
-      generation: this.advancedSearch.region
-        ? this.regionToGenerationMap[this.advancedSearch.region]
-        : undefined,
+      generation: this.advancedSearch.region ? this.regionToGenerationMap[this.advancedSearch.region] : undefined,
     };
 
     this.pokemonService.searchAdvancedPokemons(filters).subscribe(
       (pokemons: Pokemon[]) => {
         this.allPokemons = pokemons;
-        this.totalPages = Math.ceil(pokemons.length / this.limit);
         this.updateDisplayedPokemons();
         this.loading = false;
       },
-      (error) => {
-        console.error('Erro ao realizar busca avançada:', error);
-        this.loading = false;
-      }
+      () => (this.loading = false)
     );
 
     this.showAdvancedSearch = false;
   }
 
-  onScroll(container: HTMLElement) {
-    this.showScrollTopButton = container.scrollTop > 200;
+  getTypeColor(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'fire': return 'text-orange-500';
+      case 'fighting': return 'text-orange-700';
+      case 'flying': return 'text-blue-300';
+      case 'water': return 'text-blue-500';
+      case 'ice': return 'text-blue-700';
+      case 'grass': return 'text-green-500';
+      case 'bug': return 'text-green-700';
+      case 'ground': return 'text-yellow-500';
+      case 'electric': return 'text-yellow-300';
+      case 'dragon': return 'text-red-500';
+      case 'rock': return 'text-yellow-700';
+      case 'psychic': return 'text-pink-700';
+      case 'fairy': return 'text-pink-500';
+      case 'ghost': return 'text-purple-500';
+      case 'poison': return 'text-purple-700';
+      case 'dark': return 'text-black';
+      default: return 'text-gray-500';
+    }
+  }
+
+  trackPokemon(index: number, pokemon: Pokemon): number {
+    return pokemon.id;
   }
 }
