@@ -1,126 +1,146 @@
 @if (pokemon) {
 
-<!-- ID do Pokémon -->
-<span class="absolute top-2 left-4 text-sm text-gray-500 font-semibold">
-  #{{ pokemon.id }}
-</span>
+<div
+  class="flex flex-col w-full max-w-[400px] mx-auto text-black overflow-hidden px-3 sm:px-4">
 
-<!-- Nome -->
-<h2 class="fredoka-one mb-4 text-lg text-center font-semibold capitalize">
-  {{ pokemon.name }}
-</h2>
-
-<!-- Sprite do Pokémon centralizada -->
-<div class="flex justify-center items-center mt-4">
-  <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" [alt]="pokemon.name" class="h-28 w-28 object-contain" />
-</div>
-
-<!-- Tipos -->
-<div class="flex flex-wrap montserrat justify-center gap-2 mt-2 mb-3">
-  @for (type of pokemon.type; track type) {
-  <span [ngClass]="getTypeColor(type)" class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
-    {{ type }}
+  <!-- ID -->
+  <span class="text-sm text-gray-500 font-semibold mt-2">
+    #{{ pokemon.id }}
   </span>
-  } @empty {
-  <span>No types</span>
-  }
-</div>
 
-<!-- Descrição, Altura, Peso e Habilidades -->
-<div class="text-left montserrat text-sm text-gray-700 mb-4 px-4 space-y-3">
-  <p><strong>Description:</strong> {{ pokemon.description }}</p>
+  <!-- Nome -->
+  <h2 class="fredoka-one text-xl text-center font-semibold capitalize mt-1">
+    {{ pokemon.name }}
+  </h2>
 
-  <div class="space-y-1">
-    <p><strong>Height:</strong> {{ pokemon.height }} m</p>
-    <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
+  <!-- Sprite -->
+  <div class="flex justify-center mt-3">
+    <img [src]="'data:image/png;base64,' + pokemon.spriteBase64"
+         [alt]="pokemon.name"
+         class="h-24 w-24 sm:h-28 sm:w-28 object-contain" />
+  </div>
+
+  <!-- Tipos -->
+  <div class="flex flex-wrap justify-center gap-2 mt-3">
+    @for (type of pokemon.type; track type) {
+      <span [ngClass]="getTypeColor(type)"
+            class="font-medium text-xs sm:text-sm capitalize px-3 py-1 rounded-full bg-white shadow border">
+        {{ type }}
+      </span>
+    } @empty {
+      <span>No types</span>
+    }
+  </div>
+
+  <!-- Infos -->
+  <div class="mt-4 text-sm text-gray-700 space-y-3">
+
+    <p class="leading-relaxed text-justify px-1">
+      <strong>Description:</strong> {{ pokemon.description }}
+    </p>
+
+    <div class="px-1">
+      <p><strong>Height:</strong> {{ pokemon.height }} m</p>
+      <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
+    </div>
 
     <!-- Abilities -->
     <div>
       <strong>Abilities:</strong>
-      <div class="flex justify-start flex-wrap gap-2 mt-2">
+      <div class="flex flex-wrap gap-2 mt-2">
         @for (ability of pokemon.ability; track ability) {
-        <p>
-          <strong class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full capitalize montserrat">
+          <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full capitalize montserrat text-xs sm:text-sm">
             {{ ability }}
-          </strong>
-        </p>
+          </span>
         } @empty {
-        <span>No abilities</span>
+          <span>No abilities</span>
         }
       </div>
     </div>
 
     <!-- Moves -->
-    <div>
+    <div class="mt-3">
       <strong>Moves:</strong>
-      <div class="flex justify-start flex-wrap gap-2 mt-2">
+      <div class="flex flex-wrap gap-2 mt-2">
         @for (move of getVisibleMoves(); track move) {
-        <p>
-          <strong class="bg-red-300 text-gray-700 px-3 py-1 rounded-full text-sm capitalize montserrat">
+          <span class="bg-red-300 text-gray-700 px-3 py-1 rounded-full text-xs capitalize montserrat">
             {{ move }}
-          </strong>
-        </p>
+          </span>
         } @empty {
-        <span>No moves</span>
+          <span>No moves</span>
         }
       </div>
 
       <div class="mt-2 text-center">
-        <button class="text-gray-700 text-sm hover:text-blue-700 montserrat" (click)="showAllMoves = !showAllMoves">
+        <button (click)="showAllMoves = !showAllMoves"
+                class="text-gray-700 text-sm hover:text-blue-700">
           {{ showAllMoves ? 'Show less...' : 'Show more...' }}
         </button>
       </div>
     </div>
+
   </div>
-</div>
 
-<!-- Stats -->
-<div class="mt-4 mb-6 px-4">
-  <h3 class="text-md font-semibold text-gray-700 text-center mb-2 lilita-one-regular">
-    Base Stats
-  </h3>
+  <!-- Stats -->
+  <div class="mt-5 px-1">
+    <h3 class="text-md text-center font-semibold mb-2">
+      Base Stats
+    </h3>
 
-  @if (pokemon.stats) {
-  <div class="space-y-2 montserrat text-sm text-gray-700">
-    @for (stat of statKeys; track stat) {
-    <div class="flex justify-between">
-      <span class="capitalize">{{ stat.replace('-', ' ') }}</span>
-      <span>{{ pokemon.stats[stat] }}</span>
-    </div>
-    <div class="w-full bg-gray-200 rounded-full h-3">
-      <div class="h-3 rounded-full" [ngStyle]="{
-                  width: getStatWidth(pokemon.stats[stat]),
-                  backgroundColor: getStatColor(stat)
-                }"></div>
-    </div>
+    @if (pokemon.stats) {
+      <div class="space-y-3">
+        @for (stat of statKeys; track stat) {
+          <div>
+            <div class="flex justify-between text-xs sm:text-sm">
+              <span class="capitalize">{{ stat.replace('-', ' ') }}</span>
+              <span>{{ pokemon.stats[stat] }}</span>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div class="h-3 rounded-full"
+                   [ngStyle]="{
+                     width: getStatWidth(pokemon.stats[stat]),
+                     backgroundColor: getStatColor(stat)
+                   }">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="text-center text-gray-500">No stats available</p>
     }
   </div>
-  } @else {
-  <p class="text-center text-gray-500">No stats available</p>
-  }
-</div>
 
-<!-- Evoluções -->
-<h3 class="text-md font-semibold text-gray-700 text-center mb-2 fredoka-one">
-  Evolution
-</h3>
+  <!-- Evoluções -->
+  <div class="mt-6">
+    <h3 class="text-center font-semibold mb-3">
+      Evolution
+    </h3>
 
-<div class="flex items-center justify-center gap-4 flex-wrap">
-  @for (evo of evolutionSprites; track evo.name) {
-  <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition" (click)="onEvolutionClick(evo.id)">
-    <img [src]="'data:image/png;base64,' + evo.spriteBase64" [alt]="evo.name" class="h-16 w-16 object-contain" />
-    <p class="text-sm capitalize mt-1 montserrat text-gray-700">
-      {{ evo.name }}
-    </p>
+    <div class="flex items-center justify-center gap-3 flex-wrap">
+
+      @for (evo of evolutionSprites; track evo.name) {
+        <div class="flex flex-col items-center cursor-pointer hover:scale-110 transition"
+             (click)="onEvolutionClick(evo.id)">
+          <img [src]="'data:image/png;base64,' + evo.spriteBase64"
+               [alt]="evo.name"
+               class="h-14 w-14 object-contain" />
+          <p class="text-xs capitalize mt-1">
+            {{ evo.name }}
+          </p>
+        </div>
+
+        @if (evo !== evolutionSprites[evolutionSprites.length - 1]) {
+          <span class="text-lg text-gray-500">→</span>
+        }
+      } @empty {
+        <p class="text-center text-gray-500">No evolutions</p>
+      }
+
+    </div>
   </div>
 
-  @if (evo !== evolutionSprites[evolutionSprites.length - 1]) {
-  <span class="text-xl text-gray-500">→</span>
-  }
-  } @empty {
-  <p class="text-center text-gray-500">No evolutions</p>
-  }
 </div>
-
 
 }
