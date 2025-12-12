@@ -33,6 +33,9 @@ export class HomeComponent implements OnInit {
   selectedPokemonId: number | null = null;
   closingCard = false;
 
+  // 🔥 ADICIONADO: Breakpoint para 860px
+  isDesktop: boolean = window.innerWidth > 860;
+
   @ViewChild('detailsCard') detailsCard!: ElementRef<HTMLDivElement>;
 
   availableTypes: string[] = [
@@ -66,6 +69,11 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAllPokemons();
+
+    // 🔥 Atualizar automaticamente ao mexer o tamanho da janela
+    window.addEventListener('resize', () => {
+      this.isDesktop = window.innerWidth > 860;
+    });
   }
 
   displayPage(page: number | string): string | number {

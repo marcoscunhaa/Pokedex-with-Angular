@@ -1,3 +1,97 @@
 .pokemon-card {
   cursor: pointer;
 }
+
+/* Animação de entrada mobile */
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.25s ease-out;
+}
+
+.pokedex-container {
+  position: relative;
+  padding: 20px;
+}
+
+/* Lista */
+.pokemon-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.pokemon-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  cursor: pointer;
+  text-align: center;
+  transition: transform .2s;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Overlay quando card abre */
+.pokemon-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+/* Card de detalhes */
+.pokemon-detail {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 450px;
+  max-width: 95%;
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  z-index: 11;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Conteúdo rola normalmente */
+body, html {
+  overflow-y: auto !important;
+}
+
+/* Mobile */
+@media (max-width: 860px) {
+  .pokemon-detail {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    transform: none;
+    top: 0;
+    margin: 0;
+    border-radius: 0 0 20px 20px;
+    padding: 20px;
+  }
+
+  .pokemon-list.blur {
+    filter: blur(2px);
+    pointer-events: none;
+  }
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+}
+

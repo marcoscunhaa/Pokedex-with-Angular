@@ -26,15 +26,20 @@
     </div>
 
     <!-- GRID + CARD -->
-    <div class="flex-1 overflow-hidden overflow-x-hidden relative flex transition-all duration-300"
-      [ngClass]="selectedPokemonId ? 'flex-row gap-6' : 'flex-col gap-0'"
+    <div class="flex-1 overflow-hidden relative flex transition-all duration-300"
+      [ngClass]="
+        selectedPokemonId
+          ? (isDesktop ? 'flex-row gap-6' : 'flex-col gap-0')
+          : (isDesktop ? 'flex-col gap-0' : 'flex-col gap-0')
+      "
       [class.opacity-100]="!closingCard"
       style="height: calc(95vh - 150px);">
 
       <!-- GRID -->
       <div class="flex-1 overflow-y-auto overflow-x-hidden pr-1">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+             [ngClass]="{'grid-cols-1': !isDesktop}">
           @for (pokemon of displayedPokemons; track pokemon.id) {
           <div
             class="pokemon-card bg-gradient-to-b from-white to-purple-50 rounded-3xl shadow-lg p-5 text-center relative cursor-pointer border border-purple-100 hover:shadow-2xl hover:scale-105 transition"
@@ -85,7 +90,7 @@
 
               <span *ngIf="page === '...'" class="px-3 py-2 text-gray-500 font-semibold"> ... </span>
 
-              <button *ngIf="page !== '...'"
+              <button *ngIf="page !== '...' "
                 (click)="goToPage(page)"
                 class="px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap"
                 [ngClass]="currentPage === page
@@ -107,20 +112,43 @@
 
       </div>
 
-      <!-- CARD lateral -->
-      <div *ngIf="selectedPokemonId"
-        class="w-full md:w-[430px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start transition-opacity duration-300"
-        [class.opacity-0]="closingCard" style="max-height: calc(95vh - 100px);">
+      <!-- CARD (desktop lateral / mobile modal) -->
+      <div *ngIf="selectedPokemonId">
 
-        <button (click)="selectedPokemonId = null"
-          class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl">
-          &times;
-        </button>
+        <!-- DESKTOP (>= 860px) -->
+        <div *ngIf="isDesktop"
+          class="w-[430px] bg-white rounded-2xl shadow-lg p-6 overflow-visible self-start transition-opacity duration-300 relative">
 
-        <app-pokemon-details
-            [pokemonId]="selectedPokemonId"
-            (evolutionClicked)="selectEvolutionPokemon($event)">
-        </app-pokemon-details>
+          <button (click)="selectedPokemonId = null"
+            class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl">
+            &times;
+          </button>
+
+          <app-pokemon-details
+              [pokemonId]="selectedPokemonId"
+              (evolutionClicked)="selectEvolutionPokemon($event)">
+          </app-pokemon-details>
+
+        </div>
+
+        <!-- MOBILE (modal full screen rolável) -->
+        <div *ngIf="!isDesktop"
+          class="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-2 overflow-y-auto">
+
+          <div class="bg-white w-full h-full max-w-md rounded-2xl shadow-2xl p-6 relative overflow-y-auto">
+
+            <button (click)="selectedPokemonId = null"
+              class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl">
+              &times;
+            </button>
+
+            <app-pokemon-details
+                [pokemonId]="selectedPokemonId"
+                (evolutionClicked)="selectEvolutionPokemon($event)">
+            </app-pokemon-details>
+
+          </div>
+        </div>
 
       </div>
 
