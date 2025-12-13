@@ -63,48 +63,33 @@ export class PokemonService {
     );
   }
 
-  /**
-   * Retorna um Pokémon pelo seu ID.
-   */
+
   getPokemonById(id: number): Observable<Pokemon> {
     return this.http.get<Pokemon>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Retorna Pokémon com base no nome.
-   */
+
   getPokemonsByName(name: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('name', name);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/name`, { params });
   }
 
-  /**
-   * Retorna Pokémon com base no tipo.
-   */
+
   getPokemonsByType(type: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('type', type);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/type`, { params });
   }
 
-  /**
-   * Retorna Pokémon com base na habilidade.
-   */
   getPokemonsByAbility(ability: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('ability', ability);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/ability`, { params });
   }
 
-  /**
-   * Retorna Pokémon com base no movimento.
-   */
   getPokemonsByMove(move: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('move', move);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/move`, { params });
   }
 
-  /**
-   * Pesquisa avançada com múltiplos filtros (nome, tipos, habilidade, movimento, geração).
-   */
   searchAdvancedPokemons(filters: PokemonFilter): Observable<Pokemon[]> {
     let params = new HttpParams();
 

@@ -1,20 +1,26 @@
 <body class="bg-gray-200 min-h-screen text-black flex items-center justify-center p-4 overflow-x-hidden">
-
-  <!-- ****** LOADING GLOBAL ****** -->
+  <!-- Tela de carregamento -->
   <app-loading *ngIf="loading"></app-loading>
 
   <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl flex flex-col relative">
 
-    <!-- Título -->
-    <h1 class="text-5xl md:text-6xl fredoka-one text-purple-600 mb-2 text-center drop-shadow-lg">
-      Pokedex
-    </h1>
+    <!-- Título com imagem -->
+    <div class="flex items-center justify-center gap-4 mb-4">
+
+      <!-- Gengar -->
+      <img src="assets/gengar.webp" alt="Gengar" class="h-16 md:h-20 w-auto drop-shadow-lg" />
+
+      <!-- Título -->
+      <h1 class="text-5xl md:text-6xl fredoka-one text-purple-600 text-center drop-shadow-lg">
+        Pokedex
+      </h1>
+
+    </div>
 
     <!-- Search -->
     <div class="mb-4">
       <input type="text" [(ngModel)]="searchTerm" (input)="onSearchTermChange()"
-        placeholder="Search by pokedex number or pokemon..."
-        class="montserrat w-full p-3 rounded-full border border-gray-300 text-black
+        placeholder="Search by pokedex number or pokemon..." class="montserrat w-full p-3 rounded-full border border-gray-300 text-black
                focus:outline-none focus:ring-2 focus:ring-purple-500" />
     </div>
 
@@ -26,20 +32,16 @@
     </div>
 
     <!-- GRID + CARD -->
-    <div class="flex-1 overflow-hidden relative flex transition-all duration-300"
-      [ngClass]="
+    <div class="flex-1 overflow-hidden relative flex transition-all duration-300" [ngClass]="
         selectedPokemonId
           ? (isDesktop ? 'flex-row gap-6' : 'flex-col gap-0')
           : (isDesktop ? 'flex-col gap-0' : 'flex-col gap-0')
-      "
-      [class.opacity-100]="!closingCard"
-      style="height: calc(95vh - 150px);">
+      " [class.opacity-100]="!closingCard" style="height: calc(95vh - 150px);">
 
       <!-- GRID -->
       <div class="flex-1 overflow-y-auto overflow-x-hidden pr-1">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-             [ngClass]="{'grid-cols-1': !isDesktop}">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" [ngClass]="{'grid-cols-1': !isDesktop}">
           @for (pokemon of displayedPokemons; track pokemon.id) {
           <div
             class="pokemon-card bg-gradient-to-b from-white to-purple-50 rounded-3xl shadow-lg p-5 text-center relative cursor-pointer border border-purple-100 hover:shadow-2xl hover:scale-105 transition"
@@ -60,7 +62,7 @@
             <div class="flex flex-wrap montserrat justify-center gap-2 mb-3">
               @for (type of pokemon.type; track type) {
               <span [ngClass]="getTypeColor(type)"
-                    class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow-sm border border-gray-200">
+                class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow-sm border border-gray-200">
                 {{ type }}
               </span>
               }
@@ -79,9 +81,9 @@
                       px-4 py-3 rounded-2xl bg-white/70 backdrop-blur-md shadow-lg border border-purple-200">
 
             <!-- Prev -->
-            <button class="px-4 py-2 rounded-full text-sm font-semibold transition border border-purple-300 text-purple-600 hover:bg-purple-100 disabled:opacity-40"
-              [disabled]="currentPage === 0"
-              (click)="goToPage(currentPage - 1)">
+            <button
+              class="px-4 py-2 rounded-full text-sm font-semibold transition border border-purple-300 text-purple-600 hover:bg-purple-100 disabled:opacity-40"
+              [disabled]="currentPage === 0" (click)="goToPage(currentPage - 1)">
               ‹ Prev
             </button>
 
@@ -90,10 +92,8 @@
 
               <span *ngIf="page === '...'" class="px-3 py-2 text-gray-500 font-semibold"> ... </span>
 
-              <button *ngIf="page !== '...' "
-                (click)="goToPage(page)"
-                class="px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap"
-                [ngClass]="currentPage === page
+              <button *ngIf="page !== '...' " (click)="goToPage(page)"
+                class="px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap" [ngClass]="currentPage === page
                             ? 'bg-purple-600 text-white shadow-md scale-105'
                             : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100'">
                 {{ displayPage(page) }}
@@ -102,9 +102,9 @@
             </ng-container>
 
             <!-- Next -->
-            <button class="px-4 py-2 rounded-full text-sm font-semibold transition border border-purple-300 text-purple-600 hover:bg-purple-100 disabled:opacity-40"
-              [disabled]="currentPage >= totalPages - 1"
-              (click)="goToPage(currentPage + 1)">
+            <button
+              class="px-4 py-2 rounded-full text-sm font-semibold transition border border-purple-300 text-purple-600 hover:bg-purple-100 disabled:opacity-40"
+              [disabled]="currentPage >= totalPages - 1" (click)="goToPage(currentPage + 1)">
               Next ›
             </button>
           </div>
@@ -124,9 +124,7 @@
             &times;
           </button>
 
-          <app-pokemon-details
-              [pokemonId]="selectedPokemonId"
-              (evolutionClicked)="selectEvolutionPokemon($event)">
+          <app-pokemon-details [pokemonId]="selectedPokemonId" (evolutionClicked)="selectEvolutionPokemon($event)">
           </app-pokemon-details>
 
         </div>
@@ -142,9 +140,7 @@
               &times;
             </button>
 
-            <app-pokemon-details
-                [pokemonId]="selectedPokemonId"
-                (evolutionClicked)="selectEvolutionPokemon($event)">
+            <app-pokemon-details [pokemonId]="selectedPokemonId" (evolutionClicked)="selectEvolutionPokemon($event)">
             </app-pokemon-details>
 
           </div>
@@ -173,8 +169,7 @@
           <label class="block font-semibold fredoka-one text-purple-700 mb-1">Type:</label>
           <div class="flex flex-wrap gap-2">
             @for (type of availableTypes; track type) {
-            <button (click)="toggleTypeSelection(type)"
-              [ngClass]="[
+            <button (click)="toggleTypeSelection(type)" [ngClass]="[
                 selectedTypes.includes(type)
                   ? 'bg-purple-700 text-white'
                   : 'bg-white ' + getTypeColor(type),
@@ -189,24 +184,21 @@
         <!-- Ability -->
         <div class="mb-4">
           <label class="block font-semibold fredoka-one text-purple-700 mb-1">Ability:</label>
-          <input [(ngModel)]="advancedSearch.ability"
-            class="w-full p-2 montserrat border rounded-md border-gray-300"
+          <input [(ngModel)]="advancedSearch.ability" class="w-full p-2 montserrat border rounded-md border-gray-300"
             placeholder="ex: telepathy" />
         </div>
 
         <!-- Move -->
         <div class="mb-4">
           <label class="block font-semibold fredoka-one text-purple-700 mb-1">Move:</label>
-          <input [(ngModel)]="advancedSearch.move"
-            class="w-full p-2 montserrat border rounded-md border-gray-300"
+          <input [(ngModel)]="advancedSearch.move" class="w-full p-2 montserrat border rounded-md border-gray-300"
             placeholder="ex: draco-meteor" />
         </div>
 
         <!-- Region -->
         <div class="mb-4">
           <label class="block font-semibold fredoka-one text-purple-700 mb-1">Region:</label>
-          <select [(ngModel)]="advancedSearch.region"
-            class="montserrat w-full p-2 border rounded-md border-gray-300">
+          <select [(ngModel)]="advancedSearch.region" class="montserrat w-full p-2 border rounded-md border-gray-300">
             <option value="">All regions</option>
             @for (region of regions; track region) {
             <option [value]="region">{{ region }}</option>
@@ -230,8 +222,8 @@
     }
 
     <!-- Footer -->
-    <footer class="w-full text-center text-gray-600 text-sm mt-6 p-4 border-t border-gray-300">
-      <p class="mt-1">© 2025 Pokedex API. Todos os direitos reservados.</p>
+    <footer class="w-full text-center text-gray-600 text-lm mt-6 p-4 border-t border-gray-300">
+      <p class="mt-1">© 2025 Mega Pokedex. Todos os direitos reservados.</p>
       <small>Desenvolvido por <strong>Marcos Cunha</strong></small>
     </footer>
 
